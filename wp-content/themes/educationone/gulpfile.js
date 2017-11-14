@@ -18,7 +18,7 @@ var browserSyncWatchFiles = [
 // browser-sync options
 // see: https://www.browsersync.io/docs/options/
 var browserSyncOptions = {
-    proxy: "localhost/wordpress/",
+    proxy: "http://educationone.sites.parmezani.fmaustin.com/",
     notify: false
 };
 
@@ -43,7 +43,7 @@ var browserSync = require('browser-sync').create();
 var del = require('del');
 var cleanCSS = require('gulp-clean-css');
 var gulpSequence = require('gulp-sequence');
-
+var reload = browserSync.reload;
 
 // Run:
 // gulp sass + cssnano + rename
@@ -117,8 +117,9 @@ gulp.task('sass', function () {
 // Run:
 // gulp watch
 // Starts watcher. Watcher runs gulp sass task on changes
-gulp.task('watch', function () {
+gulp.task('watch', ['browser-sync'], function () {
     gulp.watch('./sass/**/*.scss', ['styles']);
+    gulp.watch('./sass/**/*.sass', ['styles']);
     gulp.watch([basePaths.dev + 'js/**/*.js','js/**/*.js','!js/theme.js','!js/theme.min.js'], ['scripts']);
 
     //Inside the watch task.
@@ -199,10 +200,11 @@ gulp.task('scripts', function() {
 
         // Start - All BS4 stuff
         basePaths.dev + 'js/bootstrap4/bootstrap.js',
-
         // End - All BS4 stuff
 
-        basePaths.dev + 'js/skip-link-focus-fix.js'
+        basePaths.dev + 'js/skip-link-focus-fix.js',
+
+        basePaths.js + 'main.js'
     ];
   gulp.src(scripts)
     .pipe(concat('theme.min.js'))
