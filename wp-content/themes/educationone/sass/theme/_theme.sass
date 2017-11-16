@@ -1,0 +1,107 @@
+.vertical-center
+	-webkit-transform: translateY(-50%)
+	-moz-transform: translateY(-50%)
+	transform: translateY(-50%)
+	position: absolute
+	top: 50%
+
+.horizontal-center
+	margin: 0 auto
+
+.vertical-horizontal-center
+	-webkit-transform: translate(-50%, -50%)
+	-moz-transform: translate(-50%, -50%)
+	transform: translate(-50%, -50%)
+	position: absolute
+	left: 50%
+	top: 50%
+
+.mobile
+	@include media-breakpoint-up(sm)
+		display: none !important
+
+.tablet
+	@include media-breakpoint-up(lg)
+		display: none !important
+
+.small-tablet
+	@include media-breakpoint-up(md)
+		display: none !important
+
+.tablet-up
+	@include media-breakpoint-down(sm)
+		display: none !important
+
+.desktop
+	@include media-breakpoint-down(md)
+		display: none !important
+
+.hidden
+	display: none !important
+
+ul:not(.navbar-nav)
+	list-style: none
+	color: #FFF
+	padding-left: 0px
+	li
+		background: url(../img/angle-right.svg) left 20px no-repeat
+		padding-left: 30px
+
+.eo-span
+	background-color: #FFF
+	color: $brand-dark-blue
+	font-size: 36px
+	font-family: $font-barlow
+	font-weight: bold
+	border-radius: 35px
+	padding: 5px 15px
+	position: relative
+	&:before
+		content: ''
+		width: 25px
+		height: 25px
+		background-color: #fff
+		position: absolute
+		z-index: -1
+		left: 0
+
+body
+	font-family: $font-barlow
+	color: $brand-black
+
+.carousel
+	.carousel-inner
+		min-height: 100%
+		.carousel-item
+			min-height: 100%
+			background-size: cover
+			background-position: center
+
+body.home
+	.carousel
+		.carousel-inner
+			min-height: 80vh
+			font-family: $font-barlow-condensed
+			.carousel-item
+				padding-top: 170px
+				color: #FFF
+				.eo-span
+					margin-left: 52px
+				.slide-copy-wrapper
+					margin-left: 20px
+					ul
+						li
+							font-family: $font-barlow
+							font-size: 46px
+							font-weight: bold
+							letter-spacing: -1.6px
+							line-height: 1.2
+
+
+
+
+
+// Button
+.btn-orange
+	background-color: $brand-orange
+	color: #FFF

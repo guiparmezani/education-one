@@ -1,0 +1,48 @@
+header
+	margin-top: 35px
+	.navbar
+		font-family: $font-barlow-condensed
+		display: flex
+		justify-content: space-between
+		padding: 0
+		background: #FFF
+		max-height: 75px
+		.home-link-wrapper
+			background-color: $brand-dark-blue
+			padding: 30px 20px
+		.navbar-collapse
+			flex-grow: initial
+			.menu-item
+				a
+					color: $brand-black
+					text-transform: uppercase
+		.call-us
+			background-color: $brand-lime
+			color: #FFF
+			padding: 10px
+			text-align: right
+			span
+				font-size: 16px
+				font-family: $font-barlow-condensed
+			a
+				color: #FFF
+				font-family: $font-barlow-condensed
+				font-weight: bold
+				font-size: 29px
+				margin-top: -12px
+				display: block
+
+	@include media-breakpoint-up(md)
+		.navbar
+			.navbar-collapse
+				width: 55%
+				#main-menu
+					width: 100%
+					justify-content: space-between
+
+
+body.home
+	header
+		position: absolute
+		width: 100%
+		z-index: 20

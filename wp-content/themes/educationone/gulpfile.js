@@ -19,7 +19,7 @@ var browserSyncWatchFiles = [
 // see: https://www.browsersync.io/docs/options/
 var browserSyncOptions = {
     proxy: "http://educationone.sites.parmezani.fmaustin.com/",
-    notify: false
+    notify: true
 };
 
 
@@ -197,11 +197,12 @@ gulp.task('watch-bs', ['browser-sync', 'watch', 'scripts'], function () { });
 // Uglifies and concat all JS files into one
 gulp.task('scripts', function() {
     var scripts = [
+        basePaths.js + 'jquery.min.js',
 
         // Start - All BS4 stuff
         basePaths.dev + 'js/bootstrap4/bootstrap.js',
         // End - All BS4 stuff
-
+        basePaths.dev + 'js/underscore-min.js',
         basePaths.dev + 'js/skip-link-focus-fix.js',
 
         basePaths.js + 'main.js'

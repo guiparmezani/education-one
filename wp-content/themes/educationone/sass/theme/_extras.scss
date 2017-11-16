@@ -1,0 +1,14 @@
+//Carousel Fade
+.carousel-fade {
+	.carousel-item {
+		display: block;
+		position: absolute;
+		opacity: 0;
+		transition: opacity .75s ease-in-out;
+
+		&.active {
+			opacity: 1;
+			z-index: 5;
+		}
+	}
+}

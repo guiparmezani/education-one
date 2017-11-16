@@ -20,6 +20,8 @@ $container = get_theme_mod( 'understrap_container_type' );
 	<meta name="apple-mobile-web-app-title" content="<?php bloginfo( 'name' ); ?> - <?php bloginfo( 'description' ); ?>">
 	<link rel="profile" href="http://gmpg.org/xfn/11">
 	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
+
+	<link href="https://fonts.googleapis.com/css?family=Barlow+Condensed:400,500|Barlow:400,700" rel="stylesheet">
 	<?php wp_head(); ?>
 </head>
 
@@ -28,37 +30,19 @@ $container = get_theme_mod( 'understrap_container_type' );
 <div class="hfeed site" id="page">
 
 	<!-- ******************* The Navbar Area ******************* -->
-	<div class="wrapper-fluid wrapper-navbar" id="wrapper-navbar">
+	<header>
+		<div class="container">
+			<nav class="navbar navbar-expand-md">
+				<div class="home-link-wrapper">
+					<a class="home-link" rel="home" href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>">
+						<img src="<?php bloginfo('template_url') ?>/img/educationone-horizontal-slogan.svg">
+					</a>
+				</div>
 
-		<a class="skip-link screen-reader-text sr-only" href="#content"><?php esc_html_e( 'Skip to content',
-		'understrap' ); ?></a>
-
-		<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-
-		<?php if ( 'container' == $container ) : ?>
-			<div class="container">
-		<?php endif; ?>
-
-					<!-- Your site title as branding in the menu -->
-					<?php if ( ! has_custom_logo() ) { ?>
-
-						<?php if ( is_front_page() && is_home() ) : ?>
-
-							<h1 class="navbar-brand mb-0"><a rel="home" href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>"><?php bloginfo( 'name' ); ?></a></h1>
-							
-						<?php else : ?>
-
-							<a class="navbar-brand" rel="home" href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>"><?php bloginfo( 'name' ); ?></a>
-						
-						<?php endif; ?>
-						
-					
-					<?php } else {
-						the_custom_logo();
-					} ?><!-- end custom logo -->
-
-				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
+				<button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
 				</button>
 
 				<!-- The WordPress Menu goes here -->
@@ -73,10 +57,13 @@ $container = get_theme_mod( 'understrap_container_type' );
 						'walker'          => new WP_Bootstrap_Navwalker(),
 					)
 				); ?>
-			<?php if ( 'container' == $container ) : ?>
-			</div><!-- .container -->
-			<?php endif; ?>
+				
+				<div class="call-us">
+					<span>GIVE US A CALL <i class="fa fa-phone" aria-hidden="true"></i></span>
+					<a href="tel:<?php the_field('phone_number', 'options'); ?>"><?php the_field('phone_number', 'options'); ?></a>
+				</div>
+			</nav><!-- .site-navigation -->
+		</div>
 
-		</nav><!-- .site-navigation -->
+	</header>
 
-	</div><!-- .wrapper-navbar end -->
