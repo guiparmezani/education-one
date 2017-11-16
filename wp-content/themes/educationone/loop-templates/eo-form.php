@@ -2,17 +2,20 @@
 
 <div class="eo-form-wrapper">
 	<div class="row">
-		<div class="col-md-6" style="background-image: url(<?php if(get_field('background', get_the_ID())) the_field('background', get_the_ID()); else echo ''; ?>);">
+		<div class="col-md-6" style="background: linear-gradient(270deg, <?php the_field('background_color', get_the_ID()) ?>,  transparent 20%), <?php the_field('background_color', get_the_ID()); ?> no-repeat;">
 			<?php if (get_field('title', get_the_ID())): ?>
 				<div class="form-copy">
-					<h3><?php the_field('title', get_the_ID()); ?></h3>
+					<h1><?php the_field('title', get_the_ID()); ?></h1>
 					<p><?php the_field('copy', get_the_ID()); ?></p>
 				</div>
 			<?php endif ?>
+			<img src="<?php if(get_field('background', get_the_ID())) the_field('background', get_the_ID()); else echo ''; ?>">
 		</div>
 
 		<div class="col-md-6">
-			<?php gravity_form(1, false, false, false, '', true, 12); ?>
+			<div class="form-wrapper">
+				<?php gravity_form(1, false, true, false, '', true, 12); ?>
+			</div>
 		</div>
 	</div>
 </div>

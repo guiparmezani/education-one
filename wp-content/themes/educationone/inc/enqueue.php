@@ -13,7 +13,7 @@ if ( ! function_exists( 'understrap_scripts' ) ) {
 		// Get the theme data.
 		$the_theme = wp_get_theme();
 		wp_enqueue_style( 'understrap-styles', get_stylesheet_directory_uri() . '/css/theme.min.css', array(), $the_theme->get( 'Version' ), false );
-		// wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( 'jquery' );
 		/**
 		* wp_register_script('jquery-slim', (get_template_directory_uri() . '/js/jquery.slim.min.js'), true, '3.2.1');
 		* wp_enqueue_script( 'jquery-slim' );

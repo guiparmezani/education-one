@@ -39,13 +39,19 @@
 .hidden
 	display: none !important
 
-ul:not(.navbar-nav)
-	list-style: none
-	color: #FFF
-	padding-left: 0px
-	li
-		background: url(../img/angle-right.svg) left 20px no-repeat
-		padding-left: 30px
+h1
+	font-size: 46px
+	color: $brand-dark-blue
+	font-family: $font-barlow
+	font-weight: bold
+	letter-spacing: -1.89px
+	line-height: 43px
+
+p
+	font-family: $font-barlow
+	font-size: 21px
+	color: $brand-dark-blue
+	line-height: 25px
 
 .eo-span
 	background-color: #FFF
@@ -64,10 +70,12 @@ ul:not(.navbar-nav)
 		position: absolute
 		z-index: -1
 		left: 0
+		top: 0
 
 body
 	font-family: $font-barlow
 	color: $brand-black
+	background-color: $brand-light-gray
 
 .carousel
 	.carousel-inner
@@ -86,22 +94,122 @@ body.home
 				padding-top: 170px
 				color: #FFF
 				.eo-span
-					margin-left: 52px
+					margin-left: 32px
 				.slide-copy-wrapper
 					margin-left: 20px
+					p
+						font-family: $font-barlow-condensed
+						font-size: 21.3px
+						color: #FFFFFF
 					ul
+						list-style: none
+						color: #FFF
+						padding-left: 0px
 						li
 							font-family: $font-barlow
 							font-size: 46px
 							font-weight: bold
 							letter-spacing: -1.6px
 							line-height: 1.2
+							background: url(../img/angle-right.svg) left 20px no-repeat
+							padding-left: 30px
 
+	.form-area
+		margin-top: 50px
+		
 
 
 
 
 // Button
-.btn-orange
+.btn-orange, input[type="submit"]
 	background-color: $brand-orange
-	color: #FFF
+	color: #FFF !important
+	border: none
+	text-transform: uppercase
+	min-width: 184px
+	padding: 10px
+	font-family: $font-barlow-condensed
+
+
+
+// Forms
+.eo-form-wrapper
+	.col-md-6
+		padding-left: 0
+		padding-right: 0
+		background-color: #FFF
+	.form-copy
+		padding: 20px
+	.form-wrapper
+		padding: 20px
+		.gform_wrapper
+			.gform_body
+				.gfield
+					label, input, textarea
+						color: $brand-dark-blue
+					label
+						font-size: 16px
+						font-family: $font-barlow
+						font-weight: normal
+					input[type="text"]
+						border: none
+						background-color: $brand-light-gray
+					&.no-label
+						> label
+							display: none
+			.gform_heading
+				color: $brand-dark-blue
+				.gform_description
+					font-family: $font-barlow
+					font-weight: bold
+					font-size: 30px
+					letter-spacing: -1.23px
+					line-height: 43px
+			.gform_footer
+				text-align: right
+
+
+
+.gform_wrapper.gform_validation_error
+	.gfield.gfield_error
+		margin-right: 0 !important
+		input[type="text"], select, textarea
+			border: none
+			background-color: pink
+		label
+			margin-top: 0 !important
+		.ginput_container
+			margin-top: 8px !important
+		
+
+	@include media-breakpoint-up(md)
+		.gfield.gfield_error
+			&.gf_left_half
+				width: 50% !important
+				padding-right: 16px !important
+				margin-top: 16px !important
+			&.gf_right_half
+				width: 50% !important
+				margin-top: 16px !important
+
+.validation_error, .validation_message
+	display: none !important
+.gfield_error
+	border: none !important
+	background: none !important
+	padding: 0 !important
+.gfield_required
+	display: none !important
+
+.modal
+	.gform_confirmation_message
+		color: #FFF
+.gform_confirmation_message
+	color: $brand-black
+	margin-top: 30px
+	text-align: center
+
+
+#ui-datepicker-div
+	display: none
