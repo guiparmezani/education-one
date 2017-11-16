@@ -13,19 +13,50 @@ $container = get_theme_mod( 'understrap_container_type' );
 
 <?php get_sidebar( 'footerfull' ); ?>
 
-<div class="wrapper" id="wrapper-footer">
-	<div class="<?php echo esc_attr( $container ); ?>">
+<footer class="wrapper" id="wrapper-footer">
+	<div class="container">
 		<div class="row">
 			<div class="col-md-12">
-				<footer class="site-footer" id="colophon">
-					<div class="site-info">
-					</div><!-- .site-info -->
-				</footer><!-- #colophon -->
-				
+				<div class="site-footer" id="colophon">
+					
+					<nav class="navbar navbar-expand-md">
+						<div class="home-link-wrapper">
+							<a class="home-link" rel="home" href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>">
+								<img src="<?php bloginfo('template_url') ?>/img/educationone-vertical-logo.svg">
+							</a>
+						</div>
+
+						<!-- The WordPress Menu goes here -->
+						<?php wp_nav_menu(
+							array(
+								'theme_location'  => 'primary',
+								'container_class' => 'footer-menu',
+								'container_id'    => 'navbarNavDropdown',
+								'menu_class'      => 'navbar-nav',
+								'fallback_cb'     => '',
+								'menu_id'         => 'main-menu-footer',
+								'walker'          => new WP_Bootstrap_Navwalker(),
+							)
+						); ?>
+						
+						<div class="call-us">
+							<span>GIVE US A CALL <i class="fa fa-phone" aria-hidden="true"></i></span>
+							<a href="tel:<?php the_field('phone_number', 'options'); ?>"><?php the_field('phone_number', 'options'); ?></a>
+						</div>
+					</nav><!-- .site-navigation -->
+
+				</div><!-- #colophon -->
 			</div><!--col end -->
 		</div><!-- row end -->
 	</div><!-- container end -->
-</div><!-- wrapper end -->
+
+	<div class="copyright clearfix">
+		<div class="container">
+			<span class="pull-left">© 2017 Education One</span>
+			<span class="pull-right"><a href="/careers/">Careers</a></span>
+		</div>
+	</div>
+</footer><!-- wrapper end -->
 </div><!-- #page we need this extra closing tag here -->
 <?php wp_footer(); ?>
 

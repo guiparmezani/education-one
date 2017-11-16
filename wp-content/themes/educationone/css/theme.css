@@ -9424,7 +9424,8 @@ header {
     justify-content: space-between;
     padding: 0;
     background: #FFF;
-    max-height: 75px; }
+    max-height: 75px;
+    width: 100%; }
     header .navbar .home-link-wrapper {
       background-color: #2D556B;
       padding: 30px 20px; }
@@ -9459,6 +9460,54 @@ body.home header {
   position: absolute;
   width: 100%;
   z-index: 20; }
+
+footer {
+  background-color: #2D556B;
+  padding: 0 !important;
+  margin-top: 50px; }
+  footer .copyright {
+    background-color: #1E4256;
+    color: #FFF;
+    font-family: "Barlow", sans-serif;
+    font-size: 16px;
+    padding: 10px 0; }
+    footer .copyright a {
+      color: #FFF; }
+  footer .site-footer {
+    color: #FFF;
+    padding: 30px 0; }
+    footer .site-footer a {
+      color: #FFF; }
+  footer .navbar {
+    font-family: "Barlow Condensed", sans-serif;
+    display: flex;
+    justify-content: space-between;
+    padding: 0;
+    width: 100%; }
+    footer .navbar .footer-menu {
+      width: 55%; }
+      footer .navbar .footer-menu #main-menu-footer {
+        justify-content: space-between; }
+    footer .navbar .call-us {
+      color: #FFF;
+      padding: 10px;
+      text-align: right; }
+      footer .navbar .call-us span {
+        font-size: 16px;
+        font-family: "Barlow Condensed", sans-serif; }
+      footer .navbar .call-us a {
+        color: #FFF;
+        font-family: "Barlow Condensed", sans-serif;
+        font-weight: bold;
+        font-size: 29px;
+        margin-top: -12px;
+        display: block; }
+  @media (min-width: 768px) {
+    footer .navbar .navbar-collapse {
+      width: 55%; }
+      footer .navbar .navbar-collapse #main-menu {
+        width: 100%;
+        justify-content: space-between; } }
 
 .carousel-fade .carousel-item {
   display: block;
@@ -9594,37 +9643,37 @@ body.home .form-area {
   padding: 10px;
   font-family: "Barlow Condensed", sans-serif; }
 
-.eo-form-wrapper .col-md-6 {
-  padding-left: 0;
-  padding-right: 0;
-  background-color: #FFF; }
-
-.eo-form-wrapper .form-copy {
-  padding: 20px; }
-
-.eo-form-wrapper .form-wrapper {
-  padding: 20px; }
-  .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea {
-    color: #2D556B; }
-  .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label {
-    font-size: 16px;
-    font-family: "Barlow", sans-serif;
-    font-weight: normal; }
-  .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="text"] {
-    border: none;
-    background-color: #eaeaea; }
-  .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield.no-label > label {
-    display: none; }
-  .eo-form-wrapper .form-wrapper .gform_wrapper .gform_heading {
-    color: #2D556B; }
-    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_heading .gform_description {
+.eo-form-wrapper {
+  padding: 0 15px; }
+  .eo-form-wrapper .col-md-6 {
+    padding-left: 0;
+    padding-right: 0;
+    background-color: #FFF; }
+  .eo-form-wrapper .form-copy {
+    padding: 20px; }
+  .eo-form-wrapper .form-wrapper {
+    padding: 20px; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea {
+      color: #2D556B; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label {
+      font-size: 16px;
       font-family: "Barlow", sans-serif;
-      font-weight: bold;
-      font-size: 30px;
-      letter-spacing: -1.23px;
-      line-height: 43px; }
-  .eo-form-wrapper .form-wrapper .gform_wrapper .gform_footer {
-    text-align: right; }
+      font-weight: normal; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="text"] {
+      border: none;
+      background-color: #eaeaea; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield.no-label > label {
+      display: none; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_heading {
+      color: #2D556B; }
+      .eo-form-wrapper .form-wrapper .gform_wrapper .gform_heading .gform_description {
+        font-family: "Barlow", sans-serif;
+        font-weight: bold;
+        font-size: 30px;
+        letter-spacing: -1.23px;
+        line-height: 43px; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_footer {
+      text-align: right; }
 
 .gform_wrapper.gform_validation_error .gfield.gfield_error {
   margin-right: 0 !important; }

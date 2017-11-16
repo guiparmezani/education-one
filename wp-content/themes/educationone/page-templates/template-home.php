@@ -40,7 +40,7 @@ get_header();
 	
 	<div class="form-area">
 		<div class="container">
-			<?php get_template_part( 'loop-templates/eo-form' ); ?>
+			<?php get_template_part('loop-templates/eo-form'); ?>
 		</div>
 	</div>
 </div>

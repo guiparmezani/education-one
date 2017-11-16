@@ -1,24 +1,32 @@
-header
-	margin-top: 35px
+footer
+	background-color: $brand-dark-blue
+	padding: 0 !important
+	margin-top: 50px
+	.copyright
+		background-color: #1E4256
+		color: #FFF
+		font-family: $font-barlow
+		font-size: 16px
+		padding: 10px 0
+		a
+			color: #FFF
+	.site-footer
+		color: #FFF
+		padding: 30px 0
+		a
+			color: #FFF
+
 	.navbar
 		font-family: $font-barlow-condensed
 		display: flex
 		justify-content: space-between
 		padding: 0
-		background: #FFF
-		max-height: 75px
 		width: 100%
-		.home-link-wrapper
-			background-color: $brand-dark-blue
-			padding: 30px 20px
-		.navbar-collapse
-			flex-grow: initial
-			.menu-item
-				a
-					color: $brand-black
-					text-transform: uppercase
+		.footer-menu
+			width: 55%
+			#main-menu-footer
+				justify-content: space-between
 		.call-us
-			background-color: $brand-lime
 			color: #FFF
 			padding: 10px
 			text-align: right
@@ -40,10 +48,3 @@ header
 				#main-menu
 					width: 100%
 					justify-content: space-between
-
-
-body.home
-	header
-		position: absolute
-		width: 100%
-		z-index: 20
