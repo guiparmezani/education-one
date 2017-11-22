@@ -43,6 +43,24 @@ get_header();
 			<?php get_template_part('loop-templates/eo-form'); ?>
 		</div>
 	</div>
+
+	<div class="page-section callouts-wrapper">
+		<div class="container">
+			<div class="callouts">
+				<h1><?php the_field('callouts_title'); ?></h1>
+				<div class="row">
+					<?php while(have_rows('callouts')): the_row(); ?>
+						<div class="col-sm-4">
+							<div class="callout">
+								<?php echo wp_get_attachment_image(get_sub_field('image'), 'medium'); ?>
+								<?php the_sub_field('copy'); ?>
+							</div>
+						</div>
+					<?php endwhile ?>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 
