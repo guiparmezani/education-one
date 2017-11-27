@@ -47,7 +47,7 @@ get_header();
 	<div class="page-section callouts-wrapper">
 		<div class="container">
 			<div class="callouts">
-				<h1><?php the_field('callouts_title'); ?></h1>
+				<h1 class="section-title"><?php the_field('callouts_title'); ?></h1>
 				<div class="row">
 					<?php while(have_rows('callouts')): the_row(); ?>
 						<div class="col-sm-4">
@@ -57,6 +57,26 @@ get_header();
 							</div>
 						</div>
 					<?php endwhile ?>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="page-section testimonial-wrapper">
+		<div class="container">
+			<div class="testimonials">
+				<h1 class="section-title"><?php the_field('testimonial_title'); ?></h1>
+				<div class="testimonial-image text-center">
+					<?php echo wp_get_attachment_image(get_field('testimonial_image'), 'medium'); ?>
+				</div>
+				<div class="testimonial-copy">
+					<p><?php the_field('testimonial_copy'); ?></p>
+					<p class="testimonial-name"><?php the_field('testimonial_name'); ?></p>
+					<p class="testimonial-subname"><?php the_field('testimonial_sub_name'); ?></p>
+				</div>
+				<div class="text-center">
+					<a href="/test-prep/" class="btn btn-orange">LEARN MORE ABOUT TEST PREP <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+					<a href="/test-prep/" class="btn btn-blue-gradient">LEARN MORE ABOUT SUBJECT TUTORING <i class="fa fa-angle-right" aria-hidden="true"></i></a>
 				</div>
 			</div>
 		</div>

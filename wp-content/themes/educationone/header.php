@@ -21,7 +21,7 @@ $container = get_theme_mod( 'understrap_container_type' );
 	<link rel="profile" href="http://gmpg.org/xfn/11">
 	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
 
-	<link href="https://fonts.googleapis.com/css?family=Barlow+Condensed:400,500|Barlow:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Barlow+Condensed:400,500|Barlow:300i,400,700" rel="stylesheet">
 	<?php wp_head(); ?>
 </head>
 
@@ -58,7 +58,7 @@ $container = get_theme_mod( 'understrap_container_type' );
 					)
 				); ?>
 				
-				<div class="call-us">
+				<div class="call-us desktop">
 					<span>GIVE US A CALL <i class="fa fa-phone" aria-hidden="true"></i></span>
 					<a href="tel:<?php the_field('phone_number', 'options'); ?>"><?php the_field('phone_number', 'options'); ?></a>
 				</div>

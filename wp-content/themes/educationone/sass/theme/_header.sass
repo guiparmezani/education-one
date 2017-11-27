@@ -1,12 +1,10 @@
 header
-	margin-top: 35px
 	.navbar
 		font-family: $font-barlow-condensed
 		display: flex
 		justify-content: space-between
 		padding: 0
 		background: #FFF
-		max-height: 75px
 		width: 100%
 		.home-link-wrapper
 			background-color: $brand-dark-blue
@@ -33,8 +31,40 @@ header
 				margin-top: -12px
 				display: block
 
-	@include media-breakpoint-up(md)
+	.navbar-toggler
+		height: 31px
+		.icon-bar
+			@include transition(all .3s ease)
+			width: 30px
+			height: 3px
+			background-color: #FFF
+			display: block
+			&:nth-child(n+1)
+				margin-top: 4px
+		&:not(.collapsed)
+			.icon-bar:first-child
+				transform: rotate(45deg)
+			.icon-bar:nth-child(2)
+				transform: rotate(-45deg)
+				margin-top: -2px
+			.icon-bar:nth-child(3)
+				display: none
+
+	@include media-breakpoint-down(sm)
+		.container
+			padding: 0
 		.navbar
+			background-color: $brand-dark-blue
+			.navbar-nav
+				.menu-item
+					a
+						color: #FFF
+						text-align: center
+
+	@include media-breakpoint-up(md)
+		margin-top: 35px
+		.navbar
+			max-height: 75px
 			.navbar-collapse
 				width: 55%
 				#main-menu
@@ -44,6 +74,9 @@ header
 
 body.home
 	header
-		position: absolute
 		width: 100%
+		position: relative
 		z-index: 20
+	@include media-breakpoint-up(md)
+		header
+			position: absolute
