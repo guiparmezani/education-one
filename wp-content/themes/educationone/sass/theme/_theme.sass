@@ -59,6 +59,18 @@ h3
 	color: $brand-dark-blue
 	line-height: 33px
 
+h4
+	font-family: $font-barlow
+	font-size: 21px
+	color: $brand-dark-blue
+	line-height: 25px
+
+h5
+	font-family: Barlow-Bold
+	font-size: 13px
+	color: $brand-gray
+	line-height: 25px
+
 p
 	font-family: $font-barlow
 	font-size: 21px
@@ -236,6 +248,54 @@ body.page-template-template-test-prep
 			border: 1px solid $brand-blue
 			border-bottom: none
 			font-weight: bold
+
+body.page-template-template-careers
+	.hero-section
+		background-size: 100%
+		background-position: 50% 40%
+		background-repeat: no-repeat
+		padding: 70px 30px
+		.hero-content
+			max-width: 600px
+			margin: 0 auto
+			h1, p
+				color: #FFF
+			p
+				margin-top: 20px
+	.opportunities-section
+		padding: 30px
+		.opportunities-wrapper
+			margin-top: 30px
+			.opportunity-item
+				background-color: #f5f5f5
+				padding: 30px
+				h4
+					font-weight: bold
+	.locations-section
+		padding: 30px
+		.location-item
+			background-color: #f5f5f5
+			padding: 30px
+			min-height: 270px
+			h4
+				font-weight: bold
+			.coming-soon
+				background: #41AAC9
+				font-family: $font-barlow
+				font-size: 19px
+				color: #FFFFFF
+				box-shadow: -30px 0px 0px #41AAC9
+				font-weight: bold
+				padding: 10px 0
+				width: 90%
+				margin-top: 25px
+
+	@include media-breakpoint-up(md)
+		.opportunities-section
+			.opportunities-wrapper
+				.opportunity-item
+					min-height: 517px
+
 
 .tab-content
 	.tab-pane
