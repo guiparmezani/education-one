@@ -9823,15 +9823,24 @@ body.page-template-template-careers .opportunities-section {
       body.page-template-template-careers .opportunities-section .opportunities-wrapper .opportunity-item h4 {
         font-weight: bold; }
 
-body.page-template-template-careers .locations-section {
+@media (min-width: 768px) {
+  body.page-template-template-careers .opportunities-section .opportunities-wrapper .opportunity-item {
+    min-height: 517px; } }
+
+.locations-wrapper {
+  margin-top: 30px; }
+
+.locations-section {
   padding: 30px; }
-  body.page-template-template-careers .locations-section .location-item {
+  .locations-section .location-item {
     background-color: #f5f5f5;
     padding: 30px;
     min-height: 270px; }
-    body.page-template-template-careers .locations-section .location-item h4 {
-      font-weight: bold; }
-    body.page-template-template-careers .locations-section .location-item .coming-soon {
+    .locations-section .location-item .location-copy {
+      min-height: 140px; }
+      .locations-section .location-item .location-copy h4 {
+        font-weight: bold; }
+    .locations-section .location-item .coming-soon {
       background: #41AAC9;
       font-family: "Barlow", sans-serif;
       font-size: 19px;
@@ -9841,10 +9850,6 @@ body.page-template-template-careers .locations-section {
       padding: 10px 0;
       width: 90%;
       margin-top: 25px; }
-
-@media (min-width: 768px) {
-  body.page-template-template-careers .opportunities-section .opportunities-wrapper .opportunity-item {
-    min-height: 517px; } }
 
 .tab-content .tab-pane .main-content-wrapper {
   padding: 30px; }
