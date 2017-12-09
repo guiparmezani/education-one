@@ -229,6 +229,7 @@ body.home
 		.btn + .btn
 			margin-top: 15px
 
+// Page Test Prep
 body.page-template-template-test-prep
 	.hero-section
 		background-image: url(../img/test-prep-bg-1.svg), url(../img/test-prep-bg-2.svg)
@@ -249,6 +250,7 @@ body.page-template-template-test-prep
 			border-bottom: none
 			font-weight: bold
 
+// Page Careers
 body.page-template-template-careers
 	.hero-section
 		background-size: 100%
@@ -331,6 +333,111 @@ body.page-template-template-careers
 						margin-top: 10px
 						background-color: #FFF
 						border-radius: 10px
+
+
+// Page Advising
+.timeline-wrapper
+	padding: 220px 0
+	position: relative
+	.timeline
+		width: 100%
+		height: 3px
+		background-image: linear-gradient(90deg, #74D792, #70C1D8)
+		position: relative
+		&:after
+			border: 9px solid transparent
+			border-left-color: #70C1D8
+			content: ''
+			position: absolute
+			right: -14px
+			top: -8px
+	.timeline-numbers
+		padding: 0 30px
+		.col-sm-1 
+			> span
+				font-family: $font-barlow
+				font-weight: bold
+				margin-bottom: 9px
+				display: block
+				color: $brand-dark-blue
+				&:after
+					content: ''
+					height: 8px
+					width: 1px
+					background: #73CEB2
+					position: absolute
+					left: 15px
+					bottom: 0
+
+		.col-sm-1:first-of-type span:after
+			left: 15px
+	.timeline-item
+			background: #74D792
+			font-family: $font-barlow
+			font-size: 15px
+			line-height: 16px
+			color: #FFFFFF
+			padding: 10px
+			border-radius: 10px
+			// max-width: 215px
+
+	@include media-breakpoint-up(lg)
+		.timeline-numbers
+			.col-sm-1
+				&:nth-child(1)
+					.timeline-item.top
+						bottom: 125px
+				&:nth-child(5), &:nth-child(9)
+					.timeline-item.top
+						left: -115px
+						&:after
+							left: auto
+							right: 0
+							bottom: -10px
+							border-left-color: transparent
+							border-right-color: #74D792
+					.timeline-item.bottom
+						left: -112px
+						&:after
+							left: auto
+							right: 0
+							border-left-color: transparent
+							border-right-color: #74D792
+				&:nth-child(10)
+					.timeline-item.top
+						bottom: 120px
+				&:nth-child(5)
+					.timeline-item
+						background-color: #73D0AC
+					.timeline-item.bottom
+						left: -100px
+				&:nth-child(6)
+					.timeline-item
+						background-color: #72CFAB
+				&:nth-child(9)
+					.timeline-item
+						background-color: #72CFAB
+		.timeline-item
+			position: absolute
+			white-space: nowrap
+			&.top
+				bottom: 60px
+				&:after
+					content: ''
+					position: absolute
+					left: 0
+					bottom: -10px
+					border: 15px solid transparent
+					border-left-color: #74D792
+			&.bottom
+				top: 60px
+				&:after
+					content: ''
+					position: absolute
+					left: 0
+					top: -12px
+					border: 15px solid transparent
+					border-left-color: #74D792
 
 // Button
 .btn, input[type="submit"]
