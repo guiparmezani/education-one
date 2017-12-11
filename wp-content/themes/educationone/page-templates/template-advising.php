@@ -33,10 +33,31 @@ get_header();
 					</div>
 					<div class="timeline"></div>
 				</div>
+
 				
 			</div>
+			<h2 class="text-center hero-bottom-copy"><?php the_field('hero_bottom_copy'); ?></h2>
 		</div>
+
+		<?php if (have_rows('callouts')): ?>
+			<div class="page-section callouts-wrapper">
+				<div class="callouts">
+					<p class="section-title"><?php the_field('callouts_title'); ?></p>
+					<div class="row">
+						<?php while(have_rows('callouts')): the_row(); ?>
+							<div class="col-sm-4">
+								<div class="callout">
+									<?php echo wp_get_attachment_image(get_sub_field('image'), 'medium'); ?>
+									<p><?php the_sub_field('caption'); ?></p>
+								</div>
+							</div>
+						<?php endwhile ?>
+					</div>
+				</div>
+			</div>
+		<?php endif ?>
 	</div>
+
 
 	<div class="container">
 		<div class="form-area page-section">

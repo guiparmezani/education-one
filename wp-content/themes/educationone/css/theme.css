@@ -9611,7 +9611,7 @@ h2 {
   font-family: "Barlow", sans-serif;
   font-size: 31px;
   color: #2D556B;
-  line-height: 25px; }
+  line-height: 32px; }
 
 h3 {
   font-family: "Barlow", sans-serif;
@@ -9668,8 +9668,8 @@ body {
   margin-top: 60px;
   background-color: #FFF; }
 
-.hero-section .entry-title {
-  padding: 30px; }
+.entry-title {
+  padding: 40px 30px; }
 
 .hero-section .hero-copy {
   max-width: 600px;
@@ -9881,8 +9881,20 @@ body.page-template-template-careers .opportunities-section {
         background-color: #FFF;
         border-radius: 10px; }
 
+.page-template-template-advising .hero-section {
+  padding-bottom: 60px; }
+  .page-template-template-advising .hero-section .entry-title {
+    padding: 40px 30px; }
+  .page-template-template-advising .hero-section .hero-bottom-copy {
+    max-width: 620px;
+    margin: 0 auto; }
+
+.page-template-template-advising .callouts .section-title {
+  max-width: 800px;
+  margin: 0 auto 60px; }
+
 .timeline-wrapper {
-  padding: 220px 0;
+  padding: 210px 0 150px;
   position: relative; }
   .timeline-wrapper .timeline {
     width: 100%;
@@ -9944,12 +9956,26 @@ body.page-template-template-careers .opportunities-section {
       bottom: 120px; }
     .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(5) .timeline-item {
       background-color: #73D0AC; }
+      .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(5) .timeline-item:after {
+        border-right-color: #73D0AC !important; }
     .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(5) .timeline-item.bottom {
       left: -100px; }
     .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(6) .timeline-item {
       background-color: #72CFAB; }
+      .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(6) .timeline-item:after {
+        border-left-color: #72CFAB !important; }
     .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(9) .timeline-item {
       background-color: #72CFAB; }
+      .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(9) .timeline-item:after {
+        border-right-color: #72CFAB !important; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(10) .timeline-item {
+      background-color: #71C5CC; }
+      .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(10) .timeline-item:after {
+        border-left-color: #71C5CC !important; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(11) .timeline-item {
+      background-color: #70C3D3; }
+      .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(11) .timeline-item:after {
+        border-left-color: #70C3D3 !important; }
     .timeline-wrapper .timeline-item {
       position: absolute;
       white-space: nowrap; }
@@ -9971,6 +9997,48 @@ body.page-template-template-careers .opportunities-section {
           top: -12px;
           border: 15px solid transparent;
           border-left-color: #74D792; } }
+
+.page-template-template-philosophy .entry-title {
+  padding-bottom: 0px; }
+
+.page-template-template-philosophy .callouts .section-title {
+  text-align: left;
+  margin-bottom: 60px; }
+
+.page-template-template-philosophy .aproach-wrapper .approach {
+  padding: 40px 15px;
+  background-image: url(../img/approach-bg.jpg);
+  background-repeat: no-repeat;
+  background-position: right 0px; }
+  .page-template-template-philosophy .aproach-wrapper .approach p.subtitle {
+    margin-top: 30px; }
+  .page-template-template-philosophy .aproach-wrapper .approach .bubbles {
+    padding: 40px 0; }
+    .page-template-template-philosophy .aproach-wrapper .approach .bubbles .bubble-text {
+      background-color: #67A2D7;
+      padding: 15px;
+      border-radius: 25px;
+      margin-bottom: 20px;
+      position: relative; }
+      .page-template-template-philosophy .aproach-wrapper .approach .bubbles .bubble-text p {
+        color: #FFF;
+        margin-bottom: 0; }
+      .page-template-template-philosophy .aproach-wrapper .approach .bubbles .bubble-text:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        border: 20px solid transparent;
+        border-left-color: #67A2D7;
+        border-top-color: #67A2D7; }
+      .page-template-template-philosophy .aproach-wrapper .approach .bubbles .bubble-text:after {
+        content: '';
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        border: 20px solid transparent;
+        border-right-color: #67A2D7;
+        border-bottom-color: #67A2D7; }
 
 .btn, .wpcf7 input[type=submit], input[type="submit"] {
   color: #FFF !important;

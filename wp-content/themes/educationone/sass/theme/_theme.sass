@@ -51,7 +51,7 @@ h2
 	font-family: $font-barlow
 	font-size: 31px
 	color: $brand-dark-blue
-	line-height: 25px
+	line-height: 32px
 
 h3
 	font-family: $font-barlow
@@ -108,9 +108,9 @@ body
 	margin-top: 60px
 	background-color: #FFF
 
+.entry-title
+	padding: 40px 30px
 .hero-section
-	.entry-title
-		padding: 30px
 	.hero-copy
 		max-width: 600px
 		margin: 0 auto
@@ -336,8 +336,20 @@ body.page-template-template-careers
 
 
 // Page Advising
+.page-template-template-advising
+	.hero-section
+		padding-bottom: 60px
+		.entry-title
+			padding: 40px 30px
+		.hero-bottom-copy
+			max-width: 620px
+			margin: 0 auto
+	.callouts
+		.section-title
+			max-width: 800px
+			margin: 0 auto 60px
 .timeline-wrapper
-	padding: 220px 0
+	padding: 210px 0 150px
 	position: relative
 	.timeline
 		width: 100%
@@ -409,14 +421,30 @@ body.page-template-template-careers
 				&:nth-child(5)
 					.timeline-item
 						background-color: #73D0AC
+						&:after
+							border-right-color: #73D0AC !important
 					.timeline-item.bottom
 						left: -100px
 				&:nth-child(6)
 					.timeline-item
 						background-color: #72CFAB
+						&:after
+							border-left-color: #72CFAB !important
 				&:nth-child(9)
 					.timeline-item
 						background-color: #72CFAB
+						&:after
+							border-right-color: #72CFAB !important
+				&:nth-child(10)
+					.timeline-item
+						background-color: #71C5CC
+						&:after
+							border-left-color: #71C5CC !important
+				&:nth-child(11)
+					.timeline-item
+						background-color: #70C3D3
+						&:after
+							border-left-color: #70C3D3 !important
 		.timeline-item
 			position: absolute
 			white-space: nowrap
@@ -438,6 +466,51 @@ body.page-template-template-careers
 					top: -12px
 					border: 15px solid transparent
 					border-left-color: #74D792
+
+.page-template-template-philosophy
+	.entry-title
+		padding-bottom: 0px
+	.callouts
+		.section-title
+			text-align: left
+			margin-bottom: 60px
+
+	.aproach-wrapper
+		.approach
+			padding: 40px 15px
+			background-image: url(../img/approach-bg.jpg)
+			background-repeat: no-repeat
+			background-position: right 0px
+			p.subtitle
+				margin-top: 30px
+			.bubbles
+				padding: 40px 0
+				.bubble-text
+					background-color: #67A2D7
+					padding: 15px
+					border-radius: 25px
+					margin-bottom: 20px
+					position: relative
+					p
+						color: #FFF
+						margin-bottom: 0
+					&:before
+						content: ''
+						position: absolute
+						left: 0
+						top: 0
+						border: 20px solid transparent
+						border-left-color: #67A2D7
+						border-top-color: #67A2D7
+					&:after
+						content: ''
+						position: absolute
+						right: 0
+						bottom: 0
+						border: 20px solid transparent
+						border-right-color: #67A2D7
+						border-bottom-color: #67A2D7
+
 
 // Button
 .btn, input[type="submit"]
