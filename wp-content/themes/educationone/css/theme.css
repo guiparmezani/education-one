@@ -10005,25 +10005,25 @@ body.page-template-template-careers .opportunities-section {
   text-align: left;
   margin-bottom: 60px; }
 
-.page-template-template-philosophy .aproach-wrapper .approach {
+.page-template-template-philosophy .approach-wrapper .approach {
   padding: 40px 15px;
   background-image: url(../img/approach-bg.jpg);
   background-repeat: no-repeat;
   background-position: right 0px; }
-  .page-template-template-philosophy .aproach-wrapper .approach p.subtitle {
+  .page-template-template-philosophy .approach-wrapper .approach p.subtitle {
     margin-top: 30px; }
-  .page-template-template-philosophy .aproach-wrapper .approach .bubbles {
+  .page-template-template-philosophy .approach-wrapper .approach .bubbles {
     padding: 40px 0; }
-    .page-template-template-philosophy .aproach-wrapper .approach .bubbles .bubble-text {
+    .page-template-template-philosophy .approach-wrapper .approach .bubbles .bubble-text {
       background-color: #67A2D7;
       padding: 15px;
       border-radius: 25px;
       margin-bottom: 20px;
       position: relative; }
-      .page-template-template-philosophy .aproach-wrapper .approach .bubbles .bubble-text p {
+      .page-template-template-philosophy .approach-wrapper .approach .bubbles .bubble-text p {
         color: #FFF;
         margin-bottom: 0; }
-      .page-template-template-philosophy .aproach-wrapper .approach .bubbles .bubble-text:before {
+      .page-template-template-philosophy .approach-wrapper .approach .bubbles .bubble-text:before {
         content: '';
         position: absolute;
         left: 0;
@@ -10031,7 +10031,7 @@ body.page-template-template-careers .opportunities-section {
         border: 20px solid transparent;
         border-left-color: #67A2D7;
         border-top-color: #67A2D7; }
-      .page-template-template-philosophy .aproach-wrapper .approach .bubbles .bubble-text:after {
+      .page-template-template-philosophy .approach-wrapper .approach .bubbles .bubble-text:after {
         content: '';
         position: absolute;
         right: 0;
@@ -10039,6 +10039,35 @@ body.page-template-template-careers .opportunities-section {
         border: 20px solid transparent;
         border-right-color: #67A2D7;
         border-bottom-color: #67A2D7; }
+
+.page-template-template-philosophy .tutors-wrapper h1 {
+  padding-right: 30px;
+  padding-left: 30px; }
+
+.page-template-template-philosophy .tutors-wrapper .tutors {
+  padding: 40px 0 0; }
+  .page-template-template-philosophy .tutors-wrapper .tutors .row {
+    align-items: center; }
+    .page-template-template-philosophy .tutors-wrapper .tutors .row .col-md-6:first-of-type {
+      text-align: right; }
+    .page-template-template-philosophy .tutors-wrapper .tutors .row .col-md-6 img {
+      width: 100%; }
+  .page-template-template-philosophy .tutors-wrapper .tutors .colored-copy {
+    padding: 120px 30px;
+    text-align: center;
+    background-image: linear-gradient(44deg, #70C0DC 0%, #74D792 100%);
+    font-family: "Barlow", sans-serif;
+    font-style: italic;
+    font-size: 23px;
+    color: #FFFFFF;
+    line-height: 29px; }
+    .page-template-template-philosophy .tutors-wrapper .tutors .colored-copy strong {
+      font-weight: bold;
+      font-size: 18px;
+      line-height: 35px; }
+    .page-template-template-philosophy .tutors-wrapper .tutors .colored-copy small {
+      font-size: 17px;
+      line-height: 35px; }
 
 .btn, .wpcf7 input[type=submit], input[type="submit"] {
   color: #FFF !important;

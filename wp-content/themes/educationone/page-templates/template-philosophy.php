@@ -31,7 +31,7 @@ get_header();
 			</div>
 		<?php endif ?>
 
-		<div class="aproach-wrapper">
+		<div class="approach-wrapper">
 			<div class="container">
 				<div class="page-section approach">
 					<div class="approach-content col-md-7">
@@ -45,6 +45,26 @@ get_header();
 							<?php endwhile ?>
 						</div>
 						<p><?php the_field('body_copy'); ?></p>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+
+		<div class="tutors-wrapper">
+			<div class="container">
+				<div class="page-section tutors">
+					<h1><?php the_field('tutors_title'); ?></h1>
+					<div class="row">
+						<div class="col-md-6"><h3><?php the_field('first_copy'); ?></h3></div>
+						<div class="col-md-6"><?php echo wp_get_attachment_image(get_field('first_image'), 'large'); ?></div>
+					</div>
+
+					<div class="colored-copy"><?php the_field('colored_copy'); ?></div>
+
+					<div class="row">
+						<div class="col-md-6"><?php echo wp_get_attachment_image(get_field('second_image'), 'large'); ?></div>
+						<div class="col-md-6"><?php the_field('second_copy'); ?></div>
 					</div>
 				</div>
 			</div>
