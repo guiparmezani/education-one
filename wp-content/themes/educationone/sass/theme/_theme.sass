@@ -467,6 +467,8 @@ body.page-template-template-careers
 					border: 15px solid transparent
 					border-left-color: #74D792
 
+
+// Our Philosofy page
 .page-template-template-philosophy
 	.entry-title
 		padding-bottom: 0px
@@ -554,6 +556,55 @@ body.page-template-template-careers
 							left: 0
 
 
+// Personal Tutoring page
+.personal-tutoring-wrapper
+	.hero-section
+		background-image: url(../img/personal-bg.svg)
+		background-position: 93% top 
+		background-repeat: no-repeat
+		.hero-content
+			padding: 0px 30px
+			max-width: 600px
+			h2
+				font-weight: bold
+	.callouts
+		padding-bottom: 0
+		.callout
+			.img-wrapper
+				min-height: 173px
+
+	.bottom-copy
+		padding: 60px 30px
+		margin-top: 30px
+		background-color: #10A7E1
+		color: #FFF
+		text-align: center
+	.topics
+		padding: 30px
+		margin-top: 60px
+		.row
+			margin-bottom: 10px
+			margin-left: -5px
+			margin-right: -5px
+		.topic-item
+			background-size: cover
+			background-position: center
+			position: relative
+			.topic-title
+				position: absolute
+				bottom: 0
+				padding: 10px
+				padding-left: 15px
+				padding-right: 0
+				background-image: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5))
+				width: 100%
+				color: #FFF
+				span
+					font-family: $font-barlow
+					font-weight: bold
+					font-size: 26px
+
+
 // Button
 .btn, input[type="submit"]
 	color: #FFF !important
@@ -579,6 +630,44 @@ input[type="submit"]
 
 .btn-orange-gradient
 	background-image: linear-gradient(90deg, #FFA727, #FF9C18)
+
+
+//Extras
+.col-xs-15,
+.col-sm-15,
+.col-md-15,
+.col-lg-15
+	position: relative
+	width: 100%
+	min-height: 1px
+	padding-right: 5px
+	padding-left: 5px
+
+.col-xs-15 
+	flex: 0 0 20%
+	max-width: 20%
+
+
+@media (min-width: 768px) 
+	.col-sm-15 
+		flex: 0 0 20%
+		max-width: 20%
+
+
+
+@media (min-width: 992px) 
+	.col-md-15 
+		flex: 0 0 20%
+		max-width: 20%
+
+
+
+@media (min-width: 1200px) 
+	.col-lg-15 
+		flex: 0 0 20%
+		max-width: 20%
+
+
 
 
 

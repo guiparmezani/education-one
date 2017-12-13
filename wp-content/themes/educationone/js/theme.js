@@ -3913,4 +3913,10 @@ $(window).scroll(function(){
 	}
 });
 
+$(document).ready(function(){
+	$('.topic-item').each(function(){
+		$(this).height($(this).width());
+	});
+});
+
 })(window.Zepto || window.jQuery, window, document);
