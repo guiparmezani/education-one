@@ -57,14 +57,17 @@ get_header();
 					<h1><?php the_field('tutors_title'); ?></h1>
 					<div class="row">
 						<div class="col-md-6"><h3><?php the_field('first_copy'); ?></h3></div>
-						<div class="col-md-6"><?php echo wp_get_attachment_image(get_field('first_image'), 'large'); ?></div>
+						<div class="col-md-6 img-wrapper parallax-img down"><?php echo wp_get_attachment_image(get_field('first_image'), 'large'); ?></div>
 					</div>
 
 					<div class="colored-copy"><?php the_field('colored_copy'); ?></div>
 
 					<div class="row">
-						<div class="col-md-6"><?php echo wp_get_attachment_image(get_field('second_image'), 'large'); ?></div>
-						<div class="col-md-6"><?php the_field('second_copy'); ?></div>
+						<div class="col-md-6 img-wrapper parallax-img up"><?php echo wp_get_attachment_image(get_field('second_image'), 'large'); ?></div>
+						<div class="col-md-6">
+							<h3><?php the_field('second_copy'); ?></h3><br>
+							<a href="#" class="btn btn-orange">GET STARTED</a>
+						</div>
 					</div>
 				</div>
 			</div>

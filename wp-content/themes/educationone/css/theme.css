@@ -10045,7 +10045,7 @@ body.page-template-template-careers .opportunities-section {
   padding-left: 30px; }
 
 .page-template-template-philosophy .tutors-wrapper .tutors {
-  padding: 40px 0 0; }
+  padding: 40px 0; }
   .page-template-template-philosophy .tutors-wrapper .tutors .row {
     align-items: center; }
     .page-template-template-philosophy .tutors-wrapper .tutors .row .col-md-6:first-of-type {
@@ -10053,7 +10053,7 @@ body.page-template-template-careers .opportunities-section {
     .page-template-template-philosophy .tutors-wrapper .tutors .row .col-md-6 img {
       width: 100%; }
   .page-template-template-philosophy .tutors-wrapper .tutors .colored-copy {
-    padding: 120px 30px;
+    padding: 140px 30px;
     text-align: center;
     background-image: linear-gradient(44deg, #70C0DC 0%, #74D792 100%);
     font-family: "Barlow", sans-serif;
@@ -10068,6 +10068,12 @@ body.page-template-template-careers .opportunities-section {
     .page-template-template-philosophy .tutors-wrapper .tutors .colored-copy small {
       font-size: 17px;
       line-height: 35px; }
+
+@media (min-width: 768px) {
+  .page-template-template-philosophy .tutors-wrapper .tutors .row {
+    padding: 0 30px; }
+    .page-template-template-philosophy .tutors-wrapper .tutors .row .col-md-6 img {
+      left: 0; } }
 
 .btn, .wpcf7 input[type=submit], input[type="submit"] {
   color: #FFF !important;
