@@ -1,5 +1,11 @@
 ;(function($, window, document, undefined) { //jquery reference
 
+
+$('.ginput_container_fileupload input[type="file"]').on('change', function(){
+	$('.ginput_container_fileupload').css('color', '#eaeaea');
+	$('.ginput_container_fileupload').append('<span>File Selected.</span>');
+});
+
 $(window).scroll(function(){
 	if ($(window).width() > 991) {
 		var scroll = $(window).scrollTop();

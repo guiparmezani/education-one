@@ -35,10 +35,27 @@ get_header();
 			<?php endif ?>
 		</div>
 
-		<div class="form-area page-section">
+		<div class="form-area">
 			<div class="container">
 				<div class="row">
-					<?php get_template_part('loop-templates/eo-form'); ?>
+					<div class="eo-form-wrapper">
+						<div class="row">
+							<div class="col-md-6" style="background-image: url(<?php echo bloginfo('template_url'); ?>/img/kids-bg.svg);">
+								<?php if (get_field('title', get_the_ID())): ?>
+									<div class="form-copy">
+										<h1><?php the_field('title', get_the_ID()); ?></h1>
+										<p><?php the_field('copy', get_the_ID()); ?></p>
+									</div>
+								<?php endif ?>
+							</div>
+							<div class="col-md-6">
+								<div class="form-wrapper">
+									<?php gravity_form(2, false, true, false, '', true, 12); ?>
+								</div>
+							</div>
+						</div>
+					</div>
+
 				</div>
 			</div>
 		</div>

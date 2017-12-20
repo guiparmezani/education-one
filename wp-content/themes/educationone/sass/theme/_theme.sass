@@ -1,3 +1,9 @@
+@keyframe fade-in
+	0%
+		opacity: 0
+	100%
+		opacity: 1
+
 .vertical-center
 	-webkit-transform: translateY(-50%)
 	-moz-transform: translateY(-50%)
@@ -76,6 +82,9 @@ p
 	font-size: 21px
 	color: $brand-dark-blue
 	line-height: 25px
+
+b
+	font-weight: bold
 
 .section-title
 	text-align: center
@@ -190,7 +199,7 @@ body.home
 	.callout
 		text-align: center
 		img
-			width: 150px
+			width: 110px
 			max-width: 100%
 		p
 			margin-top: 30px
@@ -283,6 +292,10 @@ body.page-template-template-careers
 				h4
 					font-weight: bold
 
+	.eo-form-wrapper
+		.form-wrapper
+			background-color: #F6F6F6
+
 	@include media-breakpoint-up(md)
 		.opportunities-section
 			.opportunities-wrapper
@@ -302,11 +315,11 @@ body.page-template-template-careers
 			h4
 				font-weight: bold
 		.coming-soon
-			background: #41AAC9
+			background: $brand-blue
 			font-family: $font-barlow
 			font-size: 19px
 			color: #FFFFFF
-			box-shadow: -30px 0px 0px #41AAC9
+			box-shadow: -30px 0px 0px $brand-blue
 			font-weight: bold
 			padding: 10px 0
 			width: 90%
@@ -356,7 +369,8 @@ body.page-template-template-careers
 	.callouts
 		.section-title
 			max-width: 800px
-			margin: 0 auto 60px
+			margin: 0 auto 90px
+
 .timeline-wrapper
 	padding: 210px 0 150px
 	position: relative
@@ -374,7 +388,7 @@ body.page-template-template-careers
 			top: -8px
 	.timeline-numbers
 		padding: 0 30px
-		.col-sm-1 
+		.col-sm-1
 			> span
 				font-family: $font-barlow
 				font-weight: bold
@@ -404,10 +418,34 @@ body.page-template-template-careers
 
 	@include media-breakpoint-up(lg)
 		.timeline-numbers
+			.timeline-item
+				animation: fade-in 1.5s forwards
+				opacity: 0
 			.col-sm-1
 				&:nth-child(1)
 					.timeline-item.top
 						bottom: 125px
+				&:nth-child(2) .timeline-item
+					animation-delay: .1s
+				&:nth-child(3) .timeline-item
+					animation-delay: .2s
+				&:nth-child(4) .timeline-item
+					animation-delay: .3s
+				&:nth-child(5) .timeline-item
+					animation-delay: .4s
+				&:nth-child(6) .timeline-item
+					animation-delay: .5s
+				&:nth-child(7) .timeline-item
+					animation-delay: .6s
+				&:nth-child(8) .timeline-item
+					animation-delay: .7s
+				&:nth-child(9) .timeline-item
+					animation-delay: .8s
+				&:nth-child(10) .timeline-item
+					animation-delay: .9s
+				&:nth-child(11) .timeline-item
+					animation-delay: 1s
+
 				&:nth-child(5), &:nth-child(9)
 					.timeline-item.top
 						left: -115px
@@ -620,7 +658,7 @@ body.page-template-template-careers
 	border: none
 	text-transform: uppercase
 	min-width: 184px
-	padding: 10px
+	padding: 10px 20px
 	font-family: $font-barlow-condensed
 	font-size: 27px
 	border-radius: 6px
@@ -688,6 +726,8 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 		padding-right: 0
 		background-color: #FFF
 		background-size: cover
+		background-position: center bottom
+		background-repeat: no-repeat
 	.form-copy
 		padding: 30px
 		h1
@@ -701,19 +741,31 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 						text-align: right
 						border: none
 				.gfield
-					label, input, textarea
+					label, input, textarea, select
 						color: $brand-dark-blue
 					label
 						font-size: 16px
 						font-family: $font-barlow
 						font-weight: normal
 						margin-bottom: 0
-					input[type="text"], textarea
+					input[type="text"], textarea, select
 						border: none
 						background-color: $brand-light-gray
 					&.no-label
 						> label
 							display: none
+					.ginput_container_select
+						position: relative
+						select
+							border-radius: 0
+							padding: 5px 8px
+							-webkit-appearance: none
+						&:after
+							content: '\f0d7'
+							font-family: FontAwesome
+							position: absolute
+							right: 10px
+							top: 7px
 					.gfield_radio
 						@extend .clearfix
 						li
@@ -754,7 +806,31 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 			.gform_footer
 				text-align: right
 
+	.ginput_container_fileupload 
+		overflow: hidden
+		position: relative
+		height: 34px
+		background-color: $brand-light-gray
+		color: #838383
+		&:before
+			content: 'Browse file...'
+			position: absolute
+			left: 10px
+			top: 5px
+			font-family: $font-barlow
+		span
+			color: $brand-dark-blue
+			position: absolute
+			top: 5px
+			left: 10px
+
+		[type=file] 
+			opacity: 0
+	
+
 	@include media-breakpoint-up(md)
+		.form-copy
+			padding-bottom: 250px
 		.form-wrapper
 			transform: translateY(-50%)
 			position: relative
@@ -765,9 +841,11 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 .gform_wrapper.gform_validation_error
 	.gfield.gfield_error
 		margin-right: 0 !important
+		max-width: none !important
+		padding-right: 16px !important
 		input[type="text"], select, textarea
-			border: none
-			background-color: pink
+			border: none !important
+			background-color: pink !important
 		label
 			margin-top: 0 !important
 		.ginput_container

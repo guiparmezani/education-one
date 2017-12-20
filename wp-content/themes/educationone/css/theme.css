@@ -9560,6 +9560,12 @@ footer {
     opacity: 1;
     z-index: 5; }
 
+@keyframe fade-in {
+  0% {
+    opacity: 0; }
+  100% {
+    opacity: 1; } }
+
 .vertical-center {
   -webkit-transform: translateY(-50%);
   -moz-transform: translateY(-50%);
@@ -9638,6 +9644,9 @@ p {
   font-size: 21px;
   color: #2D556B;
   line-height: 25px; }
+
+b {
+  font-weight: bold; }
 
 .section-title {
   text-align: center; }
@@ -9745,7 +9754,7 @@ body.home .form-area {
   .callouts .callout {
     text-align: center; }
     .callouts .callout img {
-      width: 150px;
+      width: 110px;
       max-width: 100%; }
     .callouts .callout p {
       margin-top: 30px; }
@@ -9835,6 +9844,9 @@ body.page-template-template-careers .opportunities-section {
       body.page-template-template-careers .opportunities-section .opportunities-wrapper .opportunity-item h4 {
         font-weight: bold; }
 
+body.page-template-template-careers .eo-form-wrapper .form-wrapper {
+  background-color: #F6F6F6; }
+
 @media (min-width: 768px) {
   body.page-template-template-careers .opportunities-section .opportunities-wrapper .opportunity-item {
     min-height: 517px; } }
@@ -9853,11 +9865,11 @@ body.page-template-template-careers .opportunities-section {
       .locations-section .location-item .location-copy h4 {
         font-weight: bold; }
     .locations-section .location-item .coming-soon {
-      background: #41AAC9;
+      background: #2a9ec4;
       font-family: "Barlow", sans-serif;
       font-size: 19px;
       color: #FFFFFF;
-      box-shadow: -30px 0px 0px #41AAC9;
+      box-shadow: -30px 0px 0px #2a9ec4;
       font-weight: bold;
       padding: 10px 0;
       width: 90%;
@@ -9903,7 +9915,7 @@ body.page-template-template-careers .opportunities-section {
 
 .page-template-template-advising .callouts .section-title {
   max-width: 800px;
-  margin: 0 auto 60px; }
+  margin: 0 auto 90px; }
 
 .timeline-wrapper {
   padding: 210px 0 150px;
@@ -9947,8 +9959,31 @@ body.page-template-template-careers .opportunities-section {
     padding: 10px;
     border-radius: 10px; }
   @media (min-width: 992px) {
+    .timeline-wrapper .timeline-numbers .timeline-item {
+      animation: fade-in 1.5s forwards;
+      opacity: 0; }
     .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(1) .timeline-item.top {
       bottom: 125px; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(2) .timeline-item {
+      animation-delay: .1s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(3) .timeline-item {
+      animation-delay: .2s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(4) .timeline-item {
+      animation-delay: .3s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(5) .timeline-item {
+      animation-delay: .4s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(6) .timeline-item {
+      animation-delay: .5s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(7) .timeline-item {
+      animation-delay: .6s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(8) .timeline-item {
+      animation-delay: .7s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(9) .timeline-item {
+      animation-delay: .8s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(10) .timeline-item {
+      animation-delay: .9s; }
+    .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(11) .timeline-item {
+      animation-delay: 1s; }
     .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(5) .timeline-item.top, .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(9) .timeline-item.top {
       left: -115px; }
       .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(5) .timeline-item.top:after, .timeline-wrapper .timeline-numbers .col-sm-1:nth-child(9) .timeline-item.top:after {
@@ -10139,7 +10174,7 @@ body.page-template-template-careers .opportunities-section {
   border: none;
   text-transform: uppercase;
   min-width: 184px;
-  padding: 10px;
+  padding: 10px 20px;
   font-family: "Barlow Condensed", sans-serif;
   font-size: 27px;
   border-radius: 6px; }
@@ -10194,7 +10229,9 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button {
     padding-left: 0;
     padding-right: 0;
     background-color: #FFF;
-    background-size: cover; }
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat; }
   .eo-form-wrapper .form-copy {
     padding: 30px; }
     .eo-form-wrapper .form-copy h1 {
@@ -10204,18 +10241,30 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button {
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gform_page .gform_page_footer {
       text-align: right;
       border: none; }
-    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea {
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield select {
       color: #2D556B; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label {
       font-size: 16px;
       font-family: "Barlow", sans-serif;
       font-weight: normal;
       margin-bottom: 0; }
-    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="text"], .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea {
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="text"], .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield select {
       border: none;
       background-color: #eaeaea; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield.no-label > label {
       display: none; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .ginput_container_select {
+      position: relative; }
+      .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .ginput_container_select select {
+        border-radius: 0;
+        padding: 5px 8px;
+        -webkit-appearance: none; }
+      .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .ginput_container_select:after {
+        content: '\f0d7';
+        font-family: FontAwesome;
+        position: absolute;
+        right: 10px;
+        top: 7px; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .gfield_radio li {
       float: left;
       margin-right: 30px; }
@@ -10252,17 +10301,40 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button {
         line-height: 43px; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_footer {
       text-align: right; }
+  .eo-form-wrapper .ginput_container_fileupload {
+    overflow: hidden;
+    position: relative;
+    height: 34px;
+    background-color: #eaeaea;
+    color: #838383; }
+    .eo-form-wrapper .ginput_container_fileupload:before {
+      content: 'Browse file...';
+      position: absolute;
+      left: 10px;
+      top: 5px;
+      font-family: "Barlow", sans-serif; }
+    .eo-form-wrapper .ginput_container_fileupload span {
+      color: #2D556B;
+      position: absolute;
+      top: 5px;
+      left: 10px; }
+    .eo-form-wrapper .ginput_container_fileupload [type=file] {
+      opacity: 0; }
   @media (min-width: 768px) {
+    .eo-form-wrapper .form-copy {
+      padding-bottom: 250px; }
     .eo-form-wrapper .form-wrapper {
       transform: translateY(-50%);
       position: relative;
       top: 50%; } }
 
 .gform_wrapper.gform_validation_error .gfield.gfield_error {
-  margin-right: 0 !important; }
+  margin-right: 0 !important;
+  max-width: none !important;
+  padding-right: 16px !important; }
   .gform_wrapper.gform_validation_error .gfield.gfield_error input[type="text"], .gform_wrapper.gform_validation_error .gfield.gfield_error select, .gform_wrapper.gform_validation_error .gfield.gfield_error textarea {
-    border: none;
-    background-color: pink; }
+    border: none !important;
+    background-color: pink !important; }
   .gform_wrapper.gform_validation_error .gfield.gfield_error label {
     margin-top: 0 !important; }
   .gform_wrapper.gform_validation_error .gfield.gfield_error .ginput_container {
