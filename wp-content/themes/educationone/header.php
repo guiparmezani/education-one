@@ -22,6 +22,8 @@ $container = get_theme_mod( 'understrap_container_type' );
 	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
 
 	<link href="https://fonts.googleapis.com/css?family=Barlow+Condensed:400,500|Barlow:300i,400,700,900" rel="stylesheet">
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<?php wp_head(); ?>
 </head>
 

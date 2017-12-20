@@ -66,7 +66,7 @@ get_header();
 						<div class="col-md-6 img-wrapper parallax-img up"><?php echo wp_get_attachment_image(get_field('second_image'), 'large'); ?></div>
 						<div class="col-md-6">
 							<h3><?php the_field('second_copy'); ?></h3><br>
-							<a href="#" class="btn btn-orange">GET STARTED</a>
+							<a href="/locations-contact" class="btn btn-orange">GET STARTED <i class="fa fa-angle-right" aria-hidden="true"></i></a>
 						</div>
 					</div>
 				</div>

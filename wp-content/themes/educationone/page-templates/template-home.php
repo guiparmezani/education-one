@@ -46,26 +46,28 @@ get_header();
 			</div>
 		</div>
 
-		<div class="page-section callouts-wrapper">
-			<div class="container">
-				<div class="callouts">
-					<h1 class="section-title"><?php the_field('callouts_title'); ?></h1>
-					<div class="row">
-						<?php while(have_rows('callouts')): the_row(); ?>
-							<div class="col-sm-4">
-								<div class="callout">
-									<?php echo wp_get_attachment_image(get_sub_field('image'), 'medium'); ?>
-									<?php the_sub_field('copy'); ?>
+		<div class="container">
+			<div class="page-section callouts-wrapper">
+				<div class="container">
+					<div class="callouts">
+						<h1 class="section-title"><?php the_field('callouts_title'); ?></h1>
+						<div class="row">
+							<?php while(have_rows('callouts')): the_row(); ?>
+								<div class="col-sm-4">
+									<div class="callout">
+										<?php echo wp_get_attachment_image(get_sub_field('image'), 'medium'); ?>
+										<?php the_sub_field('copy'); ?>
+									</div>
 								</div>
-							</div>
-						<?php endwhile ?>
+							<?php endwhile ?>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="page-section testimonial-wrapper">
-			<div class="container">
+		<div class="container">
+			<div class="page-section testimonial-wrapper">
 				<div class="testimonials">
 					<h1 class="section-title"><?php the_field('testimonial_title'); ?></h1>
 					<div class="testimonial-image text-center">
@@ -83,6 +85,7 @@ get_header();
 				</div>
 			</div>
 		</div>
+
 	</div>
 
 <?php endwhile; else : ?>

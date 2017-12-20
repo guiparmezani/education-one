@@ -197,7 +197,7 @@ gulp.task('watch-bs', ['browser-sync', 'watch', 'scripts'], function () { });
 // Uglifies and concat all JS files into one
 gulp.task('scripts', function() {
     var scripts = [
-        basePaths.js + 'jquery.min.js',
+        // basePaths.js + 'jquery.min.js',
 
         // Start - All BS4 stuff
         basePaths.dev + 'js/bootstrap4/bootstrap.js',

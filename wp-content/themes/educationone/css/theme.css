@@ -9422,8 +9422,10 @@ header .navbar {
   justify-content: space-between;
   padding: 0;
   background: #FFF;
-  width: 100%; }
+  width: 100%;
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.1); }
   header .navbar .home-link-wrapper {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     background-color: #2D556B;
     padding: 30px 20px; }
   header .navbar .navbar-collapse {
@@ -9681,11 +9683,18 @@ body {
   .carousel .carousel-inner .carousel-item {
     min-height: 100%;
     background-size: cover;
-    background-position: center; }
+    background-position: center top; }
+
+.carousel .carousel-indicators li {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #FFF;
+  border-radius: 8px;
+  cursor: pointer; }
 
 body.home .carousel .carousel-inner {
-  min-height: 80vh;
-  font-family: "Barlow Condensed", sans-serif; }
+  font-family: "Barlow Condensed", sans-serif;
+  min-height: 300px; }
   body.home .carousel .carousel-inner .carousel-item {
     color: #FFF;
     padding-top: 30px; }
@@ -9697,6 +9706,8 @@ body.home .carousel .carousel-inner {
         font-family: "Barlow Condensed", sans-serif;
         font-size: 21.3px;
         color: #FFFFFF; }
+      body.home .carousel .carousel-inner .carousel-item .slide-copy-wrapper b {
+        font-weight: bold; }
       body.home .carousel .carousel-inner .carousel-item .slide-copy-wrapper ul {
         list-style: none;
         color: #FFF;
@@ -9704,7 +9715,6 @@ body.home .carousel .carousel-inner {
         body.home .carousel .carousel-inner .carousel-item .slide-copy-wrapper ul li {
           font-family: "Barlow", sans-serif;
           font-size: 36px;
-          font-weight: bold;
           letter-spacing: -1.6px;
           line-height: 1.2;
           background: url(../img/angle-right.svg) left 20px no-repeat;
@@ -9719,11 +9729,13 @@ body.home .form-area {
     min-height: 70vh; } }
 
 @media (min-width: 768px) {
-  body.home .carousel .carousel-inner .carousel-item {
-    padding-top: 170px; }
-    body.home .carousel .carousel-inner .carousel-item .slide-copy-wrapper ul li {
-      font-size: 46px;
-      margin-bottom: 0px; } }
+  body.home .carousel .carousel-inner {
+    min-height: 600px; }
+    body.home .carousel .carousel-inner .carousel-item {
+      padding-top: 170px; }
+      body.home .carousel .carousel-inner .carousel-item .slide-copy-wrapper ul li {
+        font-size: 46px;
+        margin-bottom: 0px; } }
 
 .callouts {
   padding: 30px;
@@ -9739,7 +9751,7 @@ body.home .form-area {
       margin-top: 30px; }
 
 .testimonials {
-  padding: 30px;
+  padding: 40px 30px;
   background-color: #FFF;
   background-image: url(../img/testimonial-bg-1.jpg), url(../img/testimonial-bg-2.jpg);
   background-position: top left, bottom right;
@@ -9790,13 +9802,13 @@ body.page-template-template-test-prep .nav-tabs {
 
 .nav-tabs {
   padding-left: 30px;
-  border-bottom: 1px solid #55A1CB; }
+  border-bottom: 1px solid #2a9ec4; }
   .nav-tabs .nav-link {
     border: none;
-    color: #55A1CB; }
+    color: #2a9ec4; }
     .nav-tabs .nav-link.active {
       color: #FF9C18;
-      border: 1px solid #55A1CB;
+      border: 1px solid #2a9ec4;
       border-bottom: none;
       font-weight: bold; }
 
@@ -10055,7 +10067,7 @@ body.page-template-template-careers .opportunities-section {
   .page-template-template-philosophy .tutors-wrapper .tutors .colored-copy {
     padding: 140px 30px;
     text-align: center;
-    background-image: linear-gradient(44deg, #70C0DC 0%, #74D792 100%);
+    background-image: linear-gradient(44deg, #74D792 0%, #70C0DC 100%);
     font-family: "Barlow", sans-serif;
     font-style: italic;
     font-size: 23px;
@@ -10122,7 +10134,7 @@ body.page-template-template-careers .opportunities-section {
         font-weight: bold;
         font-size: 26px; }
 
-.btn, .wpcf7 input[type=submit], input[type="submit"] {
+.btn, .wpcf7 input[type=submit], input[type="submit"], .gform_submit .button, .gform_page_footer .button {
   color: #FFF !important;
   border: none;
   text-transform: uppercase;
@@ -10131,14 +10143,14 @@ body.page-template-template-careers .opportunities-section {
   font-family: "Barlow Condensed", sans-serif;
   font-size: 27px;
   border-radius: 6px; }
-  .btn i, .wpcf7 input[type=submit] i, input[type="submit"] i {
+  .btn i, .wpcf7 input[type=submit] i, input[type="submit"] i, .gform_submit .button i, .gform_page_footer .button i {
     font-size: 30px;
     margin-left: 10px; }
 
-input[type="submit"] {
+input[type="submit"], .gform_submit .button, .gform_page_footer .button {
   font-size: 27px !important; }
 
-.btn-orange, input[type="submit"] {
+.btn-orange, input[type="submit"], .gform_submit .button, .gform_page_footer .button {
   background-color: #FF9C18; }
 
 .btn-blue-gradient {
@@ -10181,18 +10193,25 @@ input[type="submit"] {
   .eo-form-wrapper .col-md-6 {
     padding-left: 0;
     padding-right: 0;
-    background-color: #FFF; }
+    background-color: #FFF;
+    background-size: cover; }
   .eo-form-wrapper .form-copy {
     padding: 30px; }
+    .eo-form-wrapper .form-copy h1 {
+      margin-bottom: 30px; }
   .eo-form-wrapper .form-wrapper {
     padding: 30px; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gform_page .gform_page_footer {
+      text-align: right;
+      border: none; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea {
       color: #2D556B; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield label {
       font-size: 16px;
       font-family: "Barlow", sans-serif;
-      font-weight: normal; }
-    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="text"] {
+      font-weight: normal;
+      margin-bottom: 0; }
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="text"], .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea {
       border: none;
       background-color: #eaeaea; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield.no-label > label {
@@ -10200,6 +10219,29 @@ input[type="submit"] {
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .gfield_radio li {
       float: left;
       margin-right: 30px; }
+      .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .gfield_radio li label {
+        margin-left: 7px; }
+      .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .gfield_radio li input[type="radio"] {
+        -webkit-appearance: none;
+        background-color: #FFF;
+        width: 18px !important;
+        height: 18px;
+        border-radius: 10px;
+        margin-bottom: 3px;
+        margin-left: 4px;
+        border: 3px solid #FFF;
+        outline: none !important; }
+        .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .gfield_radio li input[type="radio"]:checked {
+          background-color: #2a9ec4; }
+        .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield .gfield_radio li input[type="radio"]:after {
+          content: '';
+          position: absolute;
+          width: 23px;
+          height: 23px;
+          border: 3px solid #2a9ec4;
+          border-radius: 12px;
+          top: 4px;
+          left: 2px; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_heading {
       color: #2D556B; }
       .eo-form-wrapper .form-wrapper .gform_wrapper .gform_heading .gform_description {
@@ -10210,6 +10252,11 @@ input[type="submit"] {
         line-height: 43px; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_footer {
       text-align: right; }
+  @media (min-width: 768px) {
+    .eo-form-wrapper .form-wrapper {
+      transform: translateY(-50%);
+      position: relative;
+      top: 50%; } }
 
 .gform_wrapper.gform_validation_error .gfield.gfield_error {
   margin-right: 0 !important; }
@@ -10246,7 +10293,6 @@ input[type="submit"] {
 
 .gform_confirmation_message {
   color: #474747;
-  margin-top: 30px;
   text-align: center; }
 
 #ui-datepicker-div {
