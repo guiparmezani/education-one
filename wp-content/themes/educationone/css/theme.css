@@ -10298,6 +10298,10 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button {
 #ui-datepicker-div {
   display: none; }
 
+.animsition-loading:after {
+  font-size: 12px;
+  text-transform: uppercase; }
+
 /*
 * Use existing Bootstrap 4 classes and
 * variables to extend - override CF7 style
