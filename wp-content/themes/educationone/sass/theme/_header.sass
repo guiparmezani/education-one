@@ -6,9 +6,7 @@ header
 		padding: 0
 		background: #FFF
 		width: 100%
-		box-shadow: 0 5px 8px rgba(0,0,0,0.1)
 		.home-link-wrapper
-			box-shadow: 0 4px 10px rgba(0,0,0,0.2)
 			background-color: $brand-dark-blue
 			padding: 30px 20px
 		.navbar-collapse
@@ -53,6 +51,7 @@ header
 				display: none
 
 	@include media-breakpoint-down(sm)
+		background-color: $brand-dark-blue
 		.container
 			padding: 0
 		.navbar
@@ -67,6 +66,9 @@ header
 		margin-top: 35px
 		.navbar
 			max-height: 75px
+			box-shadow: 0 5px 8px rgba(0,0,0,0.1)
+			.home-link-wrapper
+				box-shadow: 0 4px 10px rgba(0,0,0,0.2)
 			.navbar-collapse
 				width: 55%
 				#main-menu

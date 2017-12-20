@@ -9422,10 +9422,8 @@ header .navbar {
   justify-content: space-between;
   padding: 0;
   background: #FFF;
-  width: 100%;
-  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.1); }
+  width: 100%; }
   header .navbar .home-link-wrapper {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     background-color: #2D556B;
     padding: 30px 20px; }
   header .navbar .navbar-collapse {
@@ -9468,19 +9466,24 @@ header .navbar-toggler {
     display: none; }
 
 @media (max-width: 767px) {
-  header .container {
-    padding: 0; }
-  header .navbar {
+  header {
     background-color: #2D556B; }
-    header .navbar .navbar-nav .menu-item a {
-      color: #FFF;
-      text-align: center; } }
+    header .container {
+      padding: 0; }
+    header .navbar {
+      background-color: #2D556B; }
+      header .navbar .navbar-nav .menu-item a {
+        color: #FFF;
+        text-align: center; } }
 
 @media (min-width: 768px) {
   header {
     margin-top: 35px; }
     header .navbar {
-      max-height: 75px; }
+      max-height: 75px;
+      box-shadow: 0 5px 8px rgba(0, 0, 0, 0.1); }
+      header .navbar .home-link-wrapper {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
       header .navbar .navbar-collapse {
         width: 55%; }
         header .navbar .navbar-collapse #main-menu {
@@ -9510,7 +9513,7 @@ footer {
       color: #FFF; }
   footer .site-footer {
     color: #FFF;
-    padding: 30px 0; }
+    padding: 40px 0; }
     footer .site-footer a {
       color: #FFF; }
   footer .navbar {
