@@ -19,7 +19,7 @@ get_header();
 				<div class="timeline-numbers">
 					<div class="row">
 						<?php for ($i=1; $i < 13; $i++) : ?>
-							<div class="col-sm-1">
+							<div class="col-xl-1">
 								<span><?php echo $i; ?></span>
 								<?php while(have_rows('bubbles')): the_row(); ?>
 									<?php if ($i == get_sub_field('position')): ?>

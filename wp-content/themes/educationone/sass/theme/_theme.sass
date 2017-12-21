@@ -52,6 +52,10 @@ h1
 	font-weight: bold
 	letter-spacing: -1.89px
 	line-height: 43px
+	
+	@include media-breakpoint-down(sm)
+		font-size: 36px
+		line-height: 38px
 
 h2
 	font-family: $font-barlow
@@ -59,11 +63,19 @@ h2
 	color: $brand-dark-blue
 	line-height: 32px
 
+	@include media-breakpoint-down(sm)
+		font-size: 21px
+		line-height: 22px
+
 h3
 	font-family: $font-barlow
 	font-size: 28px
 	color: $brand-dark-blue
 	line-height: 33px
+
+	@include media-breakpoint-down(sm)
+		font-size: 20px
+		line-height: 24px
 
 h4
 	font-family: $font-barlow
@@ -82,6 +94,10 @@ p
 	font-size: 21px
 	color: $brand-dark-blue
 	line-height: 25px
+
+	@include media-breakpoint-down(sm)
+		font-size: 16px
+		line-height: 21px
 
 b
 	font-weight: bold
@@ -108,6 +124,11 @@ b
 		left: 0
 		top: 0
 
+	@include media-breakpoint-down(sm)
+		font-size: 22px
+		&:before
+			height: 19px
+
 body
 	font-family: $font-barlow
 	color: $brand-black
@@ -116,6 +137,10 @@ body
 .page-section
 	margin-top: 60px
 	background-color: #FFF
+
+	@include media-breakpoint-down(sm)
+		overflow: hidden
+		margin-top: 30px
 
 .entry-title
 	padding: 40px 30px
@@ -131,7 +156,7 @@ body
 		.carousel-item
 			min-height: 100%
 			background-size: cover
-			background-position: center top
+			background-position: 75% top
 	.carousel-indicators
 		li
 			width: 16px
@@ -139,6 +164,13 @@ body
 			border: 2px solid #FFF
 			border-radius: 8px
 			cursor: pointer
+
+	@include media-breakpoint-down(sm)
+		.btn
+			width: 300px
+			margin-top: 20px
+		.carousel-inner
+			height: calc(100vh - 79px)
 
 body.home
 	.carousel
@@ -151,11 +183,12 @@ body.home
 				.eo-span
 					margin-left: 32px
 				.slide-copy-wrapper
-					margin-left: 20px
 					p
 						font-family: $font-barlow-condensed
 						font-size: 21.3px
 						color: #FFFFFF
+						b
+							color: $brand-dark-blue
 					b
 						font-weight: bold
 					ul
@@ -167,9 +200,15 @@ body.home
 							font-size: 36px
 							letter-spacing: -1.6px
 							line-height: 1.2
-							background: url(../img/angle-right.svg) left 20px no-repeat
+							// background: url(../img/angle-right.svg) left 20px no-repeat
 							padding-left: 30px
 							margin-bottom: 10px
+							position: relative
+							&:before
+								content: '\f105'
+								font-family: FontAwesome
+								position: absolute
+								left: 0
 	.form-area
 		margin-top: 50px
 
@@ -177,6 +216,18 @@ body.home
 		.carousel
 			.carousel-inner
 				min-height: 70vh
+				.carousel-item
+					.slide-copy-wrapper
+						h2
+							margin-bottom: 0
+						p
+							font-size: 16px
+							margin-top: 20px
+						ul
+							li
+								font-size: 27px
+								background: none
+								line-height: 1
 
 	@include media-breakpoint-up(md)
 		.carousel
@@ -185,6 +236,7 @@ body.home
 				.carousel-item
 					padding-top: 170px
 					.slide-copy-wrapper
+						margin-left: 20px
 						ul
 							li
 								font-size: 46px
@@ -194,8 +246,6 @@ body.home
 .callouts
 	padding: 30px
 	background-color: #FFF
-	h1
-		margin-bottom: 60px
 	.callout
 		text-align: center
 		img
@@ -203,6 +253,17 @@ body.home
 			max-width: 100%
 		p
 			margin-top: 30px
+
+	@include media-breakpoint-down(xs)
+		padding: 30px 15px
+		.callout
+			margin-top: 30px
+			padding-left: 15px
+			padding-right: 15px
+	
+	@include media-breakpoint-up(md)
+		h1
+			margin-bottom: 60px
 
 .testimonials
 	padding: 40px 30px
@@ -241,9 +302,13 @@ body.home
 
 	@include media-breakpoint-down(sm)
 		.btn
-			font-size: 20px
+			font-size: 17px
 			width: 80%
 			margin-right: 0 !important
+			padding: 10px
+			font-size: 12px
+			i
+				font-size: 14px
 		.btn + .btn
 			margin-top: 15px
 
@@ -255,6 +320,28 @@ body.page-template-template-test-prep
 		background-repeat: no-repeat, no-repeat
 	.nav-tabs
 		margin-top: 120px
+
+	@include media-breakpoint-down(sm)
+		.hero-section
+			background-image: url(../img/test-prep-bg-2.svg)
+			background-position: 270px top
+			.entry-title
+				padding: 30px
+				padding-bottom: 0
+			.hero-copy
+				padding-left: 30px
+				padding-right: 30px
+			.nav-tabs
+				margin-top: 30px
+				padding-left: 30px
+				padding-right: 30px
+				padding-bottom: 30px
+				.nav-link
+					width: 100%
+					border: none
+					padding-left: 0
+					padding-right: 0
+					text-align: center
 
 .nav-tabs
 	padding-left: 30px
@@ -325,6 +412,12 @@ body.page-template-template-careers
 			width: 90%
 			margin-top: 25px
 
+	@include media-breakpoint-down(sm)
+		.entry-title
+			padding: 0
+		.location-item
+			margin-bottom: 30px
+
 .tab-content
 	.tab-pane
 		.main-content-wrapper
@@ -356,6 +449,13 @@ body.page-template-template-careers
 						background-color: #FFF
 						border-radius: 10px
 
+	@include media-breakpoint-down(sm)
+		.tab-pane .secondary-content-wrapper
+			ul
+				li
+					&:before
+						margin-top: 5px
+
 
 // Page Advising
 .page-template-template-advising
@@ -366,14 +466,16 @@ body.page-template-template-careers
 		.hero-bottom-copy
 			max-width: 620px
 			margin: 0 auto
+		p, h2
+			padding-left: 30px
+			padding-right: 30px
 	.callouts
 		.section-title
 			max-width: 800px
-			margin: 0 auto 90px
 
 .timeline-wrapper
-	padding: 210px 0 150px
 	position: relative
+	padding: 15px 0
 	.timeline
 		width: 100%
 		height: 3px
@@ -388,7 +490,7 @@ body.page-template-template-careers
 			top: -8px
 	.timeline-numbers
 		padding: 0 30px
-		.col-sm-1
+		.col-xl-1
 			> span
 				font-family: $font-barlow
 				font-weight: bold
@@ -404,7 +506,7 @@ body.page-template-template-careers
 					left: 15px
 					bottom: 0
 
-		.col-sm-1:first-of-type span:after
+		.col-xl-1:first-of-type span:after
 			left: 15px
 	.timeline-item
 			background: #74D792
@@ -416,12 +518,25 @@ body.page-template-template-careers
 			border-radius: 10px
 			// max-width: 215px
 
-	@include media-breakpoint-up(lg)
+	@include media-breakpoint-down(lg)
+		.timeline
+			display: none
+		.timeline-numbers
+			.col-xl-1
+				> span
+					display: none
+				.timeline-item
+					margin-bottom: 15px
+
+	@include media-breakpoint-up(xl)
+		padding: 210px 0 150px
+		.section-title
+			margin: 0 auto 90px
 		.timeline-numbers
 			.timeline-item
 				animation: fade-in 1.5s forwards
 				opacity: 0
-			.col-sm-1
+			.col-xl-1
 				&:nth-child(1)
 					.timeline-item.top
 						bottom: 125px
@@ -569,8 +684,6 @@ body.page-template-template-careers
 			.row
 				align-items: center
 				.col-md-6
-					&:first-of-type
-						text-align: right
 					img
 						width: 100%
 			.colored-copy
@@ -590,12 +703,26 @@ body.page-template-template-careers
 					font-size: 17px
 					line-height: 35px
 
+	@include media-breakpoint-down(sm)
+		.callouts
+			padding: 30px
+		.tutors-wrapper
+			.tutors
+				h3
+					padding: 30px
+				.colored-copy
+					padding: 30px
+				.btn
+					margin-left: 30px
+
 	@include media-breakpoint-up(md)
 		.tutors-wrapper
 			.tutors
 				.row
 					padding: 0 30px
 					.col-md-6
+						&:first-of-type
+							text-align: right
 						&.img-wrapper
 							// min-height: 272px
 						img
@@ -618,11 +745,12 @@ body.page-template-template-careers
 		padding-bottom: 0
 		.callout
 			.img-wrapper
-				min-height: 173px
+				// min-height: 173px
 
 	.bottom-copy
 		padding: 60px 30px
 		margin-top: 30px
+		margin-bottom: 0
 		background-color: #10A7E1
 		color: #FFF
 		text-align: center
@@ -651,6 +779,17 @@ body.page-template-template-careers
 					font-weight: bold
 					font-size: 26px
 
+	@include media-breakpoint-down(sm)
+		.topics
+			.topic-item
+				margin-bottom: 30px
+
+	@include media-breakpoint-up(md)
+		.callouts
+			.callout
+				.img-wrapper
+					min-height: 173px
+
 
 // Button
 .btn, input[type="submit"], .gform_submit .button, .gform_page_footer .button
@@ -658,6 +797,7 @@ body.page-template-template-careers
 	border: none
 	text-transform: uppercase
 	min-width: 184px
+	max-width: 100%
 	padding: 10px 20px
 	font-family: $font-barlow-condensed
 	font-size: 27px
@@ -665,6 +805,12 @@ body.page-template-template-careers
 	i
 		font-size: 30px
 		margin-left: 10px
+
+	@include media-breakpoint-down(sm)
+		padding: 10px
+		font-size: 17px
+		i
+			font-size: 20px
 
 input[type="submit"], .gform_submit .button, .gform_page_footer .button
 	font-size: 27px !important
@@ -683,7 +829,7 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 .col-xs-15,
 .col-sm-15,
 .col-md-15,
-.col-lg-15
+.col-sm-15
 	position: relative
 	width: 100%
 	min-height: 1px
@@ -696,7 +842,7 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 
 
 @media (min-width: 768px) 
-	.col-sm-15 
+	.col-lg-15 
 		flex: 0 0 20%
 		max-width: 20%
 
@@ -730,6 +876,7 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 		background-repeat: no-repeat
 	.form-copy
 		padding: 30px
+		padding-bottom: 250px
 		h1
 			margin-bottom: 30px
 	.form-wrapper
@@ -828,9 +975,32 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 			opacity: 0
 	
 
+	@include media-breakpoint-down(sm)
+		.form-copy
+			h1
+				font-size: 28px
+				line-height: 32px
+		.form-wrapper
+			.gform_wrapper
+				.gform_heading
+					.gform_description
+						font-size: 24px
+						line-height: 27px
+				.gform_body
+					.gfield
+						label
+							width: auto
+						.gfield_radio
+							li
+								input[type="radio"]
+									margin-bottom: 0px
+									&:after
+										width: 22px
+										height: 22px
+
 	@include media-breakpoint-up(md)
 		.form-copy
-			padding-bottom: 250px
+			// padding-bottom: 250px
 		.form-wrapper
 			transform: translateY(-50%)
 			position: relative
