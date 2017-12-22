@@ -9429,8 +9429,11 @@ header .navbar {
   header .navbar .navbar-collapse {
     flex-grow: initial; }
     header .navbar .navbar-collapse .menu-item a {
+      transition: opacity .2s ease;
       color: #474747;
       text-transform: uppercase; }
+    header .navbar .navbar-collapse .menu-item:hover a {
+      opacity: .7; }
   header .navbar .call-us {
     background-color: #82B151;
     color: #FFF;
@@ -9608,6 +9611,10 @@ footer {
 
 @media (max-width: 991px) {
   .desktop {
+    display: none !important; } }
+
+@media (max-width: 1199px) {
+  .desktop-wide {
     display: none !important; } }
 
 .hidden {
@@ -9855,7 +9862,7 @@ body.home .form-area {
       font-size: 16px;
       line-height: 35px;
       margin-top: -5px; }
-  @media (max-width: 767px) {
+  @media (max-width: 991px) {
     .testimonials .btn, .testimonials .wpcf7 input[type=submit], .wpcf7 .testimonials input[type=submit] {
       font-size: 17px;
       width: 80%;
@@ -9952,6 +9959,8 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
       min-height: 140px; }
       .locations-section .location-item .location-copy h4 {
         font-weight: bold; }
+      .locations-section .location-item .location-copy p {
+        font-size: 19px; }
     .locations-section .location-item .coming-soon {
       background: #2a9ec4;
       font-family: "Barlow", sans-serif;
@@ -10251,6 +10260,8 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
     max-width: 600px; }
     .personal-tutoring-wrapper .hero-section .hero-content h2 {
       font-weight: bold; }
+    .personal-tutoring-wrapper .hero-section .hero-content .btn, .personal-tutoring-wrapper .hero-section .hero-content .wpcf7 input[type=submit], .wpcf7 .personal-tutoring-wrapper .hero-section .hero-content input[type=submit] {
+      margin-top: 50px; }
 
 .personal-tutoring-wrapper .callouts {
   padding-bottom: 0; }
@@ -10297,11 +10308,11 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
     min-height: 173px; } }
 
 .btn, .wpcf7 input[type=submit], input[type="submit"], .gform_submit .button, .gform_page_footer .button {
+  transition: all .2s ease;
   color: #FFF !important;
   border: none;
   text-transform: uppercase;
   min-width: 184px;
-  max-width: 100%;
   padding: 10px 20px;
   font-family: "Barlow Condensed", sans-serif;
   font-size: 27px;
@@ -10312,21 +10323,29 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
   @media (max-width: 767px) {
     .btn, .wpcf7 input[type=submit], input[type="submit"], .gform_submit .button, .gform_page_footer .button {
       padding: 10px;
-      font-size: 17px; }
+      font-size: 17px;
+      max-width: 100%; }
       .btn i, .wpcf7 input[type=submit] i, input[type="submit"] i, .gform_submit .button i, .gform_page_footer .button i {
         font-size: 20px; } }
 
 input[type="submit"], .gform_submit .button, .gform_page_footer .button {
-  font-size: 27px !important; }
+  font-size: 27px !important;
+  cursor: pointer; }
 
 .btn-orange, input[type="submit"], .gform_submit .button, .gform_page_footer .button {
   background-color: #FF9C18; }
+  .btn-orange:hover, input[type="submit"]:hover, .gform_submit .button:hover, .gform_page_footer .button:hover {
+    background-color: #ffb24b; }
 
 .btn-blue-gradient {
   background-image: linear-gradient(90deg, #55A2CC, #37769A); }
+  .btn-blue-gradient:hover {
+    background-image: linear-gradient(90deg, #7cb7d8, #4792bd); }
 
 .btn-orange-gradient {
   background-image: linear-gradient(90deg, #FFA727, #FF9C18); }
+  .btn-orange-gradient:hover {
+    background-image: linear-gradient(90deg, #ffbc5a, #ffb24b); }
 
 .col-xs-15,
 .col-sm-15,
@@ -10520,6 +10539,18 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button {
 .animsition-loading:after {
   font-size: 12px;
   text-transform: uppercase; }
+
+.error-404 {
+  color: #474747;
+  text-align: center;
+  height: 50vh; }
+  .error-404 h1 {
+    margin-bottom: 30px; }
+  .error-404 a {
+    color: #2D556B; }
+
+#search-wrapper header {
+  color: #474747; }
 
 /*
 * Use existing Bootstrap 4 classes and

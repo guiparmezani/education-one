@@ -13,7 +13,7 @@ get_header();
 <?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
 
 	<div class="home-page-wrapper">
-		<div data-ride="carousel" class="carousel carousel-fade" id="carousel-image-slider" data-interval="false" data-pause="false">
+		<div data-ride="carousel" class="carousel carousel-fade" id="carousel-image-slider" data-interval="4000" data-pause="false">
 			<ol class="carousel-indicators">
 		    <?php $i=0; while(have_rows('slides')): the_row(); ?>
 		    	<li data-target="#carousel-image-slider" data-slide-to="<?php echo $i; ?>" class="<?php if($i == 0) echo ' active'; ?>"></li>

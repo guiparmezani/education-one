@@ -13,8 +13,12 @@ header
 			flex-grow: initial
 			.menu-item
 				a
+					transition: opacity .2s ease
 					color: $brand-black
 					text-transform: uppercase
+				&:hover
+					a
+						opacity: .7
 		.call-us
 			background-color: $brand-lime
 			color: #FFF

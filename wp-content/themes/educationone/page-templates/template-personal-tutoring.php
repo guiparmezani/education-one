@@ -18,7 +18,7 @@ get_header();
 				<div class="hero-content">
 					<h2><?php the_field('hero_subtitle'); ?></h2>
 					<p><?php the_field('hero_copy'); ?></p>
-					<a href="#" class="btn btn-orange">Get Started with Personalized Subject Tutoring Today!</a>
+					<a href="/locations-contact/" class="btn btn-orange">Get Started with Personalized Subject Tutoring Today!</a>
 				</div>
 				
 				<?php if (have_rows('topics')): ?>
