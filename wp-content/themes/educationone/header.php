@@ -60,7 +60,7 @@ $container = get_theme_mod( 'understrap_container_type' );
 					)
 				); ?>
 				
-				<div class="call-us desktop">
+				<div class="call-us desktop-wide">
 					<span>GIVE US A CALL <i class="fa fa-phone" aria-hidden="true"></i></span>
 					<a href="tel:<?php the_field('phone_number', 'options'); ?>"><?php the_field('phone_number', 'options'); ?></a>
 				</div>
