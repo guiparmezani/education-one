@@ -9468,6 +9468,10 @@ header .navbar-toggler {
   header .navbar-toggler:not(.collapsed) .icon-bar:nth-child(3) {
     display: none; }
 
+@media (max-width: 1199px) {
+  header .navbar .navbar-nav .menu-item a {
+    line-height: 16px; } }
+
 @media (max-width: 767px) {
   header {
     background-color: #2D556B; }
@@ -9553,6 +9557,9 @@ footer {
         margin-bottom: 20px; }
       footer .navbar .footer-menu {
         width: 100%; } }
+  @media (max-width: 991px) {
+    footer .navbar .menu-item a {
+      line-height: 16px; } }
   @media (min-width: 768px) {
     footer .navbar .navbar-collapse {
       width: 55%; }
@@ -9796,9 +9803,14 @@ body.home .form-area {
       background: none;
       line-height: 1; } }
 
+@media (max-width: 991px) {
+  body.home .btn, body.home .wpcf7 input[type=submit], .wpcf7 body.home input[type=submit] {
+    width: 500px;
+    margin-top: 20px; } }
+
 @media (min-width: 768px) {
   body.home .carousel .carousel-inner {
-    min-height: 600px; }
+    min-height: 750px; }
     body.home .carousel .carousel-inner .carousel-item {
       padding-top: 170px; }
       body.home .carousel .carousel-inner .carousel-item .slide-copy-wrapper {
@@ -9942,7 +9954,11 @@ body.page-template-template-careers .opportunities-section {
 body.page-template-template-careers .eo-form-wrapper .form-wrapper {
   background-color: #F6F6F6; }
 
-@media (min-width: 768px) {
+@media (max-width: 991px) {
+  body.page-template-template-careers .opportunities-section .opportunities-wrapper .opportunity-item {
+    margin-bottom: 30px; } }
+
+@media (min-width: 992px) {
   body.page-template-template-careers .opportunities-section .opportunities-wrapper .opportunity-item {
     min-height: 517px; } }
 
@@ -9976,6 +9992,11 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
       padding: 0; }
     .locations-section .location-item {
       margin-bottom: 30px; } }
+  @media (max-width: 991px) {
+    .locations-section .location-item {
+      min-height: 420px; }
+      .locations-section .location-item .location-copy {
+        min-height: 260px; } }
 
 .tab-content .tab-pane .main-content-wrapper {
   padding: 30px; }
@@ -10243,6 +10264,11 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
   .page-template-template-philosophy .tutors-wrapper .tutors .btn, .page-template-template-philosophy .tutors-wrapper .tutors .wpcf7 input[type=submit], .wpcf7 .page-template-template-philosophy .tutors-wrapper .tutors input[type=submit] {
     margin-left: 30px; } }
 
+@media (max-width: 991px) {
+  .page-template-template-philosophy .tutors-wrapper .tutors .col-md-6 {
+    padding-top: 30px;
+    padding-bottom: 30px; } }
+
 @media (min-width: 768px) {
   .page-template-template-philosophy .tutors-wrapper .tutors .row {
     padding: 0 30px; }
@@ -10299,7 +10325,7 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
         font-weight: bold;
         font-size: 26px; }
 
-@media (max-width: 767px) {
+@media (max-width: 991px) {
   .personal-tutoring-wrapper .topics .topic-item {
     margin-bottom: 30px; } }
 

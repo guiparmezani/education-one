@@ -22,7 +22,7 @@ get_header();
 				<div class="opportunities-wrapper">
 					<div class="row">
 						<?php while(have_rows('opportunities')): the_row(); ?>
-							<div class="col-md-4">
+							<div class="col-lg-4">
 								<div class="opportunity-item">
 									<h4><?php the_sub_field('heading'); ?></h4>
 									<h5><?php the_sub_field('subheading'); ?></h5>

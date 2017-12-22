@@ -54,6 +54,13 @@ header
 			.icon-bar:nth-child(3)
 				display: none
 
+	@include media-breakpoint-down(lg)
+		.navbar
+			.navbar-nav
+				.menu-item
+					a
+						line-height: 16px
+
 	@include media-breakpoint-down(sm)
 		background-color: $brand-dark-blue
 		.container

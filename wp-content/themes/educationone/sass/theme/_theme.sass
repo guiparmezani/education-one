@@ -168,14 +168,14 @@ body
 			border: 2px solid #FFF
 			border-radius: 8px
 			cursor: pointer
-
+		
 	@include media-breakpoint-down(sm)
 		.btn
 			width: 300px
 			margin-top: 20px
 		.carousel-inner
 			height: calc(100vh - 79px)
-
+	
 body.home
 	.carousel
 		.carousel-inner
@@ -233,10 +233,15 @@ body.home
 								background: none
 								line-height: 1
 
+	@include media-breakpoint-down(md)
+		.btn
+			width: 500px
+			margin-top: 20px
+
 	@include media-breakpoint-up(md)
 		.carousel
 			.carousel-inner
-				min-height: 600px
+				min-height: 750px
 				.carousel-item
 					padding-top: 170px
 					.slide-copy-wrapper
@@ -387,7 +392,13 @@ body.page-template-template-careers
 		.form-wrapper
 			background-color: #F6F6F6
 
-	@include media-breakpoint-up(md)
+	@include media-breakpoint-down(md)
+		.opportunities-section
+			.opportunities-wrapper
+				.opportunity-item
+					margin-bottom: 30px
+
+	@include media-breakpoint-up(lg)
 		.opportunities-section
 			.opportunities-wrapper
 				.opportunity-item
@@ -423,6 +434,12 @@ body.page-template-template-careers
 			padding: 0
 		.location-item
 			margin-bottom: 30px
+	
+	@include media-breakpoint-down(md)
+		.location-item
+			min-height: 420px
+			.location-copy
+				min-height: 260px
 
 .tab-content
 	.tab-pane
@@ -720,6 +737,13 @@ body.page-template-template-careers
 					padding: 30px
 				.btn
 					margin-left: 30px
+	
+	@include media-breakpoint-down(md)
+		.tutors-wrapper
+			.tutors
+				.col-md-6
+					padding-top: 30px
+					padding-bottom: 30px
 
 	@include media-breakpoint-up(md)
 		.tutors-wrapper
@@ -787,7 +811,7 @@ body.page-template-template-careers
 					font-weight: bold
 					font-size: 26px
 
-	@include media-breakpoint-down(sm)
+	@include media-breakpoint-down(md)
 		.topics
 			.topic-item
 				margin-bottom: 30px
