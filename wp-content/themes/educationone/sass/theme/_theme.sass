@@ -170,11 +170,12 @@ body
 			cursor: pointer
 		
 	@include media-breakpoint-down(sm)
-		.btn
-			width: 300px
-			margin-top: 20px
 		.carousel-inner
 			height: calc(100vh - 79px)
+			.carousel-item:nth(n+1)
+				.btn
+					width: 300px
+					margin-top: 10px
 	
 body.home
 	.carousel
@@ -189,7 +190,7 @@ body.home
 				.slide-copy-wrapper
 					p
 						font-family: $font-barlow-condensed
-						font-size: 21.3px
+						font-size: 25.5px
 						color: #FFFFFF
 						b
 							color: $brand-dark-blue
@@ -213,6 +214,14 @@ body.home
 								font-family: FontAwesome
 								position: absolute
 								left: 0
+					.buttons
+						position: absolute
+						bottom: 70px
+						.btn
+							margin-right: 20px
+					.buttons-top-text
+						position: absolute
+						bottom: 150px
 	.form-area
 		margin-top: 50px
 
@@ -222,6 +231,9 @@ body.home
 				min-height: 70vh
 				.carousel-item
 					.slide-copy-wrapper
+						h1
+							font-size: 30px
+							line-height: 31px
 						h2
 							margin-bottom: 0
 						p
@@ -232,16 +244,33 @@ body.home
 								font-size: 27px
 								background: none
 								line-height: 1
+						.buttons
+							position: absolute
+							bottom: 60px
+							width: 70vw
+							.btn
+								font-size: 14px
+								i
+									display: none
+						.buttons-top-text
+							position: absolute
+							bottom: 110px
+					&:nth-child(n+2)
+						.slide-copy-wrapper
+							max-width: 220px
+					&:first-child, &:last-child
+						background-position: 63% top
 
 	@include media-breakpoint-down(md)
 		.btn
 			width: 500px
-			margin-top: 20px
+			margin-top: 10px
+			margin-right: 0
 
 	@include media-breakpoint-up(md)
 		.carousel
 			.carousel-inner
-				min-height: 750px
+				min-height: 680px
 				.carousel-item
 					padding-top: 170px
 					.slide-copy-wrapper
@@ -250,6 +279,17 @@ body.home
 							li
 								font-size: 46px
 								margin-bottom: 0px
+						.btn
+							// margin-top: 120px
+					&:nth-child(n+2)
+						h1
+							font-size: 76px
+							line-height: 78px
+						h2
+							font-size: 46px
+						p
+							font-size: 26px
+							margin-top: 20px
 
 
 .callouts

@@ -40,7 +40,7 @@ get_header();
 				<div class="row">
 					<div class="eo-form-wrapper">
 						<div class="row">
-							<div class="col-md-6" style="background-image: url(<?php echo bloginfo('template_url'); ?>/img/kids-bg.svg);">
+							<div class="col-md-6" style="background-image: url(<?php echo bloginfo('template_url'); ?>/img/kids-bg-2.jpg);">
 								<?php if (get_field('title', get_the_ID())): ?>
 									<div class="form-copy">
 										<h1><?php the_field('title', get_the_ID()); ?></h1>
