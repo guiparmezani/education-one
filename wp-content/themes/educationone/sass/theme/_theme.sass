@@ -432,6 +432,10 @@ body.page-template-template-careers
 		.form-wrapper
 			background-color: #F6F6F6
 
+	@include media-breakpoint-down(sm)
+		.hero-section
+			background-size: cover
+			
 	@include media-breakpoint-down(md)
 		.opportunities-section
 			.opportunities-wrapper
@@ -769,6 +773,9 @@ body.page-template-template-careers
 	@include media-breakpoint-down(sm)
 		.callouts
 			padding: 30px
+		.approach-wrapper
+			.approach
+				background-image: linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url(../img/approach-bg.jpg)
 		.tutors-wrapper
 			.tutors
 				h3
@@ -850,6 +857,10 @@ body.page-template-template-careers
 					font-family: $font-barlow
 					font-weight: bold
 					font-size: 26px
+
+	@include media-breakpoint-down(md)
+		.hero-section
+			background-image: linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url(../img/personal-bg.svg)
 
 	@include media-breakpoint-down(md)
 		.topics

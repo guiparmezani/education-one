@@ -9484,7 +9484,9 @@ header .navbar-toggler {
         padding: 20px 15px; }
       header .navbar .navbar-nav .menu-item a {
         color: #FFF;
-        text-align: center; } }
+        text-align: center; }
+      header .navbar .navbar-nav .menu-item:last-child {
+        padding-bottom: 20px; } }
 
 @media (min-width: 768px) {
   header {
@@ -9989,6 +9991,10 @@ body.page-template-template-careers .opportunities-section {
 body.page-template-template-careers .eo-form-wrapper .form-wrapper {
   background-color: #F6F6F6; }
 
+@media (max-width: 767px) {
+  body.page-template-template-careers .hero-section {
+    background-size: cover; } }
+
 @media (max-width: 991px) {
   body.page-template-template-careers .opportunities-section .opportunities-wrapper .opportunity-item {
     margin-bottom: 30px; } }
@@ -10292,6 +10298,8 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
 @media (max-width: 767px) {
   .page-template-template-philosophy .callouts {
     padding: 30px; }
+  .page-template-template-philosophy .approach-wrapper .approach {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url(../img/approach-bg.jpg); }
   .page-template-template-philosophy .tutors-wrapper .tutors h3 {
     padding: 30px; }
   .page-template-template-philosophy .tutors-wrapper .tutors .colored-copy {
@@ -10359,6 +10367,10 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
         font-family: "Barlow", sans-serif;
         font-weight: bold;
         font-size: 26px; }
+
+@media (max-width: 991px) {
+  .personal-tutoring-wrapper .hero-section {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url(../img/personal-bg.svg); } }
 
 @media (max-width: 991px) {
   .personal-tutoring-wrapper .topics .topic-item {
