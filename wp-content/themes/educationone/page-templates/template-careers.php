@@ -17,7 +17,7 @@ get_header();
 		</div>
 
 		<div class="opportunities-section page-section">
-			<h1 class="entry-title">Open Opportunities</h1>
+			<h1>Open Opportunities</h1>
 			<?php if (have_rows('opportunities')): ?>
 				<div class="opportunities-wrapper">
 					<div class="row">

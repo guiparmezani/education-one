@@ -472,18 +472,21 @@ body.page-template-template-careers
 			padding: 10px 0
 			width: 90%
 			margin-top: 25px
-
-	@include media-breakpoint-down(sm)
-		.entry-title
-			padding: 0
-		.location-item
-			margin-bottom: 30px
 	
 	@include media-breakpoint-down(md)
 		.location-item
 			min-height: 420px
 			.location-copy
 				min-height: 260px
+
+	@include media-breakpoint-down(sm)
+		.entry-title
+			padding: 0
+		.location-item
+			margin-bottom: 30px
+			min-height: 0
+			.location-copy
+				min-height: 0
 
 .tab-content
 	.tab-pane
@@ -861,11 +864,11 @@ body.page-template-template-careers
 	@include media-breakpoint-down(md)
 		.hero-section
 			background-image: linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.8)), url(../img/personal-bg.svg)
-
-	@include media-breakpoint-down(md)
 		.topics
 			.topic-item
 				margin-bottom: 30px
+		.btn
+			font-size: 13px
 
 	@include media-breakpoint-up(md)
 		.callouts

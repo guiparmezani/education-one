@@ -10028,16 +10028,19 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
       padding: 10px 0;
       width: 90%;
       margin-top: 25px; }
-  @media (max-width: 767px) {
-    .locations-section .entry-title {
-      padding: 0; }
-    .locations-section .location-item {
-      margin-bottom: 30px; } }
   @media (max-width: 991px) {
     .locations-section .location-item {
       min-height: 420px; }
       .locations-section .location-item .location-copy {
         min-height: 260px; } }
+  @media (max-width: 767px) {
+    .locations-section .entry-title {
+      padding: 0; }
+    .locations-section .location-item {
+      margin-bottom: 30px;
+      min-height: 0; }
+      .locations-section .location-item .location-copy {
+        min-height: 0; } }
 
 .tab-content .tab-pane .main-content-wrapper {
   padding: 30px; }
@@ -10370,11 +10373,11 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
 
 @media (max-width: 991px) {
   .personal-tutoring-wrapper .hero-section {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url(../img/personal-bg.svg); } }
-
-@media (max-width: 991px) {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url(../img/personal-bg.svg); }
   .personal-tutoring-wrapper .topics .topic-item {
-    margin-bottom: 30px; } }
+    margin-bottom: 30px; }
+  .personal-tutoring-wrapper .btn, .personal-tutoring-wrapper .wpcf7 input[type=submit], .wpcf7 .personal-tutoring-wrapper input[type=submit] {
+    font-size: 13px; } }
 
 @media (min-width: 768px) {
   .personal-tutoring-wrapper .callouts .callout .img-wrapper {
