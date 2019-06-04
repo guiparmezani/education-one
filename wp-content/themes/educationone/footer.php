@@ -53,6 +53,7 @@ $container = get_theme_mod( 'understrap_container_type' );
 	<div class="copyright clearfix">
 		<div class="container">
 			<span class="pull-left">© <?php echo date("Y"); ?> Education One</span>
+			<span></span>
 			<span class="pull-right"><a href="/careers/">Careers</a></span>
 		</div>
 	</div>
