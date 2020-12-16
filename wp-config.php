@@ -17,26 +17,22 @@
  *
  * @package WordPress
  */
-
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
 define('DB_NAME', 'educationone');
-
 /** MySQL database username */
 define('DB_USER', 'web');
-
 /** MySQL database password */
 define('DB_PASSWORD', 'web');
-
 /** MySQL hostname */
 define('DB_HOST', 'localhost');
-
 /** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8mb4');
-
 /** The Database Collate type. Don't change this if in doubt. */
 define('DB_COLLATE', '');
 
+define('WP_HOME', 'http://educationone.sites.parmezani.fmaustin.com/');
+define('WP_SITEURL', 'http://educationone.sites.parmezani.fmaustin.com/');
 /**#@+
  * Authentication Unique Keys and Salts.
  *
@@ -54,9 +50,7 @@ define('AUTH_SALT',        'X8AI?/!Y4&S|yw9>1CR9CNa=N4{r}%S$L^gF|a#>Sk%_ZC:gkS=B
 define('SECURE_AUTH_SALT', 'T_eK.X%{,Z_95lc5kaK$sE4@i?1N7d7ZM8P[WHWsOxWOjbXtyaT~=tYycTk,-?jO');
 define('LOGGED_IN_SALT',   '={D/!yqT FN/LCACKNk]E:8#!f,DurK@Y@D:z<m3?sF0e.[si!g@AIv!-]*V{=3B');
 define('NONCE_SALT',       '*U>Lt`z(;q(z,7,79NI{xa?$nu&Cv+8iB/F]cZFNB}j!z2y+O5EeI]gT4S~,7q4}');
-
 /**#@-*/
-
 /**
  * WordPress Database Table prefix.
  *
@@ -64,7 +58,6 @@ define('NONCE_SALT',       '*U>Lt`z(;q(z,7,79NI{xa?$nu&Cv+8iB/F]cZFNB}j!z2y+O5Ee
  * a unique prefix. Only numbers, letters, and underscores please!
  */
 $table_prefix  = 'wp_';
-
 /**
  * For developers: WordPress debugging mode.
  *
@@ -78,13 +71,9 @@ $table_prefix  = 'wp_';
  * @link https://codex.wordpress.org/Debugging_in_WordPress
  */
 define('WP_DEBUG', false);
-
 /* That's all, stop editing! Happy blogging. */
-
 /** Absolute path to the WordPress directory. */
 if ( !defined('ABSPATH') )
 	define('ABSPATH', dirname(__FILE__) . '/');
-
 /** Sets up WordPress vars and included files. */
 require_once(ABSPATH . 'wp-settings.php');
-
