@@ -1,4 +1,8 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
 require_once( 'PostmanRegisterConfigurationSettings.php' );
 class PostmanConfigurationController {
 	const CONFIGURATION_SLUG = 'postman/configuration';
@@ -197,16 +201,27 @@ class PostmanConfigurationController {
 		print '<div class="wrap">';
 
 		PostmanViewController::outputChildPageHeader( __( 'Settings', 'post-smtp' ), 'advanced_config' );
+
+		$config_tabs = apply_filters( 'post_smtp_admin_tabs', array(
+		    'account_config' => __( 'Account', 'post-smtp' ),
+		    'fallback' => __( 'Fallback', 'post-smtp' ),
+		    'message_config' => __( 'Message', 'post-smtp' ),
+		    'logging_config' => __( 'Logging', 'post-smtp' ),
+		    'advanced_options_config' => __( 'Advanced', 'post-smtp' ),
+        ) );
+
 		print '<div id="config_tabs"><ul>';
-		print sprintf( '<li><a href="#account_config">%s</a></li>', __( 'Account', 'post-smtp' ) );
-		print sprintf( '<li><a href="#fallback">%s</a></li>', __( 'Fallback', 'post-smtp' ) );
-		print sprintf( '<li><a href="#message_config">%s</a></li>', __( 'Message', 'post-smtp' ) );
-		print sprintf( '<li><a href="#logging_config">%s</a></li>', __( 'Logging', 'post-smtp' ) );
-		print sprintf( '<li><a href="#advanced_options_config">%s</a></li>', __( 'Advanced', 'post-smtp' ) );
-		print sprintf( '<li><a href="#notifications">%s</a></li>', __( 'Notifications', 'post-smtp' ) );
+
+		foreach ( $config_tabs as $slug => $tab ) :
+            printf( '<li><a href="#%s">%s</a></li>', $slug, $tab );
+        endforeach;
+
 		print '</ul>';
 
 		print '<form method="post" action="options.php">';
+
+		wp_nonce_field('post-smtp', 'security');
+
 		// This prints out all hidden setting fields
 		settings_fields( PostmanAdminController::SETTINGS_GROUP_NAME );
 
@@ -235,6 +250,9 @@ class PostmanConfigurationController {
 		print '<div id="mailgun_settings" class="authentication_setting non-basic non-oauth2">';
 		do_settings_sections( PostmanMailgunTransport::MAILGUN_AUTH_OPTIONS );
 		print '</div>';
+
+		do_action( 'post_smtp_settings_sections' );
+
 		print '</section>';
         // end account config
 		?>
@@ -284,9 +302,9 @@ class PostmanConfigurationController {
                     <th scope="row"><?php _e('Security', 'post-smtp' ); ?></th>
                     <?php
                     $security_options = array(
-                            'none' => __( 'None', 'post-smtp' ),
-                            'ssl' => __( 'SSL', 'post-smtp' ),
-                            'tls' => __( 'TLS', 'post-smtp' ),
+                        'none' => __( 'None', 'post-smtp' ),
+                        'ssl' => __( 'SSL', 'post-smtp' ),
+                        'tls' => __( 'TLS', 'post-smtp' ),
                     );
                     ?>
                     <td>
@@ -303,17 +321,17 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-				<tr>
-					<th scope="row"><?php _e('From Email', 'post-smtp' ); ?></th>
-					<td>
-						<input type="email" id="fallback-smtp-from-email"
-							   value="<?php echo $this->options->getFallbackFromEmail(); ?>"
-							   name="postman_options[<?php echo PostmanOptions::FALLBACK_FROM_EMAIL; ?>]"
-						>
-						<br>
-						<small><?php _e( "Use allowed email, for example: If you are using Gmail, type your Gmail adress.", 'post-smtp' ); ?></small>
-					</td>
-				</tr>
+                <tr>
+                    <th scope="row"><?php _e('From Email', 'post-smtp' ); ?></th>
+                    <td>
+                        <input type="email" id="fallback-smtp-from-email"
+                               value="<?php echo $this->options->getFallbackFromEmail(); ?>"
+                               name="postman_options[<?php echo PostmanOptions::FALLBACK_FROM_EMAIL; ?>]"
+                        >
+                        <br>
+                        <small><?php _e( "Use allowed email, for example: If you are using Gmail, type your Gmail adress.", 'post-smtp' ); ?></small>
+                    </td>
+                </tr>
 
                 <tr valign="">
                     <th scope="row"><?php _e( 'Use SMTP Authentication?', 'post-smtp' ); ?></th>
@@ -377,22 +395,7 @@ class PostmanConfigurationController {
 		do_settings_sections( PostmanAdminController::ADVANCED_OPTIONS );
 		print '</section>';
 
-		print '<section id="notifications">';
-		do_settings_sections( PostmanAdminController::NOTIFICATIONS_OPTIONS );
-
-			$currentKey = $this->options->getNotificationService();
-			$pushover = $currentKey == 'pushover' ? 'block' : 'none';
-			$slack = $currentKey == 'slack' ? 'block' : 'none';
-
-			echo '<div id="pushover_cred" style="display: ' . $pushover . ';">';
-			do_settings_sections( PostmanAdminController::NOTIFICATIONS_PUSHOVER_CRED );
-			echo '</div>';
-
-			echo '<div id="slack_cred" style="display: ' . $slack . ';">';
-			do_settings_sections( PostmanAdminController::NOTIFICATIONS_SLACK_CRED );
-			echo '</div>';
-
-		print '</section>';
+		do_action( 'post_smtp_settings_menu' );
 
 		submit_button();
 		print '</form>';
@@ -437,6 +440,8 @@ class PostmanConfigurationController {
 		printf( '<input type="hidden" id="input_%2$s" name="%1$s[%2$s]" value="%3$s" />', PostmanOptions::POSTMAN_OPTIONS, PostmanOptions::RUN_MODE, $this->options->getRunMode() );
 		printf( '<input type="hidden" id="input_%2$s" name="%1$s[%2$s]" value="%3$s" />', PostmanOptions::POSTMAN_OPTIONS, PostmanOptions::STEALTH_MODE, $this->options->isStealthModeEnabled() );
 		printf( '<input type="hidden" id="input_%2$s" name="%1$s[%2$s]" value="%3$s" />', PostmanOptions::POSTMAN_OPTIONS, PostmanOptions::TEMPORARY_DIRECTORY, $this->options->getTempDirectory() );
+
+		wp_nonce_field('post-smtp', 'security' );
 
 		// display the setting text
 		settings_fields( PostmanAdminController::SETTINGS_GROUP_NAME );
@@ -596,7 +601,7 @@ class PostmanConfigurationController {
 		Postman::getMailerTypeRecommend();
 
 		$in_wizard = true;
-		include_once POST_PATH . '/Postman/extra/donation.php';
+		include_once POST_SMTP_PATH . '/Postman/extra/donation.php';
 
 		print '</section>';
 		print '</fieldset>';
@@ -619,6 +624,9 @@ class PostmanGetHostnameByEmailAjaxController extends PostmanAbstractAjaxHandler
 	 * This Ajax function retrieves the smtp hostname for a give e-mail address
 	 */
 	function getAjaxHostnameByEmail() {
+
+	    check_admin_referer('post-smtp', 'security');
+
 		$goDaddyHostDetected = $this->getBooleanRequestParameter( 'go_daddy' );
 		$email = $this->getRequestParameter( 'email' );
 		$d = new PostmanSmtpDiscovery( $email );
@@ -653,6 +661,9 @@ class PostmanManageConfigurationAjaxHandler extends PostmanAbstractAjaxHandler {
 	 * @throws Exception
 	 */
 	function getManualConfigurationViaAjax() {
+
+	    check_admin_referer('post-smtp', 'security');
+
 		$queryTransportType = $this->getTransportTypeFromRequest();
 		$queryAuthType = $this->getAuthenticationTypeFromRequest();
 		$queryHostname = $this->getHostnameFromRequest();
@@ -683,6 +694,9 @@ class PostmanManageConfigurationAjaxHandler extends PostmanAbstractAjaxHandler {
 	 * The UI response is built so the user may choose a different socket with different options.
 	 */
 	function getWizardConfigurationViaAjax() {
+
+	    check_admin_referer('post-smtp', 'security');
+
 		$this->logger->debug( 'in getWizardConfiguration' );
 		$originalSmtpServer = $this->getRequestParameter( 'original_smtp_server' );
 		$queryHostData = $this->getHostDataFromRequest();
@@ -739,7 +753,7 @@ class PostmanManageConfigurationAjaxHandler extends PostmanAbstractAjaxHandler {
 			wp_send_json_success( $response );
 		} else {
 			/* translators: where %s is the URL to the Connectivity Test page */
-			$configuration ['message'] = sprintf( __( 'Postman can\'t find any way to send mail on your system. Run a <a href="%s">connectivity test</a>.', 'post-smtp' ), PostmanViewController::getPageUrl( PostmanViewController::PORT_TEST_SLUG ) );
+			$configuration ['message'] = sprintf( __( 'Postman can\'t find any way to send mail on your system. Run a <a href="%s">connectivity test</a>.', 'post-smtp' ), PostmanViewController::getPageUrl( PostmanConnectivityTestController::PORT_TEST_SLUG ) );
 			$response ['configuration'] = $configuration;
 			if ( $this->logger->isTrace() ) {
 				$this->logger->trace( 'configuration:' );
@@ -892,6 +906,9 @@ class PostmanImportConfigurationAjaxController extends PostmanAbstractAjaxHandle
 	 * and pushes them into the Postman configuration screen.
 	 */
 	function getConfigurationFromExternalPluginViaAjax() {
+
+        check_admin_referer('post-smtp', 'security');
+
 		$importableConfiguration = new PostmanImportableConfiguration();
 		$plugin = $this->getRequestParameter( 'plugin' );
 		$this->logger->debug( 'Looking for config=' . $plugin );

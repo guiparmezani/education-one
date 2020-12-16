@@ -1,100 +1,17 @@
 <?php if (!defined('ABSPATH')) {
         exit;
-    }?>
-    <div class="wrap wp-filemanager-wrap">
-        <?php $fm_nonce = wp_create_nonce('wp-file-manager');
-    $wp_fm_lang = get_transient('wp_fm_lang');
-    $wp_fm_theme = get_transient('wp_fm_theme');
-    $current_user = wp_get_current_user();
-    $vle_nonce = wp_create_nonce('verify-filemanager-email');
-    $opt = get_option('wp_file_manager_settings');
+    } 
+     $current_user = wp_get_current_user(); 
+     $wp_fm_lang = get_transient('wp_fm_lang');
+     $wp_fm_theme = get_transient('wp_fm_theme');
+     $opt = get_option('wp_file_manager_settings');
     ?>
-        <script src="<?php echo plugins_url('codemirror/lib/codemirror.js', __FILE__); ?>"></script>
-        <link rel="stylesheet" href="<?php echo plugins_url('codemirror/lib/codemirror.css', __FILE__); ?>">
-        <link rel="stylesheet" href="<?php echo plugins_url('codemirror/theme/3024-day.css', __FILE__); ?>">
-        <script>
-            var security_key = "<?php echo $fm_nonce; ?>";
-    var fmlang = "<?php echo isset($_GET['lang']) ? sanitize_text_field($_GET['lang']) : ($wp_fm_lang !== false) ? $wp_fm_lang : 'en'; ?>";
-    var vle_nonce = "<?php echo $vle_nonce; ?>";
-    jQuery(document).ready(function() {
-        var ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";    
-                    jQuery('#wp_file_manager').elfinder({
-                        url : ajaxurl,
-                        customData : {action: 'mk_file_folder_manager', _wpnonce: security_key },
-                        uploadMaxChunkSize : 1048576000000,
-                        defaultView : 'list',
-                        height: 500,
-                        lang : fmlang,
-                        /* Start */
-                        handlers : {
-                            <?php if(isset($opt['fm_enable_media_upload']) && $opt['fm_enable_media_upload'] == '1'):?>
-						        /* Upload */
-								upload: function(event, instance) {
-									var filepaths = [];
-									var uploadedFiles = event.data.added;
-									for (i in uploadedFiles) {
-										var file = uploadedFiles[i];
-										filepaths.push(file.url);
-									}	
-									if(filepaths != '') {
-										      var data = {
-													'action': 'mk_file_folder_manager_media_upload',		
-													'uploadefiles' : filepaths
-												};										
-												jQuery.post(ajaxurl, data, function(response) {	
-																									
-												});
-									 }								
-								},
-								<?php endif; ?>
-                                },
-                            
-                        commandsOptions: {
-                                        edit : {
-
-                                                mimes : [],
-
-                                                editors : [{
-
-                                                mimes : ['text/plain', 'text/html', 'text/javascript', 'text/css', 'text/x-php', 'application/x-php'],
-
-                                                load : function(textarea) {
-                                                    var mimeType = this.file.mime;
-                                                    var filename = this.file.name;
-                                                    // CodeMirror configure
-                                                    editor = CodeMirror.fromTextArea(textarea, {
-                                                        //mode: 'css',
-                                                        indentUnit: 4,
-                                                        lineNumbers: true,
-                                                        theme: "3024-day",
-                                                        viewportMargin: Infinity,
-                                                        lineWrapping: true,
-                                                        //gutters: ["CodeMirror-lint-markers"],
-                                                        lint: true
-                                                    });
-                                                    return editor;
-                                                    
-
-                                                },
-                                                close : function(textarea, instance) {
-                                                this.myCodeMirror = null;
-                                                },
-
-                                                save: function(textarea, editor) {
-                                                    jQuery(textarea).val(editor.getValue());
-                                                    }
-
-                                                } ]
-                                                },
-
-                                }
-
-                        /* END */
-                    }).elfinder('instance');
-    });
+    <script>
+    var vle_nonce = "<?php echo wp_create_nonce('verify-filemanager-email');?>";
     </script>
-        <?php
-    $this->load_custom_assets();
+    <div class="wrap wp-filemanager-wrap">
+    <?php
+    $this->load_custom_assets(); 
     $this->load_help_desk();
     ?>
 
@@ -114,29 +31,24 @@
                 <span class="switch_txt_theme">Change Theme Here:</span>
 
                 <select name="theme" id="fm_theme">
-                    <option value="default" <?php echo (isset($_GET['theme']) && $_GET['theme'] == 'default') ?
-                        'selected="selected"' : ($wp_fm_theme !== false) && $wp_fm_theme == 'default' ? 'selected="selected"'
-                        : ''; ?>>
+                    <option value="default" <?php echo (isset($_GET['theme']) && $_GET['theme'] == 'default') ? 'selected="selected"' : (($wp_fm_theme !== false) && $wp_fm_theme == 'default' ? 'selected="selected"' : ''); ?>>
                         <?php _e('Default', 'wp-file-manager'); ?>
                     </option>
                     <option value="dark" <?php echo (isset($_GET['theme']) && $_GET['theme'] == 'dark') ?
-                        'selected="selected"' : ($wp_fm_theme !== false) && $wp_fm_theme == 'dark' ? 'selected="selected"' :
-                        ''; ?>>
+                        'selected="selected"' : (($wp_fm_theme !== false) && $wp_fm_theme == 'dark' ? 'selected="selected"' : ''); ?>>
                         <?php _e('Dark', 'wp-file-manager'); ?>
                     </option>
                     <option value="light" <?php echo (isset($_GET['theme']) && $_GET['theme'] == 'light') ?
-                        'selected="selected"' : ($wp_fm_theme !== false) && $wp_fm_theme == 'light' ? 'selected="selected"' :
-                        ''; ?>>
+                        'selected="selected"' : (($wp_fm_theme !== false) && $wp_fm_theme == 'light' ? 'selected="selected"' : ''); ?>>
                         <?php _e('Light', 'wp-file-manager'); ?>
                     </option>
                     <option value="gray" <?php echo (isset($_GET['theme']) && $_GET['theme'] == 'gray') ?
-                        'selected="selected"' : ($wp_fm_theme !== false) && $wp_fm_theme == 'gray' ? 'selected="selected"' :
-                        ''; ?>>
+                        'selected="selected"' : (($wp_fm_theme !== false) && $wp_fm_theme == 'gray' ? 'selected="selected"' : ''); ?>>
                         <?php _e('Gray', 'wp-file-manager'); ?>
                     </option>
                     <option value="windows - 10" <?php echo (isset($_GET['theme']) && $_GET['theme'] == 'windows - 10') ?
-                        'selected="selected"' : ($wp_fm_theme !== false) && $wp_fm_theme == 'windows - 10' ?
-                        'selected="selected"' : ''; ?>>
+                        'selected="selected"' : (($wp_fm_theme !== false) && $wp_fm_theme == 'windows - 10' ?
+                        'selected="selected"' : ''); ?>>
                         <?php _e('Windows - 10', 'wp-file-manager'); ?>
                     </option>
                 </select>
@@ -144,7 +56,7 @@
                     <?php foreach ($this->fm_languages() as $name => $lang) {
                             ?>
                     <option value="<?php echo $lang; ?>" <?php echo (isset($_GET['lang']) && $_GET['lang'] == $lang) ?
-                        'selected="selected"' : ($wp_fm_lang !== false) && $wp_fm_lang == $lang ? 'selected="selected"' : ''; ?>>
+                        'selected="selected"' : (($wp_fm_lang !== false) && $wp_fm_lang == $lang ? 'selected="selected"' : ''); ?>>
                         <?php echo $name; ?>
                     </option>
                     <?php
@@ -158,9 +70,8 @@
 
 
         <?php ///***** Verify Lokhal Popup Start *****///
-    //delete_transient( 'filemanager_cancel_lk_popup_'.$current_user->ID );
-    ?>
-        <?php if (false === get_option('filemanager_email_verified_'.$current_user->ID) && (false === (get_transient('filemanager_cancel_lk_popup_'.$current_user->ID)))) {
+          //delete_transient( 'filemanager_cancel_lk_popup_'.$current_user->ID );
+        if (false === get_option('filemanager_email_verified_'.$current_user->ID) && (false === (get_transient('filemanager_cancel_lk_popup_'.$current_user->ID)))) {
         ?>
         <div id="lokhal_verify_email_popup" class="lokhal_verify_email_popup">
             <div class="lokhal_verify_email_popup_overlay"></div>
@@ -229,7 +140,7 @@
         </div>
 
         <?php
-    } ///***** Verify Lokhal Popup End *****///?>
+   } ///***** Verify Lokhal Popup End *****///?>
 
 
     </div>
@@ -246,81 +157,3 @@
             </div>
         </div>
     </div>
-
-    <style>
-        .fm_msg_popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 9999;
-            background: rgba(0, 0, 0, 0.7);
-        }
-
-        .fm_msg_popup .fm_msg_popup_tbl {
-            display: table;
-            width: 100%;
-            height: 100%;
-        }
-
-        .fm_msg_popup .fm_msg_popup_tbl .fm_msg_popup_cell {
-            display: table-cell;
-            vertical-align: middle;
-        }
-
-        .fm_msg_popup .fm_msg_popup_tbl .fm_msg_popup_cell .fm_msg_popup_inner {
-            max-width: 400px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            text-align: center;
-            border-radius: 5px;
-            -webkit-border-radius: 5px;
-            box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.4);
-        }
-
-        .fm_msg_popup .fm_msg_popup_tbl .fm_msg_popup_cell .fm_msg_popup_inner .fm_msg_text {
-            margin-bottom: 25px;
-            font-size: 15px;
-            color: #ff2400;
-        }
-       .fm_msg_btn_dv 
-       {
-           display: none;
-       }
-        .fm_msg_popup .fm_msg_popup_tbl .fm_msg_popup_cell .fm_msg_popup_inner .fm_msg_btn_dv a {
-
-            padding: 0px 30px;
-        }
-        .check_syntax_loading {
-            color: #000;            
-        }
-        .no_syntax_error_found {
-            color: #076b34;
-        }
-        button.ui-button-text.check-syntax-cta {
-            padding: 5px 9px;
-            border-radius: 4px;
-            outline: 0px;
-            background: #3077ac;
-            position: relative;
-            top: 5px;
-            color:#fff;
-        }
-        button.ui-button-text.check-syntax-cta:hover {
-         background: #1f5884;
-        }
-        #wp_file_manager .ui-dialog.elfinder-to-editing.elfinder-dialog-edit{
-         z-index:10 !important;
-        }
-    </style>
-
-    <script>
-        jQuery(document).ready(function(e) {
-            jQuery('.fm_close_msg').click(function(e) {
-                jQuery('.fm_msg_popup').fadeOut();
-            });
-        });
-    </script>

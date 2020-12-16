@@ -47,7 +47,7 @@ $settings = get_option('wp_file_manager_settings'); ?>
 <th><?php _e('Enable Files Upload to Media Library?', 'wp-file-manager'); ?></th>
 <td>
 <input name="fm_enable_media_upload" type="checkbox" id="fm_enable_media_upload" value="1" class="regular-text" <?php echo (isset($settings['fm_enable_media_upload']) && !empty($settings['fm_enable_media_upload']) && $settings['fm_enable_media_upload'] == 1) ? 'checked="checked"' : ''; ?>>
-<p style="color:#F00" class="description mb15"><?php _e('After enabling this, uploaded images, pdfs and zip files will go to media library too.', 'wp-file-manager'); ?>
+<p style="color:#F00" class="description mb15"><?php _e('After enabling this all files will go to media library.', 'wp-file-manager'); ?>
 </p>
 </td>
 </tr>

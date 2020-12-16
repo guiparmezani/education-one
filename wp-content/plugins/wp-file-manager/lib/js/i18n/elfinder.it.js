@@ -151,7 +151,7 @@
 			'cmdsort'      : 'Ordina',
 			'cmdnetmount'  : 'Monta disco di rete', // added 18.04.2012
 			'cmdnetunmount': 'Smonta', // from v2.1 added 30.04.2012
-			'cmdplaces'    : 'Alle cartelle', // added 28.12.2014
+			'cmdplaces'    : 'Aggiungi ad Accesso rapido', // added 28.12.2014
 			'cmdchmod'     : 'Cambia modalità', // from v2.1 added 20.6.2015
 			'cmdopendir'   : 'Apri una cartella', // from v2.1 added 13.1.2016
 			'cmdcolwidth'  : 'Reimposta dimensione colonne', // from v2.1.13 added 12.06.2016
@@ -165,6 +165,7 @@
 			'cmdselectnone': 'Annulla selezione', // from v2.1.28 added 15.08.2017
 			'cmdselectinvert': 'Inverti selezione', // from v2.1.28 added 15.08.2017
 			'cmdopennew'   : 'Apri in una nuova finestra', // from v2.1.38 added 3.4.2018
+			'cmdhide':'Nascondi (preferenza)',
 
 			/*********************************** buttons ***********************************/
 			'btnClose'  : 'Chiudi',
@@ -320,7 +321,7 @@
 			'viewMedium'      : 'Icone medie', // from v2.1.39 added 22.5.2018
 			'viewLarge'       : 'Icone grandi', // from v2.1.39 added 22.5.2018
 			'viewExtraLarge'  : 'Icone molto grandi', // from v2.1.39 added 22.5.2018
-			'places'          : 'Cartelle',
+			'places'          : 'Accesso rapido',
 			'calc'            : 'Calcola',
 			'path'            : 'Percorso',
 			'aliasfor'        : 'Alias per',
@@ -360,7 +361,7 @@
 			'moveFiles'       : 'Sposta file',
 			'copyFiles'       : 'Copia file',
 			'restoreFiles'    : 'Ripristina oggetti', // from v2.1.24 added 5.5.2017
-			'rmFromPlaces'    : 'Rimuovi da places',
+			'rmFromPlaces'    : 'Rimuovi da Accesso rapido',
 			'aspectRatio'     : 'Proporzioni',
 			'scale'           : 'Scala',
 			'width'           : 'Larghezza',
@@ -464,7 +465,8 @@
 			'dialog'          : 'Dialog', // from v2.1.38 added 4.4.2018
 			'all'             : 'Tutti', // from v2.1.38 added 4.4.2018
 			'iconSize'        : 'Dimensione icona (Visualizzazione icone)', // form v2.1.39 added 7.5.2018
-
+			'Code Editor':'Editor di codice',
+            'extentiontype':'Tipo di estensione',
 			/********************************** mimetypes **********************************/
 			'kindUnknown'     : 'Sconosciuto',
 			'kindRoot'        : 'Percorso base del volume', // from v2.1.16 added 16.10.2016
@@ -498,7 +500,7 @@
 			'kindText'        : 'Documento di testo',
 			'kindTextPlain'   : 'Testo Semplice',
 			'kindPHP'         : 'File PHP',
-			'kindCSS'         : 'File CSS (Cascading Style Sheet)',
+			'kindCSS'         : 'File CSS (foglio di stile a cascata)',
 			'kindHTML'        : 'Documento HTML',
 			'kindJS'          : 'File Javascript',
 			'kindRTF'         : 'File RTF (Rich Text Format)',
@@ -514,7 +516,7 @@
 			'kindSQL'         : 'File SQL',
 			'kindXML'         : 'File XML',
 			'kindAWK'         : 'File AWK',
-			'kindCSV'         : 'File CSV (Comma separated values)',
+			'kindCSV'         : 'File CSV (valori separati da virgola)',
 			'kindDOCBOOK'     : 'File Docbook XML',
 			'kindMarkdown'    : 'Testo markdown', // added 20.7.2015
 			// images
@@ -549,4 +551,3 @@
 		}
 	};
 }));
-

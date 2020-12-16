@@ -1,4 +1,8 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
 class PostmanSendTestEmailController {
 	const EMAIL_TEST_SLUG = 'postman/email_test';
 	const RECIPIENT_EMAIL_FIELD_NAME = 'postman_recipient_email';
@@ -113,7 +117,8 @@ class PostmanSendTestEmailController {
 				'not_started' => _x( 'In Outbox', 'Email Test Status', 'post-smtp' ),
 				'sending' => _x( 'Sending...', 'Email Test Status', 'post-smtp' ),
 				'success' => _x( 'Success', 'Email Test Status', 'post-smtp' ),
-				'failed' => _x( 'Failed', 'Email Test Status', 'post-smtp' ),
+				//'failed' => _x( 'Failed', 'Email Test Status', 'post-smtp' ),
+				'failed' => sprintf( 'Failed - Check the plugin email log for more info: %s', '<a href="' . esc_url( admin_url( 'admin.php?page=postman_email_log' ) ) . '">Here</a>' ),
 				'ajax_error' => __( 'Ajax Error', 'post-smtp' ),
 		) );
 	}
@@ -126,6 +131,8 @@ class PostmanSendTestEmailController {
 		PostmanViewController::outputChildPageHeader( __( 'Send a Test Email', 'post-smtp' ) );
 
 		printf( '<form id="postman_test_email_wizard" method="post" action="%s">', PostmanUtils::getSettingsPageUrl() );
+
+		wp_nonce_field('post-smtp', 'security' );
 
 		// Step 1
 		printf( '<h5>%s</h5>', __( 'Specify the Recipient', 'post-smtp' ) );
@@ -199,6 +206,9 @@ class PostmanSendTestEmailAjaxController extends PostmanAbstractAjaxHandler {
 	 * This Ajax sends a test email
 	 */
 	function sendTestEmailViaAjax() {
+
+	    check_admin_referer('post-smtp', 'security');
+
 		// get the email address of the recipient from the HTTP Request
 		$email = $this->getRequestParameter( 'email' );
 

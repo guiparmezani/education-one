@@ -1,0 +1,64 @@
+<?php
+
+// TODO PHP7.x; declare(strict_type=1);
+// TODO PHP7.x; type hints & return types
+
+namespace WPStaging\Pro\Snapshot\Database\Ajax;
+
+use Exception;
+use WPStaging\Framework\Component\AbstractComponent;
+use WPStaging\Framework\Component\AjaxTrait;
+use WPStaging\Pro\Snapshot\Database\Service\NotCompatibleException;
+use WPStaging\Pro\Snapshot\Database\Service\SnapshotService;
+
+class Export extends AbstractComponent
+{
+    use AjaxTrait;
+
+    /** @var SnapshotService */
+    private $service;
+
+    public function __construct(SnapshotService $service)
+    {
+        $this->service = $service;
+    }
+
+    public function registerHooks()
+    {
+        add_action('wp_ajax_wpstg--snapshots--export', [$this, 'render']);
+    }
+
+    public function render()
+    {
+        if ( ! $this->canRenderAjax()) {
+            return;
+        }
+
+        $id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : null;
+
+        try {
+            wp_send_json_success($this->pathToUrl($this->service->export($id)));
+        } catch (NotCompatibleException $e) {
+            wp_send_json([
+                'error' => true,
+                'message' => $e->getMessage(),
+            ]);
+        } catch (Exception $e) {
+            wp_send_json([
+                'error' => true,
+                'message' => sprintf(__('Failed to export the backup tables %s', 'wp-staging'), $id),
+            ]);
+        }
+    }
+
+    /**
+     * @param string $dir
+     *
+     * @return string
+     */
+    private function pathToUrl($dir)
+    {
+        $relativePath = str_replace(ABSPATH, null, $dir);
+        return site_url() . '/' . $relativePath;
+    }
+}

@@ -2,9 +2,9 @@
 Contributors: mndpsingh287
 Tags: wp-file-manager, elfinder,file manager, ftp, wp-filemanager,file manager, wp-filemanager, Upload Files, WP File Manager, File Manage, Edit Files, Delete Files, FTP, filemanager, wpfilemanager, ftp, file transfer, update, create, delete, view, rename, editor, Cpanel, Control Panel, Admin, Shortcode, explorer, file explorer, filemanager
 Requires at least: 4.0
-Tested up to: 5.2
+Tested up to: 5.5
 Requires PHP: 5.2.4
-Stable tag: 4.8
+Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,23 +14,23 @@ file manager provides you ability to edit, delete, upload, download, copy and pa
 
 #### File Manager allows you to edit, delete, upload, download, zip, copy and paste files and folders directly from the Wordpress backend. Don’t bother with FTP to manage and move your files from location to location. The most powerful, flexible, and easiest Wordpress file management solution ever built!
 
-Multi Languages Added 
+https://www.youtube.com/watch?v=7NswPb5WikA
        
 = Key Features in File Manager free Version Plugin =
 
 Key Features in the Free File Manager plugin include:
-* **Operations**: Various operations with files and folders on a remote server (copy, move, upload, create folder/file, rename, edit, delete, etc.)
-* **Move/Copy**: Admin can Move/Copy files with Drag & Drop. Also includes multi file selection. 
-* **Archives**: Admin can create, archive and extract files(zip, rar, tar, gzip).
-* **File Size**: Admin/User can upload any size files.
-* **File Type**: Control what files can be uploaded and what file can be downloaded.
+* **Operations**: Various operations with files and folders on a remote server (copy, move, upload, create folder/file, rename, edit, delete, etc.)
+* **Move/Copy**: Admin can Move/Copy files with Drag & Drop. Also includes multi file selection. 
+* **Archives**: Admin can create, archive and extract files(zip, rar, tar, gzip).
+* **File Size**: Admin/User can upload any size files.
+* **File Type**: Control what files can be uploaded and what file can be downloaded.
 * **Code Editor**: File Manager comes with a built in integrated development environment (IDE) - New Feature
 * **Syntax Checker**: File Manager now can complete code reviews before saving files to ensure your site will not go down when updating code. Reviewing code for errors has never been so easy! - New Feature
-* **Multiple Themes**: Multiple File Manager Themes Available – New Feature
+* **Multiple Themes**: Multiple File Manager Themes Available – New Feature
 * **Get Info**: All file details, properties, information is now available by simply right clicking a file and selecting Get Info - New Feature 
 * **Share Files by Email**: With File Manager you can easily and quickly share files by Email. Simply right click a file and press share, that’s it! - New Feature 
-* **Private Folder**: Available only for File Manager Pro Edition
-* **Shortcode**: Available only for File Manager Pro Edition
+* **Private Folder**: Available only for File Manager Pro Edition
+* **Shortcode**: Available only for File Manager Pro Edition
 * **Root Directory**: Quickly and easily edit your root path directory. With this feature you can access files inside and outside of Wordpress
 * **PDF Support**: Preview PDF files easily 
 * **Built-in Trash**: Delete files by moving them to trash
@@ -53,6 +53,7 @@ Key Features in the Free File Manager plugin include:
 * **Thumbnails**: Thumbnails for all types of image files
 * **Upload to Media Library**: We have now included the ability to enable images, pdf's, and zip files to be uploaded to you folders and as well be available via the native Wordpress Media Library
 * **Backup/Restore**: Backup and restore themes files, plugins files,uploads folder and db data on server.
+* **Multi Languages Added
 
 = Key Features in File Manager Pro Editions =
 
@@ -77,23 +78,24 @@ Key Features in the Free File Manager plugin include:
 * **Admin Email Notifications.** Admin will get a Notification whenever a file is Downloaded. 
 * **Admin Email Notifications.** Admin will get a Notification whenever a file is Edited. 
 * **Google Drive Integration**   drag drop, copy paste all other operations between file manager and google drive.
-* **Dropbox Integration**        drag drop, copy paste all other operations between file manager and dropbox.   
+* **Dropbox Integration**        drag drop, copy paste all other operations between file manager and dropbox.
 
 
-> <strong>[Buy Pro Version](https://filemanagerpro.io/product/file-manager/)</strong> with various features & support.
-> <strong>[Contact us](https://webdesi9.zendesk.com/hc/en-us)</strong> for Support Only Pro Version Users.
-> <strong>[Documentation](https://filemanagerpro.io/documentation/)</strong> Click Here.
-> <strong>[Addons](https://filemanagerpro.io/addons)</strong> with various features & support.
-**[Upgrade to Pro Version](https://filemanagerpro.io/product/file-manager/)**
+> <strong>[Buy Pro Version](https://filemanagerpro.io/product/file-manager/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> with various features & support.
+> <strong>[Contact us](https://filemanagerpro.io/contact/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> for Support Only Pro Version Users.
+> <strong>[Documentation](https://filemanagerpro.io/documentation/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> Click Here.
+> <strong>[Addons](https://filemanagerpro.io/addons/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> with various features & support.
+**[Upgrade to Pro Version](https://filemanagerpro.io/product/file-manager/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)**
 
 = Premium Addons =
 
-<strong>[File Manager Google Drive](https://filemanagerpro.io/product/file-manager-google-drive)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in Google Drive.
-<strong>[File Manager OneDrive](https://filemanagerpro.io/product/file-manager-one-drive)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in OneDrive from File Manager.
-<strong>[File Manager Dropbox](https://filemanagerpro.io/product/file-manager-dropbox)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in dropbox.
-<strong>[File Manager Box](https://filemanagerpro.io/product/file-manager-box)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in Box.
-<strong>[File Manager Git](https://filemanagerpro.io/product/file-manager-git)</strong> Github integration for file manager.
-<strong>[File Manager Slack](https://filemanagerpro.io/product/file-manager-slack)</strong> Slack incoming webhook integration to file manager.
+<strong>[File Manager Google Drive](https://filemanagerpro.io/product/file-manager-google-drive/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in Google Drive.
+<strong>[File Manager OneDrive](https://filemanagerpro.io/product/file-manager-one-drive/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in OneDrive from File Manager.
+<strong>[File Manager Dropbox](https://filemanagerpro.io/product/file-manager-dropbox/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in dropbox.
+<strong>[File Manager Box](https://filemanagerpro.io/product/file-manager-box/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in Box.
+<strong>[File Manager AWS S3](https://filemanagerpro.io/product/file-manager-aws-s3/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> provides you ability to edit, delete, upload, download, copy and paste files and folders in AWS S3 bucket.
+<strong>[File Manager Git](https://filemanagerpro.io/product/file-manager-git/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> Github integration for file manager.
+<strong>[File Manager Slack](https://filemanagerpro.io/product/file-manager-slack/?utm_source=Wordpress.org&utm_medium=Website&utm_campaign=File%20Manager%20Pro)</strong> Slack incoming webhook integration to file manager.
 
 
 == Installation ==
@@ -107,7 +109,7 @@ Key Features in the Free File Manager plugin include:
 Yes, You can achieve any files and folders as zip then simple download it. Please view screenshots.
 
 == Support == 
-* If any problem occurs, please contact us at https://webdesi9.zendesk.com/hc/en-us
+* If any problem occurs, please contact us at https://filemanagerpro.io/contact/
 
 ## How to use
 
@@ -134,6 +136,92 @@ Yes, You can achieve any files and folders as zip then simple download it. Pleas
 
 
 == Changelog ==
+
+= 6.9 (1st Sept, 2020) =
+
+* Security issue fixed
+
+= 6.8 (31st Aug, 2020) =
+
+* Fixed design compatibility issues with wordpress 5.5 version
+
+= 6.7 (20th Aug, 2020) =
+
+* Fixed issue of deprecated function of jquery
+* Updated messages text 
+
+= 6.6 (18th Aug, 2020) =
+
+* Updated Translations
+* Added media title to the uploaded file when Files Upload to Media Library is enabled
+
+= 6.5 (18th Jun, 2020) =
+
+* Security Fix
+
+= 6.4 (25th May, 2020) =
+
+* $ confliction fixes
+
+= 6.3 (22nd May, 2020) =
+
+* Files extract issues fixes
+
+= 6.2 (15th May, 2020) =
+
+* jQuery confliction fixes
+
+= 6.1 (14th May, 2020) =
+
+* Compatibility issues
+
+= 6.0 (14th May, 2020) =
+
+* Google doc preview feature added and Library Updates - Major Update
+
+= 5.9 (13th APR, 2020) =
+
+* Fixed Errors Deprecated Unparenthesized
+
+= 5.8 (31st MARCH, 2020) =
+
+* Tested with Wordpress 5.4 version.
+
+= 5.7 (23rd JAN, 2020) =
+
+* Media library js fixes
+
+= 5.6 (14th JAN, 2020) =
+
+* Media library option fixes
+
+= 5.5 (2nd DEC, 2019) =
+
+* Unparenthesized issue fixes.
+
+= 5.4 (16th AUGUST, 2019) =
+
+* Minor fixes and added logs demo screenshots.
+
+= 5.3 (20th AUGUST, 2019) =
+
+* Rate us bar repetition removed.
+
+= 5.2 (12th JULY, 2019) =
+
+* Security fixes addressed by wordpress.
+
+= 5.1 (11th JULY, 2019) =
+
+* Security fixes.
+
+= 5.0 (10th JULY, 2019) =
+
+* Search outline issue fixed, Restore feature bugs fixes
+
+= 4.9 (8th JULY, 2019) =
+
+* Media library multiple file extensions allowed, backup feature admin authorized issue fixes
 
 = 4.8 (13th MAY, 2019) =
 
@@ -265,7 +353,7 @@ major Performence fix
 
 * fix some Bug in 1.7 - Minor Update
 * Now WP File Manager is in various languages. - Major Update
-* WP File Manager Translations Available. Compatiable with any wordpress language. - Major Update
+* WP File Manager Translations Available. Compatible with any wordpress language. - Major Update
 
 = 1.7 (18th Aug ,2017) =
 
@@ -312,4 +400,4 @@ major Performence fix
 *   PHP 5.x
 *   MySQL 5.x
 
-If any problem occurs, please contact us at https://webdesi9.zendesk.com/hc/en-us.
+If any problem occurs, please contact us at https://filemanagerpro.io/contact/
