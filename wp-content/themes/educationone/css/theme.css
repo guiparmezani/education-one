@@ -70,7 +70,7 @@ article, aside, dialog, figcaption, figure, footer, header, hgroup, main, nav, s
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  font-size: .5rem;
+  font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
   color: #212529;
@@ -87,8 +87,7 @@ hr {
 
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
-  margin-bottom: 0.5rem; 
-}
+  margin-bottom: 0.5rem; }
 
 p {
   margin-top: 0;
@@ -9432,8 +9431,8 @@ header .navbar {
     header .navbar .navbar-collapse .menu-item a {
       transition: opacity .2s ease;
       color: #474747;
-      text-transform: uppercase; 
-	  font-size: .5rem !important;}
+      text-transform: uppercase;
+      font-size: 18px !important; }
     header .navbar .navbar-collapse .menu-item:hover a {
       opacity: .7; }
   header .navbar .call-us {
@@ -9503,6 +9502,10 @@ header .navbar-toggler {
         header .navbar .navbar-collapse #main-menu {
           width: 100%;
           justify-content: space-between; } }
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  header .navbar .navbar-collapse {
+    width: 70%; } }
 
 body.home header {
   width: 100%;
@@ -9580,7 +9583,7 @@ footer {
     opacity: 1;
     z-index: 5; }
 
-@keyframe fade-in {
+@keyframes fade-in {
   0% {
     opacity: 0; }
   100% {
@@ -9717,7 +9720,7 @@ b {
 
 body {
   font-family: "Barlow", sans-serif;
-  color: #ffffff;
+  color: #fff;
   background-color: #eaeaea; }
 
 .page-section {
@@ -10146,8 +10149,8 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
       .timeline-wrapper .section-title {
         margin: 0 auto 90px; }
       .timeline-wrapper .timeline-numbers .timeline-item {
-        animation: fade-in 1.5s forwards;
-        opacity: 0; }
+        opacity: 0;
+        animation: fade-in 1.5s forwards; }
       .timeline-wrapper .timeline-numbers .col-xl-1:nth-child(1) .timeline-item.top {
         bottom: 125px; }
       .timeline-wrapper .timeline-numbers .col-xl-1:nth-child(2) .timeline-item {
@@ -10453,6 +10456,24 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button {
   .col-lg-15 {
     flex: 0 0 20%;
     max-width: 20%; } }
+
+body.blog .entry-title {
+  padding-left: 0;
+  color: #2D556B; }
+  body.blog .entry-title a {
+    color: #2D556B; }
+
+body.blog .entry-meta a,
+body.blog .entry-meta h2,
+body.blog .entry-meta span,
+body.blog .entry-footer a,
+body.blog .entry-footer h2,
+body.blog .entry-footer span {
+  color: #2D556B; }
+
+body.blog .gform_heading,
+body.blog .gform_body {
+  color: #2D556B; }
 
 .eo-form-wrapper {
   padding: 0 15px; }

@@ -1,4 +1,4 @@
-@keyframe fade-in
+@keyframes fade-in
 	0%
 		opacity: 0
 	100%
@@ -604,8 +604,8 @@ body.page-template-template-careers
 			margin: 0 auto 90px
 		.timeline-numbers
 			.timeline-item
-				animation: fade-in 1.5s forwards
 				opacity: 0
+				animation: fade-in 1.5s forwards
 			.col-xl-1
 				&:nth-child(1)
 					.timeline-item.top
@@ -954,7 +954,23 @@ input[type="submit"], .gform_submit .button, .gform_page_footer .button
 		flex: 0 0 20%
 		max-width: 20%
 
+// Blog page
+body.blog
+	.entry-title
+		padding-left: 0
+		color: $brand-dark-blue
+		a
+			color: $brand-dark-blue
+	.entry-meta,
+	.entry-footer
+		a,
+		h2,
+		span
+			color: $brand-dark-blue
 
+	.gform_heading,
+	.gform_body
+		color: $brand-dark-blue
 
 
 

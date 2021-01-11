@@ -31,7 +31,7 @@ $sidebar_pos = get_theme_mod( 'understrap_sidebar_position' );
 				</div>
 				<div class="col-lg-6">
 					<span>
-						<img style="border:3px solid #fff" src="http://educationone.parmezani.com/wp-content/uploads/2019/05/Tutoring-Center_-1.jpg">
+						<img style="border:3px solid #fff" src="http://educate-one.com/wp-content/uploads/2019/05/Tutoring-Center_-1.jpg">
 					</span>
 				</div>
 			</div>

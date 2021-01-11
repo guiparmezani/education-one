@@ -205,6 +205,7 @@ gulp.task('scripts', function() {
         basePaths.dev + 'js/underscore-min.js',
         basePaths.dev + 'js/skip-link-focus-fix.js',
 
+        basePaths.dev + 'js/jquery.scrollTo.js',
         basePaths.js + 'main.js'
     ];
   gulp.src(scripts)

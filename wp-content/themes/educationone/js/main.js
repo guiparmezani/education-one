@@ -29,6 +29,12 @@ $(window).scroll(function(){
 	}
 });
 
+$(window).on('load', function(){
+	if (window.location.hash == '#form' && $('.form-wrapper').length > 0) {
+		$(window).scrollTo('.form-wrapper', 500);
+	}
+});
+
 $(document).ready(function(){
 	$('.topic-item').each(function(){
 		$(this).height($(this).width());
