@@ -19,6 +19,7 @@ export function configureRaven() {
       instrument: {
         tryCatch: false,
       },
+      collectWindowErrors: false,
     }
   ).install();
 

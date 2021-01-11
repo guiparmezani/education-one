@@ -5,18 +5,19 @@
 
 namespace WPStaging\Pro\Snapshot\Database\Service;
 
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Framework\Adapter\Directory;
+use WPStaging\Core\Utils\Logger;
 
 class AdapterHelper
 {
     /** @var Directory */
     private $directory;
 
-    /** @var LoggerInterface */
+    /** @var Logger */
     private $logger;
 
-    public function __construct(Directory $directory, LoggerInterface $logger)
+    public function __construct(Directory $directory, Logger $logger)
     {
         $this->directory = $directory;
         $this->logger = $logger;

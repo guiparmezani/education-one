@@ -7,7 +7,7 @@
 namespace WPStaging\Pro\Snapshot\Site\Task;
 
 use Exception;
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Component\Task\AbstractTask;
 use WPStaging\Framework\Traits\ResourceTrait;
 use WPStaging\Framework\Utils\Cache\Cache;
@@ -46,7 +46,7 @@ class IncludeDatabaseTask extends AbstractTask
             $this->requestDto->getSteps()->finish();
         }
 
-        if (0 < $this->requestDto->getSteps()->getTotal()) {
+        if ($this->requestDto->getSteps()->getTotal() > 0) {
             return;
         }
 

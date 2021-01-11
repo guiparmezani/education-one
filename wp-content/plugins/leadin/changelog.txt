@@ -1,3 +1,13 @@
+= 7.48.69 (2020-12-17) =
+* Remove legacy code
+* Limit the error logging
+
+= 7.48.63 (2020-12-15) =
+* Fix the search method in the HubSpot Gutenberg block
+
+= 7.48.45 (2020-12-09) =
+* Check that function which doesn't exist before WP 4.2 exists
+
 = 7.48.19 (2020-12-02) =
 * Fix typo that caused forms not to show on IE11
 
@@ -417,14 +427,4 @@
 = 5.3.1 (2016-08-10) =
 * Added "collected forms" screen to the navigation, a new way to manage your collected forms
 * Shifted more accounts to the new unified script loader following a beta release in 5.2.1. Now all "existing app" customers, and all new customers use the unified loader.
-
-= 5.2.1 (2016-08-03) =
-* New "existing app" customers use the new unified script loader
-
-= 5.1.1 (2016-06-19) =
-* Rebranding "Flows" to "Lead Flows"
-* Correcting the settings link in Plugins when Leadin is connected to an existing Leadin web app account
-
-= 5.0.1 (2016-06-01) =
-* The Leadin plugin can now be installed for an existing Leadin web app account
 

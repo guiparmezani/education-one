@@ -1,7 +1,7 @@
 <?php
 namespace WPStaging\Pro\Snapshot\Site\Task;
 
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Component\Task\AbstractTask;
 use WPStaging\Framework\Traits\MaintenanceTrait;
 use WPStaging\Framework\Traits\ResourceTrait;
@@ -45,7 +45,7 @@ class RestoreThemesTask extends AbstractTask
     public function execute()
     {
         $this->prepare();
-        if (0 === $this->requestDto->getSteps()->getCurrent()) {
+        if ($this->requestDto->getSteps()->getCurrent() === 0) {
             return $this->delete();
         }
         return $this->restore();
@@ -54,7 +54,7 @@ class RestoreThemesTask extends AbstractTask
     public function findRequestDto()
     {
         parent::findRequestDto();
-        if (0 < $this->requestDto->getSteps()->getTotal()) {
+        if ($this->requestDto->getSteps()->getTotal() > 0) {
             return;
         }
 

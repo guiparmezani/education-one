@@ -18,10 +18,10 @@ class Licensing {
    public function __construct() {
 
       // Load some hooks
-      add_action( 'admin_notices', array($this, 'admin_notices') );
-      add_action( 'admin_init', array($this, 'activate_license') );
-      add_action( 'admin_init', array($this, 'deactivate_license') );
-      add_action( 'wpstg_weekly_event', array($this, 'weekly_license_check') );
+      add_action( 'admin_notices', [$this, 'admin_notices'] );
+      add_action( 'admin_init', [$this, 'activate_license'] );
+      add_action( 'admin_init', [$this, 'deactivate_license'] );
+      add_action( 'wpstg_weekly_event', [$this, 'weekly_license_check'] );
       // For testing weekly_license_check, uncomment this line
       //add_action( 'admin_init', array( $this, 'weekly_license_check' ) );
       
@@ -53,13 +53,13 @@ class Licensing {
         // Check for 'undefined' here because WPSTG_PLUGIN_FILE will be undefined if plugin is uninstalled to prevent issue #216
         $pluginFile = !defined('WPSTG_PLUGIN_FILE') ? null : WPSTG_PLUGIN_FILE;
 
-        $edd_updater = new \WPStaging\Backend\Pro\Licensing\EDD_SL_Plugin_Updater(WPSTG_STORE_URL, $pluginFile, array(
-                'version' => WPStaging\WPStaging::getVersion(), // current version number
+        $edd_updater = new \WPStaging\Backend\Pro\Licensing\EDD_SL_Plugin_Updater(WPSTG_STORE_URL, $pluginFile, [
+                'version' => WPStaging\Core\WPStaging::getVersion(), // current version number
                 'license' => $license_key, // license key (used get_option above to retrieve from DB)
                 'item_name' => WPSTG_ITEM_NAME, // name of this plugin
                 'author' => 'Rene Hermenau', // author of this plugin
                 'beta' => false
-            )
+            ]
         );
     }
 
@@ -81,18 +81,18 @@ class Licensing {
 
 
          // data to send in our API request
-         $api_params = array(
+         $api_params = [
              'edd_action' => 'activate_license',
              'license' => $license,
              'item_name' => urlencode( WPSTG_ITEM_NAME ), // the name of our product in EDD
              'url' => home_url()
-         );
+         ];
 
          // Call the custom API.
-         $response = wp_remote_post( WPSTG_STORE_URL, array('timeout' => 15, 'sslverify' => false, 'body' => $api_params) );
+         $response = wp_remote_post( WPSTG_STORE_URL, ['timeout' => 15, 'sslverify' => false, 'body' => $api_params] );
 
          // make sure the response came back okay
-         if( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+         if( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
 
             if( is_wp_error( $response ) ) {
                $message = $response->get_error_message();
@@ -103,7 +103,7 @@ class Licensing {
 
             $license_data = json_decode( wp_remote_retrieve_body( $response ) );
 
-            if( false === $license_data->success ) {
+            if( $license_data->success === false ) {
 
                switch ( $license_data->error ) {
 
@@ -153,7 +153,7 @@ class Licensing {
          // Check if anything passed on a message constituting a failure
          if( !empty( $message ) ) {
             $base_url = admin_url( 'admin.php?page=wpstg-license' );
-            $redirect = add_query_arg( array('wpstg_licensing' => 'false', 'message' => urlencode( $message )), $base_url );
+            $redirect = add_query_arg( ['wpstg_licensing' => 'false', 'message' => urlencode( $message )], $base_url );
             update_option( 'wpstg_license_status', $license_data );
             wp_redirect( $redirect );
             exit();
@@ -180,18 +180,18 @@ class Licensing {
 
 
          // data to send in our API request
-         $api_params = array(
+         $api_params = [
              'edd_action' => 'deactivate_license',
              'license' => $license,
              'item_name' => urlencode( WPSTG_ITEM_NAME ), // the name of our product in EDD
              'url' => home_url()
-         );
+         ];
 
          // Call the custom API.
-         $response = wp_remote_post( WPSTG_STORE_URL, array('timeout' => 15, 'sslverify' => false, 'body' => $api_params) );
+         $response = wp_remote_post( WPSTG_STORE_URL, ['timeout' => 15, 'sslverify' => false, 'body' => $api_params] );
 
          // make sure the response came back okay
-         if( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+         if( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
 
             if( is_wp_error( $response ) ) {
                $message = $response->get_error_message();
@@ -200,7 +200,7 @@ class Licensing {
             }
 
             $base_url = admin_url( 'admin.php?page=wpstg-license' );
-            $redirect = add_query_arg( array('wpstg_licensing' => 'false', 'message' => urlencode( $message )), $base_url );
+            $redirect = add_query_arg( ['wpstg_licensing' => 'false', 'message' => urlencode( $message )], $base_url );
             wp_redirect( $redirect );
             exit();
          }
@@ -234,20 +234,20 @@ class Licensing {
       }
 
       // data to send in our API request
-      $api_params = array(
+      $api_params = [
           'edd_action' => 'check_license',
           'license' => $this->licensekey,
           'item_name' => urlencode( WPSTG_ITEM_NAME ),
           'url' => home_url()
-      );
+      ];
 
       // Call the API
       $response = wp_remote_post(
-              WPSTG_STORE_URL, array(
+              WPSTG_STORE_URL, [
           'timeout' => 15,
           'sslverify' => false,
           'body' => $api_params
-              )
+              ]
       );
 
       // make sure the response came back okay
@@ -258,7 +258,7 @@ class Licensing {
       $license_data = json_decode( wp_remote_retrieve_body( $response ) );
       update_option( 'wpstg_license_status', $license_data );
 
-      //$log = new \WPStaging\Utils\Logger;
+      //$log = new \WPStaging\Core\Utils\Logger;
       //$log->log( json_encode( array($license_data) ) );
    }
 

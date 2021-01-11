@@ -17,9 +17,7 @@ class AssetsManager {
 	const FEEDBACK_JS   = 'leadin-feedback';
 	const TRACKING_CODE = 'leadin-script-loader-js';
 	const GUTENBERG     = 'leadin-gutenberg';
-	const ELEMENTOR     = 'leadin-elementor';
 	const FORMS_SCRIPT  = 'leadin-forms-v2';
-
 	const LEADIN_CONFIG = 'leadinConfig';
 	const LEADIN_I18N   = 'leadinI18n';
 
@@ -33,8 +31,6 @@ class AssetsManager {
 		wp_localize_script( self::ADMIN_JS, self::LEADIN_I18N, AdminConstants::get_leadin_i18n() );
 		wp_register_script( self::FEEDBACK_JS, LEADIN_JS_BASE_PATH . '/feedback.js', array( 'jquery', 'thickbox' ), LEADIN_PLUGIN_VERSION, true );
 		wp_localize_script( self::FEEDBACK_JS, self::LEADIN_CONFIG, AdminConstants::get_background_leadin_config() );
-		wp_register_script( self::ELEMENTOR, LEADIN_JS_BASE_PATH . '/elementor.js', array( 'jquery' ), LEADIN_PLUGIN_VERSION, true );
-		wp_localize_script( self::ELEMENTOR, self::LEADIN_CONFIG, AdminConstants::get_background_leadin_config() );
 		wp_register_style( self::FEEDBACK_CSS, LEADIN_PATH . '/assets/style/leadin-feedback.css', array(), LEADIN_PLUGIN_VERSION );
 		wp_register_style( self::BRIDGE_CSS, LEADIN_PATH . '/assets/style/leadin-bridge.css?', array(), LEADIN_PLUGIN_VERSION );
 	}
@@ -44,13 +40,6 @@ class AssetsManager {
 	 */
 	public static function enqueue_admin_assets() {
 		wp_enqueue_style( self::ADMIN_CSS );
-	}
-
-	/**
-	 * Enqueue the assets needed for the Elementor block to work.
-	 */
-	public static function enqueue_elementor_assets() {
-		wp_enqueue_script( self::ELEMENTOR );
 	}
 
 	/**

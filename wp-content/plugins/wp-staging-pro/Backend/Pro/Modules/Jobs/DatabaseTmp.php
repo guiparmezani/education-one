@@ -7,7 +7,7 @@ if (!defined("WPINC"))
     die;
 }
 
-use WPStaging\WPStaging;
+use WPStaging\Core\WPStaging;
 
 /**
  * Class Database
@@ -127,7 +127,7 @@ class DatabaseTmp extends \WPStaging\Backend\Modules\Jobs\JobExecutable
      */
     private function copyTable($tableName)
     {
-        $strings = new \WPStaging\Utils\Strings();
+        $strings = new \WPStaging\Core\Utils\Strings();
 
         $newTableName = $this->tmpPrefix . $strings->str_replace_first($this->options->prefix, null, $tableName);
 
@@ -164,7 +164,7 @@ class DatabaseTmp extends \WPStaging\Backend\Modules\Jobs\JobExecutable
 
         $limitation = '';
 
-        if (0 < (int) $this->settings->queryLimit)
+        if ((int) $this->settings->queryLimit > 0)
         {
             $limitation = " LIMIT {$this->settings->queryLimit} OFFSET {$this->options->job->start}";
         }
@@ -200,7 +200,7 @@ class DatabaseTmp extends \WPStaging\Backend\Modules\Jobs\JobExecutable
      */
     private function startJob($new, $old)
     {
-        if (0 != $this->options->job->start)
+        if ($this->options->job->start != 0)
         {
             return true;
         }
@@ -211,7 +211,7 @@ class DatabaseTmp extends \WPStaging\Backend\Modules\Jobs\JobExecutable
 
         $this->options->job->total = (int) $this->db->get_var("SELECT COUNT(1) FROM {$old}");
 
-        if (0 == $this->options->job->total)
+        if ($this->options->job->total == 0)
         {
             $this->finishStep();
             return false;
@@ -270,7 +270,7 @@ class DatabaseTmp extends \WPStaging\Backend\Modules\Jobs\JobExecutable
             (
                 !isset($this->options->job->current) ||
                 !isset($this->options->job->start) ||
-                0 == $this->options->job->start
+                $this->options->job->start == 0
             )
         );
     }

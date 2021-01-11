@@ -154,15 +154,17 @@ class Links {
 		$signup_params = array_merge( $signup_params, $leadin_params );
 
 		// Add signup pre-fill info.
-		$wp_user                      = wp_get_current_user();
-		$signup_params['firstName']   = $wp_user->user_firstname;
-		$signup_params['lastName']    = $wp_user->user_lastname;
-		$signup_params['email']       = $wp_user->user_email;
-		$signup_params['company']     = get_bloginfo( 'name' );
-		$signup_params['domain']      = parse_url( get_site_url(), PHP_URL_HOST );
-		$signup_params['show_nav']    = 'true';
-		$signup_params['wp_user']     = $wp_user->first_name ? $wp_user->first_name : $wp_user->user_nicename;
-		$signup_params['wp_gravatar'] = get_avatar_url( $wp_user->ID );
+		$wp_user                    = wp_get_current_user();
+		$signup_params['firstName'] = $wp_user->user_firstname;
+		$signup_params['lastName']  = $wp_user->user_lastname;
+		$signup_params['email']     = $wp_user->user_email;
+		$signup_params['company']   = get_bloginfo( 'name' );
+		$signup_params['domain']    = parse_url( get_site_url(), PHP_URL_HOST );
+		$signup_params['show_nav']  = 'true';
+		$signup_params['wp_user']   = $wp_user->first_name ? $wp_user->first_name : $wp_user->user_nicename;
+		if ( function_exists( 'get_avatar_url' ) ) {
+			$signup_params['wp_gravatar'] = get_avatar_url( $wp_user->ID );
+		}
 
 		$affiliate_code = AdminFilters::apply_affiliate_code();
 		$signup_url     = LeadinFilters::get_leadin_signup_base_url() . '/signup/wordpress?';

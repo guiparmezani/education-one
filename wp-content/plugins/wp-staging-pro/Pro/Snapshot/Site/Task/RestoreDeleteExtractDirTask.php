@@ -42,7 +42,7 @@ class RestoreDeleteExtractDirTask extends AbstractTask
     public function findRequestDto()
     {
         parent::findRequestDto();
-        if (null !== $this->requestDto->getSteps()->getTotal()) {
+        if ($this->requestDto->getSteps()->getTotal() !== null) {
             return;
         }
 

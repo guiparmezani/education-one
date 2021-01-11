@@ -1,23 +1,23 @@
-export function getAuth() {
+import Raven from '../lib/Raven';
+
+function callInterframeMethod(method, ...args) {
   return window.leadinChildFrameConnection.promise.then(child =>
-    child.leadinGetAuth()
+    Raven.context(child[method], args)
   );
+}
+
+export function getAuth() {
+  return callInterframeMethod('leadinGetAuth');
 }
 
 export function searchForms(searchQuery = '') {
-  return window.leadinChildFrameConnection.promise.then(child =>
-    child.leadinSearchForms(searchQuery)
-  );
+  return callInterframeMethod('leadinSearchForms', searchQuery);
 }
 
 export function getForm(formId) {
-  return window.leadinChildFrameConnection.promise.then(child =>
-    child.leadinGetForm(formId)
-  );
+  return callInterframeMethod('leadinGetForm', formId);
 }
 
 export function monitorFormPreviewRender() {
-  return window.leadinChildFrameConnection.promise.then(child =>
-    child.monitorFormPreviewRender()
-  );
+  return callInterframeMethod('monitorFormPreviewRender');
 }

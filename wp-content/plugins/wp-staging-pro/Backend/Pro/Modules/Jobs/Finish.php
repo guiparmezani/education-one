@@ -2,7 +2,7 @@
 
 namespace WPStaging\Backend\Pro\Modules\Jobs;
 
-use WPStaging\WPStaging;
+use WPStaging\Core\WPStaging;
 
 /**
  * Class Finish
@@ -31,7 +31,7 @@ class Finish extends \WPStaging\Backend\Modules\Jobs\Job {
                 
         do_action( 'wpstg_pushing_complete' );
         
-        return array(
+        return [
             "status"       => 'finished',
             "percentage"   => 100,
             "total"        => $this->options->totalSteps,
@@ -39,7 +39,7 @@ class Finish extends \WPStaging\Backend\Modules\Jobs\Job {
             "last_msg"     => $this->logger->getLastLogMsg(),
             "running_time" => $this->time() - time(),
             "job_done"     => true
-        );
+        ];
     }
 
     /**
@@ -72,7 +72,7 @@ class Finish extends \WPStaging\Backend\Modules\Jobs\Job {
 
         $tables = $this->db->get_results( "SHOW TABLE STATUS LIKE 'wpstgtmp\_%'" );
 
-        $this->tables = array();
+        $this->tables = [];
 
         foreach ( $tables as $table ) {
             $this->tables[] = $table->Name;

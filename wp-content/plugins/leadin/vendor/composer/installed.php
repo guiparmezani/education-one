@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => 'a8f86f3aa17ca71f185f07a3962a4f009804131a',
+    'reference' => 'cef613de25009ce5dde421bc10ab824a88a5e8a8',
     'name' => 'hubspot/leadin-wordpress-plugin',
   ),
   'versions' => 
@@ -18,7 +18,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => 'a8f86f3aa17ca71f185f07a3962a4f009804131a',
+      'reference' => 'cef613de25009ce5dde421bc10ab824a88a5e8a8',
     ),
   ),
 );

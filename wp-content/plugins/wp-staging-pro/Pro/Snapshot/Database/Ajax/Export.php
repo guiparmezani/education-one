@@ -6,26 +6,20 @@
 namespace WPStaging\Pro\Snapshot\Database\Ajax;
 
 use Exception;
-use WPStaging\Framework\Component\AbstractComponent;
-use WPStaging\Framework\Component\AjaxTrait;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
+use WPStaging\Framework\TemplateEngine\TemplateEngine;
 use WPStaging\Pro\Snapshot\Database\Service\NotCompatibleException;
 use WPStaging\Pro\Snapshot\Database\Service\SnapshotService;
 
-class Export extends AbstractComponent
+class Export extends AbstractTemplateComponent
 {
-    use AjaxTrait;
-
     /** @var SnapshotService */
     private $service;
 
-    public function __construct(SnapshotService $service)
+    public function __construct(SnapshotService $service, TemplateEngine $templateEngine)
     {
+        parent::__construct($templateEngine);
         $this->service = $service;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--export', [$this, 'render']);
     }
 
     public function render()

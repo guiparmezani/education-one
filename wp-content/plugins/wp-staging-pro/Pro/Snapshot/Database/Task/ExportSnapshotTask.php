@@ -108,7 +108,7 @@ class ExportSnapshotTask extends AbstractTask
     protected function executionLog()
     {
         $steps = $this->requestDto->getSteps();
-        if (0 < $steps->getTotal()) {
+        if ($steps->getTotal() > 0) {
             $this->logger->info(sprintf('Exported %d/%d tables', $steps->getCurrent(), $steps->getTotal()));
             return;
         }

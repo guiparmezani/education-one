@@ -7,7 +7,7 @@ use WPStaging\Backend\Pro\Modules\Jobs\Copiers\PluginsCopier;
 use WPStaging\Backend\Pro\Modules\Jobs\Copiers\ThemesCopier;
 use WPStaging\Framework\Filesystem\FileService;
 use WPStaging\Framework\Filesystem\Filesystem;
-use WPStaging\Utils\Logger;
+use WPStaging\Core\Utils\Logger;
 use SplFileObject;
 use WPStaging\Backend\Modules\Jobs\JobExecutable;
 
@@ -52,7 +52,7 @@ class Files extends JobExecutable
         }
 
         // Informational logs
-        if (0 == $this->options->currentStep) {
+        if ($this->options->currentStep == 0) {
             $this->log("Files: Copying files...");
         }
 
@@ -218,7 +218,7 @@ class Files extends JobExecutable
         }
 
         // Failed to get destination
-        if (false === ($destination = $this->getDestination($fullPath))) {
+        if (($destination = $this->getDestination($fullPath)) === false) {
             $this->log("Files: Can't get the destination of {$fullPath}", Logger::TYPE_WARNING);
             return false;
         }
@@ -305,14 +305,14 @@ class Files extends JobExecutable
 
         // Try first method:
         while (!feof($src)) {
-            if (false === fwrite($dest, fread($src, $buffersize))) {
+            if (fwrite($dest, fread($src, $buffersize)) === false) {
                 $error = true;
             }
         }
         // Try second method if first one failed
         if (isset($error) && ($error === true)) {
             while (!feof($src)) {
-                if (false === stream_copy_to_stream($src, $dest, 1024)) {
+                if (stream_copy_to_stream($src, $dest, 1024) === false) {
                     $this->log("Can not copy file; {$src} -> {$dest}");
                     fclose($src);
                     fclose($dest);

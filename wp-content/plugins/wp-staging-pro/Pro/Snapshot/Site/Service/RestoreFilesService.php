@@ -2,8 +2,8 @@
 
 namespace WPStaging\Pro\Snapshot\Site\Service;
 
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Finder\Finder;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Symfony\Component\Finder\Finder;
 use WPStaging\Framework\Adapter\Directory;
 use WPStaging\Framework\Filesystem\Filesystem;
 
@@ -148,12 +148,12 @@ class RestoreFilesService
         $backupPlugins = (new Finder)
             ->in($oldPath)
             ->depth(0)
-            ->notPath($this->directory->findPluginDirectoryName())
+            ->notPath(WPSTG_PLUGIN_DIR)
             ->notName(self::OPTIMIZER_MU_PLUGIN_FILE)
             ->directories()
         ;
 
-        if (isset($_ENV['APP']) && 'dev' === $_ENV['APP']) {
+        if (isset($_ENV['APP']) && $_ENV['APP'] === 'dev') {
             $backupPlugins->notPath('fixture');
         }
 
@@ -191,12 +191,12 @@ class RestoreFilesService
         $iterator = (new Finder)
             ->in($path)
             ->depth(0)
-            ->notPath($this->directory->findPluginDirectoryName())
+            ->notPath(WPSTG_PLUGIN_DIR)
             ->notName(self::OPTIMIZER_MU_PLUGIN_FILE)
             ->directories()
         ;
 
-        if (isset($_ENV['APP']) && 'dev' === $_ENV['APP']) {
+        if (isset($_ENV['APP']) && $_ENV['APP'] === 'dev') {
             $iterator->notPath('fixture');
         }
 

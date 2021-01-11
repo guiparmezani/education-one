@@ -2,7 +2,7 @@
 
 namespace WPStaging\Backend\Pro\Modules\Jobs;
 
-use WPStaging\Iterators\RecursiveDirectoryIterator;
+use WPStaging\Core\Iterators\RecursiveDirectoryIterator;
 use WPStaging\Backend\Pro\Modules\Filters\RecursiveFilterExclude;
 use RecursiveIteratorIterator;
 use Exception;
@@ -20,7 +20,7 @@ class ScanDirectories extends JobExecutable
     /**
      * @var array
      */
-    private $files = array();
+    private $files = [];
 
     /**
      * Total steps to do
@@ -81,14 +81,14 @@ class ScanDirectories extends JobExecutable
 
         $files = $this->open($this->filename, 'a');
 
-        $excludeFolders = array(
+        $excludeFolders = [
             'cache',
             'wps-hide-login',
             'node_modules',
             'nbproject',
             'wp-staging',
             'wp-staging-hooks',
-        );
+        ];
 
         try {
             $iterator = new RecursiveDirectoryIterator($path);
@@ -102,7 +102,7 @@ class ScanDirectories extends JobExecutable
                 // Skip any file under wp-content/plugins/* (e.g. index.php) and include only valid plugins in subfolders
                 // @todo Make this compatible with single-file plugins
                 // @see \WPStaging\Backend\Pro\Modules\Jobs\Copiers\PluginsCopier::copy
-                if(trailingslashit($item->getPath()) === $path){
+                if($path === trailingslashit($item->getPath())){
                     continue;
                 }
 
@@ -180,14 +180,14 @@ class ScanDirectories extends JobExecutable
 
         $files = $this->open( $this->filename, 'a' );
 
-        $excludeFolders = array(
+        $excludeFolders = [
             'cache',
             'wps-hide-login',
             'node_modules',
             'nbproject',
             'wp-staging',
             'wp-content'
-        );
+        ];
 
         try {
             $iterator = new RecursiveDirectoryIterator( $path );
@@ -230,7 +230,7 @@ class ScanDirectories extends JobExecutable
 
         try {
             $iterator = new RecursiveDirectoryIterator($folder);
-            $iterator = new RecursiveFilterExclude($iterator, array());
+            $iterator = new RecursiveFilterExclude($iterator, []);
             $iterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::LEAVES_ONLY, RecursiveIteratorIterator::CATCH_GET_CHILD);
 
             $this->log(sprintf('Scanning %s for its sub-directories and files', $folder));
@@ -273,7 +273,7 @@ class ScanDirectories extends JobExecutable
     public function open( $file, $mode ) {
 
         $file_handle = @fopen( $file, $mode );
-        if( false === $file_handle ) {
+        if( $file_handle === false ) {
             $this->returnException( sprintf( __( 'Unable to open %s with mode %s', 'wp-staging' ), $file, $mode ) );
         }
 
@@ -291,12 +291,12 @@ class ScanDirectories extends JobExecutable
      */
     public function write( $handle, $content ) {
         $write_result = @fwrite( $handle, $content );
-        if( false === $write_result ) {
+        if( $write_result === false ) {
             if( ( $meta = \stream_get_meta_data( $handle ) ) ) {
                 //$this->returnException(sprintf(__('Unable to write to: %s', 'wp-staging'), $meta['uri']));
                 throw new \Exception( sprintf( __( 'Unable to write to: %s', 'wp-staging' ), $meta['uri'] ) );
             }
-        } elseif( strlen( $content ) !== $write_result ) {
+        } elseif( $write_result !== strlen( $content ) ) {
             //$this->returnException(__('Out of disk space.', 'wp-staging'));
             throw new \Exception( __( 'Out of disk space.', 'wp-staging' ) );
         }
@@ -381,8 +381,8 @@ class ScanDirectories extends JobExecutable
     protected function getFiles() {
         $fileName = $this->cache->getCacheDir() . "files_to_copy." . $this->cache->getCacheExtension();
 
-        if( false === ($this->files = @file_get_contents( $fileName )) ) {
-            $this->files = array();
+        if( ($this->files = @file_get_contents( $fileName )) === false ) {
+            $this->files = [];
             return;
         }
 

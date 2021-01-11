@@ -98,7 +98,7 @@ class JobSiteExportRequestDto extends AbstractDto
      */
     public function setExportDatabase($exportDatabase)
     {
-        $this->exportDatabase = true === $exportDatabase || 'true' === $exportDatabase;
+        $this->exportDatabase = $exportDatabase === true || $exportDatabase === 'true';
     }
 
     /**

@@ -2,30 +2,14 @@
 
 namespace WPStaging\Pro\Snapshot\Site\Ajax;
 
-use WPStaging\Framework\Component\AbstractComponent;
-use WPStaging\Framework\Component\AjaxTrait;
-use WPStaging\Framework\Container\Container;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
 use WPStaging\Pro\Snapshot\Site\Job\JobSiteExport;
 use WPStaging\Pro\Snapshot\Site\Job\JobSiteRestore;
+use WPStaging\Core\WPStaging;
 
-class Status extends AbstractComponent
+class Status extends AbstractTemplateComponent
 {
-    use AjaxTrait;
-
     const TYPE_RESTORE = 'restore';
-
-    /** @var Container */
-    private $container;
-
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--status', [$this, 'render']);
-    }
 
     public function render()
     {
@@ -41,9 +25,9 @@ class Status extends AbstractComponent
      */
     private function getJob()
     {
-        if (!empty($_GET['process']) && self::TYPE_RESTORE === $_GET['process']) {
-            return $this->container->get(JobSiteRestore::class);
+        if (!empty($_GET['process']) && $_GET['process'] === self::TYPE_RESTORE) {
+            return WPStaging::getInstance()->get(JobSiteRestore::class);
         }
-        return $this->container->get(JobSiteExport::class);
+        return WPStaging::getInstance()->get(JobSiteExport::class);
     }
 }

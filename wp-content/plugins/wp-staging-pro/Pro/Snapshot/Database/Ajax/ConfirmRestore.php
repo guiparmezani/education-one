@@ -5,8 +5,8 @@
 
 namespace WPStaging\Pro\Snapshot\Database\Ajax;
 
-use WPStaging\Framework\Adapter\HookedTemplate;
-use WPStaging\Pro\Snapshot\Ajax\AbstractTemplateComponent;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
+use WPStaging\Framework\TemplateEngine\TemplateEngine;
 use WPStaging\Framework\Database\TableDto;
 use WPStaging\Framework\Database\TableService;
 use WPStaging\Pro\Snapshot\Repository\SnapshotRepository;
@@ -19,15 +19,10 @@ class ConfirmRestore extends AbstractTemplateComponent
     /** @var SnapshotRepository  */
     private $snapshotRepository;
 
-    public function __construct(SnapshotRepository $snapshotRepository, HookedTemplate $hookedTemplate)
+    public function __construct(SnapshotRepository $snapshotRepository, TemplateEngine $templateEngine)
     {
-        parent::__construct($hookedTemplate);
+        parent::__construct($templateEngine);
         $this->snapshotRepository = $snapshotRepository;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--restore--confirm', [$this, 'render']);
     }
 
     public function render()
@@ -39,34 +34,34 @@ class ConfirmRestore extends AbstractTemplateComponent
         $id = isset($_POST['id'])? sanitize_text_field($_POST['id']) : '';
         $snapshot = $this->snapshotRepository->find($id);
         if (!$snapshot) {
-            wp_send_json(array(
+            wp_send_json([
                 'error' => true,
                 'message' => sprintf(__('Snapshot %s not found.', 'wp-staging'), $id),
-            ));
+            ]);
         }
 
         $tblService = new TableService;
 
         $prodTables = $tblService->findTableStatusStartsWith();
-        if (!$prodTables || 1 > $prodTables->count()) {
-            wp_send_json(array(
+        if (!$prodTables || $prodTables->count() < 1) {
+            wp_send_json([
                 'error' => true,
                 'message' => __('Production (live) database tables not found.', 'wp-staging'),
-            ));
+            ]);
         }
 
         $snapshotTables = $tblService->findTableStatusStartsWith($id);
-        if (!$snapshotTables || 1 > $snapshotTables->count()) {
-            wp_send_json(array(
+        if (!$snapshotTables || $snapshotTables->count() < 1) {
+            wp_send_json([
                 'error' => true,
                 'message' => sprintf(__('Database tables for snapshot %s not found.', 'wp-staging'), $id),
-            ));
+            ]);
         }
 
         // TODO RPoC; perhaps just check; isNotSame
         $prefixProd = (new Database)->getPrefix();
         $result = $this->templateEngine->render(
-            'Database/template/confirm-restore.php',
+            'Pro/Snapshot/Database/template/confirm-restore.php',
             [
                 'snapshot' => $snapshot,
                 'snapshotTables' => $snapshotTables,

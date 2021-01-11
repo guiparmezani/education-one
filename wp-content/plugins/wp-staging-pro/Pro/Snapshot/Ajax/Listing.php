@@ -6,7 +6,8 @@
 namespace WPStaging\Pro\Snapshot\Ajax;
 
 use WPStaging\Framework\Adapter\Directory;
-use WPStaging\Framework\Adapter\HookedTemplate;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
+use WPStaging\Framework\TemplateEngine\TemplateEngine;
 use WPStaging\Pro\Snapshot\Repository\SnapshotRepository;
 
 class Listing extends AbstractTemplateComponent
@@ -18,16 +19,11 @@ class Listing extends AbstractTemplateComponent
     /** @var Directory */
     private $directory;
 
-    public function __construct(Directory $directory, SnapshotRepository $snapshotRepository, HookedTemplate $hookedTemplate)
+    public function __construct(Directory $directory, SnapshotRepository $snapshotRepository, TemplateEngine $templateEngine)
     {
-        parent::__construct($hookedTemplate);
+        parent::__construct($templateEngine);
         $this->snapshotRepository = $snapshotRepository;
         $this->directory = $directory;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--listing', [$this, 'render']);
     }
 
     public function render()
@@ -51,13 +47,12 @@ class Listing extends AbstractTemplateComponent
         ];
 
         $result = $this->templateEngine->render(
-            'template/listing.php',
+            'Pro/Snapshot/template/listing.php',
             [
                 'snapshots' => $snapshots?: [],
                 'directory' => $this->directory,
                 'directories' => $directories,
-                // TODO
-                'urlPublic' => plugin_dir_url('wp-staging-pro/wp-staging-pro.php') . 'Backend/public/',
+                'urlPublic' => trailingslashit(WPSTG_PLUGIN_URL) . 'Backend/public/',
             ]
         );
         wp_send_json($result);

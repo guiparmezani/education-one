@@ -1,7 +1,7 @@
 <?php
 namespace WPStaging\Pro\Snapshot\Site\Task;
 
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Component\Task\AbstractTask;
 use WPStaging\Framework\Adapter\Directory;
 use WPStaging\Framework\Collection\OptionCollection;
@@ -40,7 +40,7 @@ class RestoreCleanUpTask extends AbstractTask
     public function execute()
     {
         $this->prepare();
-        if (0 === $this->requestDto->getSteps()->getCurrent()) {
+        if ($this->requestDto->getSteps()->getCurrent() === 0) {
             return $this->cleanSnapshots();
         }
         return $this->cleanClones();
@@ -49,7 +49,7 @@ class RestoreCleanUpTask extends AbstractTask
     public function findRequestDto()
     {
         parent::findRequestDto();
-        if (2 === $this->requestDto->getSteps()->getTotal()) {
+        if ($this->requestDto->getSteps()->getTotal() === 2) {
             return;
         }
 

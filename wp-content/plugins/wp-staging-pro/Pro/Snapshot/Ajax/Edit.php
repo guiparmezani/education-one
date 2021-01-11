@@ -5,28 +5,22 @@
 
 namespace WPStaging\Pro\Snapshot\Ajax;
 
-use WPStaging\Framework\Component\AbstractComponent;
-use WPStaging\Framework\Component\AjaxTrait;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
+use WPStaging\Framework\TemplateEngine\TemplateEngine;
 use WPStaging\Pro\Snapshot\Database\Command\Dto\SnapshotDto;
 use WPStaging\Pro\Snapshot\Entity\Snapshot;
 use WPStaging\Pro\Snapshot\Repository\SnapshotRepository;
 use WPStaging\Framework\Utils\Strings;
 
-class Edit extends AbstractComponent
+class Edit extends AbstractTemplateComponent
 {
-    use AjaxTrait;
-
     /** @var SnapshotRepository */
     private $repository;
 
-    public function __construct(SnapshotRepository $repository)
+    public function __construct(SnapshotRepository $repository, TemplateEngine $templateEngine)
     {
+        parent::__construct($templateEngine);
         $this->repository = $repository;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--edit', [$this, 'render']);
     }
 
     public function render()

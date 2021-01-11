@@ -7,15 +7,16 @@
 namespace WPStaging\Pro\Snapshot\Database\Service;
 
 use Exception;
+use WPStaging\Framework\Adapter\Directory;
 use WPStaging\Pro\Snapshot\Database\Command\CreateSnapshotCommand;
 use WPStaging\Pro\Snapshot\Database\Command\DeleteSnapshotCommand;
 use WPStaging\Pro\Snapshot\Database\Command\Dto\ExportDto;
 use WPStaging\Pro\Snapshot\Database\Command\Dto\SnapshotDto;
 use WPStaging\Pro\Snapshot\Database\Command\Exception\SnapshotCommandException;
 use WPStaging\Pro\Snapshot\Database\Command\ExportSnapshotCommand;
-use WPStaging\Framework\PluginInfo;
 use WPStaging\Pro\Snapshot\Entity\Snapshot;
 use WPStaging\Framework\Filesystem\Filesystem;
+use WPStaging\Core\WPStaging;
 
 class SnapshotService
 {
@@ -25,20 +26,20 @@ class SnapshotService
     const PREFIX_MANUAL = 'wpsm';
     const PREFIX_TMP = 'wpstgtmp';
 
-    /** @var PluginInfo */
-    private $pluginInfo;
-
     /** @var DatabaseHelper */
     private $databaseHelper;
 
     /** @var AdapterHelper */
     private $adapterHelper;
 
-    public function __construct(PluginInfo $pluginInfo, DatabaseHelper $databaseHelper, AdapterHelper $adapterHelper)
+    /** @var Directory */
+    private $directory;
+
+    public function __construct(DatabaseHelper $databaseHelper, AdapterHelper $adapterHelper, Directory $directory)
     {
-        $this->pluginInfo = $pluginInfo;
         $this->databaseHelper = $databaseHelper;
         $this->adapterHelper = $adapterHelper;
+        $this->directory = $directory;
     }
 
     /**
@@ -88,7 +89,7 @@ class SnapshotService
             throw new NotCompatibleException;
         }
 
-        if (null === $prefix) {
+        if ($prefix === null) {
             $prefix = $this->databaseHelper->getDatabase()->getPrefix();
         }
 
@@ -101,7 +102,7 @@ class SnapshotService
             'prefix' => $prefix,
             'directory' => $exportDirectory,
             'format' => $this->provideExportFormat(),
-            'version' => $this->pluginInfo->getVersion(),
+            'version' => WPStaging::getVersion(),
         ]);
 
         $tableService = $this->databaseHelper->getTableService();
@@ -118,7 +119,7 @@ class SnapshotService
     public function generateExportDirectory()
     {
         $directory = $this->adapterHelper->getDirectory();
-        $dirname = sprintf('%s/%s/', $this->pluginInfo->getDomain(), self::EXPORT_DIR_NAME);
+        $dirname = sprintf('%s/%s/', $this->directory->getDomain(), self::EXPORT_DIR_NAME);
         return (new Filesystem)->mkdir($directory->getUploadsDirectory() . $dirname);
     }
 

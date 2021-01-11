@@ -4,26 +4,20 @@ namespace WPStaging\Pro\Snapshot\Site\Ajax;
 
 use Exception;
 use WPStaging\Framework\Adapter\Directory;
-use WPStaging\Framework\Component\AbstractComponent;
-use WPStaging\Framework\Component\AjaxTrait;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
 use WPStaging\Framework\Filesystem\File;
 use WPStaging\Framework\Filesystem\Filesystem;
+use WPStaging\Framework\TemplateEngine\TemplateEngine;
 
-class Upload extends AbstractComponent
+class Upload extends AbstractTemplateComponent
 {
-    use AjaxTrait;
-
     /** @var Directory */
     private $directory;
 
-    public function __construct(Directory $directory)
+    public function __construct(Directory $directory, TemplateEngine $templateEngine)
     {
+        parent::__construct($templateEngine);
         $this->directory = $directory;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--import--file-upload', [$this, 'render']);
     }
 
     public function render()
@@ -69,7 +63,7 @@ class Upload extends AbstractComponent
     private function getFile($path)
     {
         $fs = new Filesystem;
-        if (!empty($_POST['reset']) && '1' === $_POST['reset'] && $fs->exists($path)) {
+        if (!empty($_POST['reset']) && $_POST['reset'] === '1' && $fs->exists($path)) {
             $fs->delete($path);
         }
 

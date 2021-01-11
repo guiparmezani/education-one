@@ -12,6 +12,7 @@ use WPStaging\Pro\Snapshot\Repository\SnapshotRepository;
 use WPStaging\Pro\Snapshot\Database\Service\SnapshotService;
 use WPStaging\Pro\Snapshot\Database\Task\CreateSnapshotTask;
 use WPStaging\Component\Job\AbstractQueueJob;
+use WPStaging\Core\WPStaging;
 
 class JobRestoreSnapshot extends AbstractQueueJob
 {
@@ -28,7 +29,7 @@ class JobRestoreSnapshot extends AbstractQueueJob
         }
 
         /** @var SnapshotRepository $repository */
-        $repository = $this->get(SnapshotRepository::class);
+        $repository = WPStaging::getInstance()->get(SnapshotRepository::class);
         $snapshots = $this->dto->getSnapshots();
         $repository->save($snapshots);
     }
@@ -55,7 +56,7 @@ class JobRestoreSnapshot extends AbstractQueueJob
         );
 
         /** @var Database $database */
-        $database = $this->get(Database::class);
+        $database = WPStaging::getInstance()->get(Database::class);
 
         $this->injectTaskRequest(
             RenameTablesTask::REQUEST_NOTATION,
@@ -71,7 +72,7 @@ class JobRestoreSnapshot extends AbstractQueueJob
     protected function init()
     {
         /** @var SnapshotRepository $repository */
-        $repository = $this->get(SnapshotRepository::class);
+        $repository = WPStaging::getInstance()->get(SnapshotRepository::class);
         $this->dto->setSnapshots($repository->findAll());
     }
 

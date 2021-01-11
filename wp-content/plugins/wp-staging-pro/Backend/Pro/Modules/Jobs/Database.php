@@ -7,7 +7,7 @@ if (!defined("WPINC"))
     die;
 }
 
-use WPStaging\WPStaging;
+use WPStaging\Core\WPStaging;
 use WPStaging\Framework\Utils\Strings;
 
 /**
@@ -124,7 +124,7 @@ class Database extends \WPStaging\Backend\Modules\Jobs\JobExecutable
             $tmpPrefix = $tmpPrefix . 'b';         
         }
         
-        $clone = get_option('wpstg_existing_clones_beta', array());
+        $clone = get_option('wpstg_existing_clones_beta', []);
         $clone[$this->options->current]['tmpPrefix'] = $tmpPrefix;
         //$this->returnException(var_dump($clone));
         //update_option('wpstg_existing_clones_beta',$clone);
@@ -154,7 +154,7 @@ class Database extends \WPStaging\Backend\Modules\Jobs\JobExecutable
      * return mixed bool | json
      */
     private function stopExecution(){
-        if ($this->getStagingPrefix() == $this->tmpPrefix){
+        if ($this->tmpPrefix == $this->getStagingPrefix()){
             $this->returnException('Fatal Error 9: Prefix ' . $this->db->prefix . ' is used for the live site hence it can not be used for the staging site as well. Please ask support@wp-staging.com how to resolve this.');
         }
         return false;
@@ -205,7 +205,7 @@ class Database extends \WPStaging\Backend\Modules\Jobs\JobExecutable
 
         $limitation = '';
 
-        if (0 < (int) $this->settings->queryLimit)
+        if ((int) $this->settings->queryLimit > 0)
         {
             $limitation = " LIMIT {$this->settings->queryLimit} OFFSET {$this->options->job->start}";
         }
@@ -241,7 +241,7 @@ class Database extends \WPStaging\Backend\Modules\Jobs\JobExecutable
      */
     private function startJob($new, $old)
     {
-        if (0 != $this->options->job->start)
+        if ($this->options->job->start != 0)
         {
             return true;
         }
@@ -252,7 +252,7 @@ class Database extends \WPStaging\Backend\Modules\Jobs\JobExecutable
 
         $this->options->job->total = (int) $this->db->get_var("SELECT COUNT(1) FROM {$old}");
 
-        if (0 == $this->options->job->total)
+        if ($this->options->job->total == 0)
         {
             $this->finishStep();
             return false;
@@ -311,7 +311,7 @@ class Database extends \WPStaging\Backend\Modules\Jobs\JobExecutable
             (
                 !isset($this->options->job->current) ||
                 !isset($this->options->job->start) ||
-                0 == $this->options->job->start
+                $this->options->job->start == 0
             )
         );
     }

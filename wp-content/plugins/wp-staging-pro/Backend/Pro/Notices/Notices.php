@@ -3,7 +3,7 @@
 namespace WPStaging\Backend\Pro\Notices;
 
 use WPStaging\Backend\Notices\Notices as FreeNotices;
-use WPStaging\WPStaging;
+use WPStaging\Core\WPStaging;
 
 /*
  *  Admin Notices | Warnings | Messages
@@ -56,7 +56,7 @@ class Notices
     {
         // Customer never used any valid license key at all. A valid (expired) license key is needed to make use of all wp staging pro features
         // So show this admin notice on all pages to make sure customer is aware that license key must be entered
-        if (((isset($this->license->error) && 'expired' !== $this->license->error) || false === $this->license) && !wpstg_is_stagingsite()) {
+        if (((isset($this->license->error) && $this->license->error !== 'expired') || $this->license === false) && !wpstg_is_stagingsite()) {
             require_once WPSTG_PLUGIN_DIR . 'Backend/Pro/views/notices/license-key-invalid.php';
         }
     }
@@ -72,7 +72,7 @@ class Notices
         }
 
         // License key has been expired
-        if ((isset($this->license->error) && 'expired' === $this->license->error) || (isset($this->license->license) && 'expired' === $this->license->license)) {
+        if ((isset($this->license->error) && $this->license->error === 'expired') || (isset($this->license->license) && $this->license->license === 'expired')) {
             $licensekey = get_option('wpstg_license_key', '');
             require_once WPSTG_PLUGIN_DIR . 'Backend/Pro/views/notices/license-key-expired.php';
         }

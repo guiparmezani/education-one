@@ -5,36 +5,25 @@
 
 namespace WPStaging\Pro\Snapshot\Database\Ajax;
 
-use WPStaging\Framework\Component\AbstractComponent;
-use WPStaging\Framework\Component\AjaxTrait;
-use WPStaging\Framework\Container\Container;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
 use WPStaging\Pro\Snapshot\Database\Job\JobRestoreSnapshot;
+use WPStaging\Core\WPStaging;
 
-class Restore extends AbstractComponent
+class Restore extends AbstractTemplateComponent
 {
-    use AjaxTrait;
-
-    /** @var Container */
-    private $container;
-
-    // This is not right thing to do but "cheaper" thing to do
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--restore', [$this, 'render']);
-    }
-
     public function render()
     {
         if ( ! $this->canRenderAjax()) {
             return;
         }
 
-        $job = $this->container->get(JobRestoreSnapshot::class);
-        wp_send_json($job->execute());
+        $job = WPStaging::getInstance()->get(JobRestoreSnapshot::class);
+
+        $response = $job->execute();
+
+        // Trigger JobRestoreSnapshot::__destruct()
+        unset($job);
+
+        wp_send_json($response);
     }
 }

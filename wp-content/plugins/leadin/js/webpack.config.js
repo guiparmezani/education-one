@@ -4,7 +4,6 @@ module.exports = {
   entry: {
     leadin: './src/entries/app.js',
     gutenberg: './src/entries/gutenberg.js',
-    elementor: './src/entries/elementor.js',
     feedback: './src/entries/feedback.js',
   },
   output: {

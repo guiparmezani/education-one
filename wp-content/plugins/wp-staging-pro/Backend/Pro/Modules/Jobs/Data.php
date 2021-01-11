@@ -7,10 +7,11 @@ if( !defined( "WPINC" ) ) {
     die;
 }
 
+use WPStaging\Backend\Notices\DisabledCacheNotice;
 use WPStaging\Framework\Security\AccessToken;
 use WPStaging\Pro\Snapshot\Repository\SnapshotRepository;
-use WPStaging\Utils\Logger;
-use WPStaging\WPStaging;
+use WPStaging\Core\Utils\Logger;
+use WPStaging\Core\WPStaging;
 
 /**
  * Class Data
@@ -37,7 +38,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         $this->db = WPStaging::getInstance()->get( "wpdb" );
 
         // Fix current step
-        if( 0 == $this->options->currentStep ) {
+        if( $this->options->currentStep == 0 ) {
             $this->options->currentStep = 1;
         }
     }
@@ -108,7 +109,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
      * @return boolean
      */
     protected function isTable( $table ) {
-        if( $this->db->get_var( "SHOW TABLES LIKE '{$table}'" ) != $table ) {
+        if( $table != $this->db->get_var( "SHOW TABLES LIKE '{$table}'" ) ) {
             $this->log( "Table {$table} does not exist", Logger::TYPE_INFO );
             return false;
         }
@@ -116,7 +117,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
     }
 
     /**
-     * Check if table is exluded
+     * Check if table is excluded
      * @param string $table
      * @return boolean
      */
@@ -136,8 +137,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         $optionsTableTmp = $this->tmpPrefix . 'options';
 
-        //$optionsTable = $this->db->prefix . 'options';
-        // Options table has been exluded from pushing process so exit here
+        // Options table has been excluded from pushing process so exit here
         if( $this->isTableExcluded( $this->options->prefix . 'options' ) ) {
             $this->log( "DB Data Step 1: Skipping table {$this->options->prefix}options" );
             return true;
@@ -172,37 +172,43 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
 
 
-        if( false === $query ) {
+        if( $query === false ) {
             $this->log( "DB Data: Can not update value wpstg_existing_clones_beta in " . $optionsTableTmp . ' - db error: ' . $this->db->last_error );
             $this->returnException( "DB Data: Can not update value wpstg_existing_clones_beta in " . $optionsTableTmp . ' - db error: ' . $this->db->last_error );
             return false;
         }
 
-        // Delete wpstg_is_staging_site entry
-        $resultDeleteIsStagingSite = $this->db->query(
-                "DELETE FROM {$optionsTableTmp} WHERE option_name = 'wpstg_is_staging_site' "
-        );
+        $optionsToDelete = (array)apply_filters('wpstg.after_push.options_to_delete', [
+            'wpstg_is_staging_site',
+            DisabledCacheNotice::OPTION_NAME,
+        ]);
 
-        if( false === $resultDeleteIsStagingSite ) {
-            $this->log( "DB Data: Can not delete table row wpstg_is_staging_site from " . $optionsTableTmp );
-            $this->returnException( "DB Data: Can not delete table row wpstg_is_staging_site from " . $optionsTableTmp . " - db error: " . $this->db->last_error );
-            return false;
+        foreach ($optionsToDelete as $option) {
+            $resultDelete = $this->db->query(
+                "DELETE FROM $optionsTableTmp WHERE option_name = '$option'"
+            );
+
+            if( $resultDelete === false ) {
+                $this->log( "DB Data: Can not delete table row $option from $optionsTableTmp" );
+                $this->returnException( "DB Data: Can not delete table row $option from $optionsTableTmp - db error: " . $this->db->last_error );
+                return false;
+            }
         }
 
         // Copy license data
         $wpstgLicense = $this->db->get_var( "SELECT option_value FROM {$this->db->prefix}options WHERE option_name = 'wpstg_license_key' " );
 
         $resultWpstgLicense = $this->db->replace(
-                $this->tmpPrefix . 'options', array(
+                $this->tmpPrefix . 'options', [
             'option_name'  => 'wpstg_license_key',
             'option_value' => $wpstgLicense ? $wpstgLicense : ''
-                ), array(
+                ], [
             '%s',
             '%s'
-                )
+                ]
         );
 
-        if( false === $resultWpstgLicense ) {
+        if( $resultWpstgLicense === false ) {
             $this->log( 'DB Data: Warning - Can not copy license key from live site' );
         }
 
@@ -211,17 +217,17 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         $wpstgSettings = $this->db->get_var( "SELECT option_value FROM {$this->db->prefix}options WHERE option_name = 'wpstg_settings' " );
 
         $resultWpstgSettings = $this->db->replace(
-                $this->tmpPrefix . 'options', array(
+                $this->tmpPrefix . 'options', [
             'option_name'  => 'wpstg_settings',
             //'option_value' => $wpstgSettings ? $this->mysql_escape_mimic($wpstgSettings) : ''
             'option_value' => $wpstgSettings ? $wpstgSettings : ''
-                ), array(
+                ], [
             '%s',
             '%s'
-                )
+                ]
         );
 
-        if( false === $resultWpstgSettings ) {
+        if( $resultWpstgSettings === false ) {
             $this->log( 'DB Data: Error - Can not copy WP Staging settings from live site' );
             $this->returnException( 'DB Data: Error - Can not copy WP Staging settings from live site - db error: ' . $this->db->last_error );
         }
@@ -230,17 +236,17 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         $wpstg_license_status = $this->db->get_var( "SELECT option_value FROM {$this->db->prefix}options WHERE option_name = 'wpstg_license_status' " );
 
         $resultWpstg_license_status = $this->db->replace(
-                $this->tmpPrefix . 'options', array(
+                $this->tmpPrefix . 'options', [
             'option_name'  => 'wpstg_license_status',
             //'option_value' => $wpstg_license_status ? $this->mysql_escape_mimic($wpstg_license_status) : ''
             'option_value' => $wpstg_license_status ? $wpstg_license_status : ''
-                ), array(
+                ], [
             '%s',
             '%s'
-                )
+                ]
         );
 
-        if( false === $resultWpstg_license_status ) {
+        if( $resultWpstg_license_status === false ) {
             $this->log( 'DB Data: Warning: Can not copy WP Staging license status from live site' );
             $this->returnException( 'DB Data: Warning: Can not copy WP Staging license status from live site' );
         }
@@ -273,7 +279,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 )
         );
 
-        if( false === $resultOptions ) {
+        if( $resultOptions === false ) {
             $this->log( "DB Data Step 2: Failed to update {$this->tmpPrefix}options with table prefixes. DB Error: {$this->db->last_error}" );
             $this->returnException( "DB Data Step 2: Failed to update {$this->tmpPrefix}options with table prefixes {$this->db->prefix}. DB Error: {$this->db->last_error}" );
             return false;
@@ -304,7 +310,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
             return true;
         }
 
-        if( false === $this->isTable( $this->tmpPrefix . 'usermeta' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'usermeta' ) === false ) {
             $this->log( 'DB Data Step 3: Fatal Error ' . $this->tmpPrefix . 'usermeta does not exist' );
             $this->returnException( 'DB Data Step 3: Fatal Error ' . $this->tmpPrefix . 'usermeta does not exist' );
             return false;
@@ -316,7 +322,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 )
         );
 
-        if( false === $resultMetaKeys ) {
+        if( $resultMetaKeys === false ) {
             $this->log( "DB Data Step 3: SQL - UPDATE {$this->tmpPrefix}usermeta SET meta_key = replace(meta_key, {$this->options->prefix}, {$this->db->prefix}) WHERE meta_key LIKE {$this->options->prefix}_%" );
             $this->log( "DB Data Step 3: Failed to update usermeta meta_key database table prefixes {$this->db->last_error}" );
             $this->returnException( "DB Data Step 3: Failed to update {$this->tmpPrefix}usermeta meta_key database table prefixes {$this->db->last_error}" );
@@ -343,7 +349,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         $this->log( "DB Data Step 4: Updating {$this->tmpPrefix}options active_plugins" );
 
-        if( false === $this->isTable( $this->tmpPrefix . 'options' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'options' ) === false ) {
             $this->log( 'DB Data Step 4: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             $this->returnException( 'DB Data Step 4: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             return false;
@@ -386,7 +392,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 "UPDATE {$this->tmpPrefix}options SET option_value = '" . serialize( $activePlugins ) . "' WHERE option_name = 'active_plugins' "
         );
 
-        if( false === $resultActivePlugins ) {
+        if( $resultActivePlugins === false ) {
             $this->log( "DB Data Step 4: Can not update table active_plugins in {$this->tmpPrefix}options" );
             $this->returnException( "DB Data Step 4: Can not update table active_plugins in {$this->tmpPrefix}options - db error: " . $this->db->last_error );
             return false;
@@ -410,7 +416,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         $this->log( "DB Data Step 5: Updating {$this->tmpPrefix}usermeta session_tokens" );
 
-        if( false === $this->isTable( $this->tmpPrefix . 'usermeta' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'usermeta' ) === false ) {
             $this->log( 'DB Data Step 5: Fatal Error ' . $this->tmpPrefix . 'usermeta does not exist', Logger::TYPE_ERROR );
             $this->returnException( 'DB Data Step 5: Fatal Error ' . $this->tmpPrefix . 'usermeta does not exist' );
             return false;
@@ -431,7 +437,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 "UPDATE {$this->tmpPrefix}usermeta SET meta_value = '" . serialize( $sessionToken ) . "' WHERE meta_key = 'session_tokens' AND user_id = {$userId}"
         );
 
-        if( false === $resultSessionToken ) {
+        if( $resultSessionToken === false ) {
             $this->log( "DB Data Step 5: Can not update row session_tokens in {$this->tmpPrefix}usermeta", Logger::TYPE_WARNING );
             //$this->returnException("DB Data Step 5: Can not update row session_tokens in {$this->tmpPrefix}usermeta - db error: " . $this->db->last_error);
             return false;
@@ -456,7 +462,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         $this->log( "DB Data Step 6: Updating {$this->tmpPrefix}options permalink_structure" );
 
-        if( false === $this->isTable( $this->tmpPrefix . 'options' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'options' ) === false ) {
             $this->log( 'DB Data Step 6: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             $this->returnException( 'DB Data Step 6: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             return false;
@@ -477,7 +483,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 "UPDATE {$this->tmpPrefix}options SET option_value = '" . $permalink . "' WHERE option_name = 'permalink_structure'"
         );
 
-        if( false === $resultPermalink ) {
+        if( $resultPermalink === false ) {
             $this->log( "DB Data Step 6: Can not update row permalink_structure in {$this->tmpPrefix}options" );
             $this->returnException( "DB Data Step 6: Can not update row permalink_structure in {$this->tmpPrefix}options - db error: " . $this->db->last_error );
             return false;
@@ -502,7 +508,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         $this->log( "DB Data Step 7: Updating {$this->tmpPrefix}options siteurl" );
 
-        if( false === $this->isTable( $this->tmpPrefix . 'options' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'options' ) === false ) {
             $this->log( 'DB Data Step 7: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             $this->returnException( 'DB Data Step 7: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             return false;
@@ -520,7 +526,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 "UPDATE {$this->tmpPrefix}options SET option_value = '" . $siteUrl . "' WHERE option_name = 'siteurl'"
         );
 
-        if( false === $resultSiteUrl ) {
+        if( $resultSiteUrl === false ) {
             $this->log( "DB Data Step 7: Can not update row siteurl in {$this->tmpPrefix}options" );
             $this->returnException( "DB Data Step 7: Can not update row siteurl in {$this->tmpPrefix}options - db error: " . $this->db->last_error );
             return false;
@@ -538,7 +544,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 "UPDATE {$this->tmpPrefix}options SET option_value = '" . $home . "' WHERE option_name = 'home'"
         );
 
-        if( false === $resultHome ) {
+        if( $resultHome === false ) {
             $this->log( "DB Data Step 7: Can not update row home in {$this->tmpPrefix}options" );
             $this->returnException( "DB Data Step 7: Can not update row home in {$this->tmpPrefix}options - db error: " . $this->db->last_error );
             return false;
@@ -559,7 +565,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         $this->log( "DB Data Step 8: Updating {$this->tmpPrefix}options wpstgpro_version" );
 
-        if( false === $this->isTable( $this->tmpPrefix . 'options' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'options' ) === false ) {
             $this->log( 'DB Data Step 8: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             $this->returnException( 'DB Data Step 8: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             return false;
@@ -577,7 +583,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 "UPDATE {$this->tmpPrefix}options SET option_value = '" . $select . "' WHERE option_name = 'wpstgpro_version'"
         );
 
-        if( false === $update ) {
+        if( $update === false ) {
             $this->log( "DB Data Step 8: Can not update row wpstgpro_version in {$this->tmpPrefix}options" );
             $this->returnException( "DB Data Step 8: Can not update row wpstgpro_version in {$this->tmpPrefix}options - db error: " . $this->db->last_error );
             return false;
@@ -599,7 +605,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         $this->log( "Preparing Data Step9: Copy (no)index value from live site to wpstgtmp_options" );
 
-        if( false === $this->isTable( $this->tmpPrefix . 'options' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'options' ) === false ) {
             $this->log( 'DB Data Step 9: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             $this->returnException( 'DB Data Step 9: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             return false;
@@ -617,7 +623,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 "UPDATE {$this->tmpPrefix}options SET option_value = '" . $result . "' WHERE option_name = 'blog_public'"
         );
 
-        if( false === $update ) {
+        if( $update === false ) {
             $this->log( "DB Data Step 9: Can not update row blog_public in {$this->tmpPrefix}options", Logger::TYPE_WARNING );
             //$this->returnException("DB Data Step 9: Can not update blog_public in {$this->tmpPrefix}options - db error: " . $this->db->last_error);
             return true;
@@ -628,18 +634,18 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
     }
 
     /**
-     * Preserve data and prevents data from beeing pushed from staging to production in wp_options
+     * Preserve data and prevents data from being pushed from staging to production in wp_options
      * @return bool
      */
     protected function step10() {
         $this->log( "DB Data Step 10: Preserve Data in " . $this->db->prefix . "options" );
 
         // Skip - Table does not exist
-        if( false === $this->isTable( $this->tmpPrefix . 'options' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'options' ) === false ) {
             return true;
         }
 
-        // options table has been exluded from pushing process so exit here
+        // options table has been excluded from pushing process so exit here
         if( $this->isTableExcluded( $this->options->prefix . 'options' ) ) {
             return true;
         }
@@ -658,7 +664,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         $preserved_option_names    = apply_filters( 'wpstg_preserved_options', $preserved_option_names );
         $preserved_options_escaped = esc_sql( $preserved_option_names );
 
-        $preserved_options_data = array();
+        $preserved_options_data = [];
 
         // Get preserved data in wp_options tables
         $table                                                = $this->db->prefix . 'options';
@@ -670,7 +676,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         // Create preserved data queries for options tables
         foreach ( $preserved_options_data as $key => $value ) {
-            if( false === empty( $value ) ) {
+            if( empty( $value ) === false ) {
                 foreach ( $value as $option ) {
                     $sql .= $this->db->prepare(
                             "DELETE FROM `{$key}` WHERE `option_name` = %s;\n", $option['option_name']
@@ -708,7 +714,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 
         $this->log( "DB Data Step 11: Updating {$this->tmpPrefix}users user_pass" );
 
-        if( false === $this->isTable( $this->tmpPrefix . 'users' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'users' ) === false ) {
             $this->log( 'DB Data Step 11: Fatal Error ' . $this->tmpPrefix . 'users does not exist', Logger::TYPE_ERROR );
             $this->returnException( 'DB Data Step 11: Fatal Error ' . $this->tmpPrefix . 'users does not exist' );
             return false;
@@ -734,28 +740,30 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
     }
 
     /**
-     * Delete wpstg_connection from tmp_options
+     * Delete several option from tmp_options and make sure they do not exist on production site after pushing
      * @return boolean
      */
     protected function step12() {
 
-
-        // options table has been exluded from pushing process so exit here
         if( $this->isTableExcluded( $this->options->prefix . 'options' ) ) {
             return true;
         }
 
-        if( false === $this->isTable( $this->tmpPrefix . 'options' ) ) {
+        if( $this->isTable( $this->tmpPrefix . 'options' ) === false ) {
             $this->log( 'DB Data Step 12: Fatal Error ' . $this->tmpPrefix . 'options does not exist', Logger::TYPE_ERROR );
             $this->returnException( 'DB Data Step12: Fatal Error ' . $this->tmpPrefix . 'options does not exist' );
             return false;
         }
 
         $sql = $this->db->prepare(
-                "DELETE FROM `{$this->tmpPrefix}options` WHERE `option_name` = %s", 'wpstg_connection'
+                "DELETE FROM `{$this->tmpPrefix}options` WHERE `option_name` = %s;\n", 'wpstg_connection'
         );
 
-        $result = $this->db->query($sql);
+        $sql .= $this->db->prepare(
+                "DELETE FROM `{$this->tmpPrefix}options` WHERE `option_name` = %s;\n", 'wpstg_emails_disabled'
+        );
+
+        $this->executeSql( $sql );
 
         $this->log( "DB Data Step 12: Successful!" );
         return true;
@@ -769,7 +777,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         $queries = array_filter( explode( ";\n", $sqlbatch ) );
 
         foreach ( $queries as $query ) {
-            if( false === $this->db->query( $query ) ) {
+            if( $this->db->query( $query ) === false ) {
                 $this->log( "DB Data Warning:  Can not execute query {$query}", Logger::TYPE_WARNING );
             }
         }
@@ -788,7 +796,7 @@ class Data extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
             return array_map( __METHOD__, $input );
         }
         if( !empty( $input ) && is_string( $input ) ) {
-            return str_replace( array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $input );
+            return str_replace( ['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $input );
         }
 
         return $input;

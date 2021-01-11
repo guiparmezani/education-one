@@ -3,7 +3,6 @@ import debounce from 'lodash/debounce';
 import GutenbergWrapper from '../../Common/GutenbergWrapper';
 import UISelect from '../../UIComponents/UISelect';
 import { searchForms } from '../../../api/hubspotPluginApi';
-import Raven from '../../../lib/Raven';
 import useForm from './useForm';
 import LoadingBlock from '../../Common/LoadingBlock';
 import { i18n } from '../../../constants/leadinConfig';
@@ -17,10 +16,9 @@ export default function FormSelect({ formId, handleChange }) {
   const { form, loading } = useForm(formId);
 
   const loadOptions = debounce(
-    (search, callback) =>
-      searchForms(search)
-        .then(forms => callback(forms.map(mapForm)))
-        .catch(error => Raven.captureException(error)),
+    (search, callback) => {
+      searchForms(search).then(forms => callback(forms.map(mapForm)));
+    },
     300,
     { trailing: true }
   );

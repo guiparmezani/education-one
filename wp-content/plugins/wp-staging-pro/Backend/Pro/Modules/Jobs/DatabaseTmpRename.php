@@ -8,8 +8,8 @@ if (!defined("WPINC")) {
 }
 
 use WPStaging\Backend\Modules\Jobs\JobExecutable;
-use WPStaging\Utils\Logger;
-use WPStaging\WPStaging;
+use WPStaging\Core\Utils\Logger;
+use WPStaging\Core\WPStaging;
 use WPStaging\Framework\Utils\Strings;
 
 /**
@@ -38,7 +38,7 @@ class DatabaseTmpRename extends JobExecutable
      * This contains an object of all existing database tables.
      * @var object
      */
-    private $existingTables = array();
+    private $existingTables = [];
 
     /**
      * Initialize
@@ -102,7 +102,7 @@ class DatabaseTmpRename extends JobExecutable
             }
 
             // Rename table
-            if (false === $this->renameTable($table->name)) {
+            if ($this->renameTable($table->name) === false) {
                 return true;
             }
         }
@@ -154,13 +154,13 @@ class DatabaseTmpRename extends JobExecutable
          * Attention: Dropping table first and then renaming it works much more reliable than just using the RENAME statement
          */
         // Drop live table
-        if (false === $this->productionDb->query("DROP TABLE IF EXISTS {$liveTable}")) {
+        if ($this->productionDb->query("DROP TABLE IF EXISTS {$liveTable}") === false) {
             $this->log("DB Rename: Error - Can not drop table {$liveTable} Error: {$this->productionDb->last_error}", Logger::TYPE_ERROR);
             $this->returnException("DB Rename: Error - Can not drop table {$liveTable} db error - " . $this->productionDb->last_error);
         }
 
         // Rename tmp table to live table
-        if (false === $this->productionDb->query("RENAME TABLE {$tmpTable} TO {$liveTable}")) {
+        if ($this->productionDb->query("RENAME TABLE {$tmpTable} TO {$liveTable}") === false) {
             $this->log("DB Rename: Error - Can not rename table {$tmpTable} TO {$liveTable} Error: {$this->productionDb->last_error}", Logger::TYPE_ERROR);
             $this->returnException("DB Rename: Error - Can not rename table {$tmpTable} TO {$liveTable} db error - " . $this->productionDb->last_error);
             return false;
@@ -176,12 +176,12 @@ class DatabaseTmpRename extends JobExecutable
     protected function dropTable($table)
     {
         // Check if table already exists
-        if (false === $this->tableExists($table)) {
+        if ($this->tableExists($table) === false) {
             return;
         }
 
         $this->log("DB Rename: {$table} already exists, dropping it first");
-        if (false === $this->productionDb->query("DROP TABLE {$table}")) {
+        if ($this->productionDb->query("DROP TABLE {$table}") === false) {
             //$this->db->query("ROLLBACK");
             $this->log("DB Rename: Can not drop table {$table}");
             $this->returnException("DB Rename: Can not drop table {$table}");

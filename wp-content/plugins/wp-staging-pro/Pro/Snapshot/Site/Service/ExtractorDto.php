@@ -106,7 +106,7 @@ class ExtractorDto
 
     public function addSeekToHeader($lineLength)
     {
-        if (null === $this->seekToHeader) {
+        if ($this->seekToHeader === null) {
             $this->seekToHeader = 0;
         }
         $this->seekToHeader += $lineLength;
@@ -130,7 +130,7 @@ class ExtractorDto
 
     public function addSeekToFile($writtenBytes)
     {
-        if (null === $this->seekToFile) {
+        if ($this->seekToFile === null) {
             $this->seekToFile = 0;
         }
         $this->seekToFile += $writtenBytes;
@@ -162,6 +162,6 @@ class ExtractorDto
 
     public function isFinished()
     {
-        return $this->fileHeadersDto->getHeaderEnd() <= $this->seekToHeader;
+        return $this->seekToHeader >= $this->fileHeadersDto->getHeaderEnd();
     }
 }

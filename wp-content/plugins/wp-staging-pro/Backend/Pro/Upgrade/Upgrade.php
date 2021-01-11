@@ -2,13 +2,13 @@
 
 namespace WPStaging\Backend\Pro\Upgrade;
 
-use WPStaging\WPStaging;
+use WPStaging\Core\WPStaging;
 use WPStaging\Backend\Optimizer\Optimizer;
-use WPStaging\Utils\Logger;
-use WPStaging\Utils\Helper;
-use WPStaging\Utils\IISWebConfig;
-use WPStaging\Utils\Htaccess;
-use WPStaging\Utils\Filesystem;
+use WPStaging\Core\Utils\Logger;
+use WPStaging\Core\Utils\Helper;
+use WPStaging\Core\Utils\IISWebConfig;
+use WPStaging\Core\Utils\Htaccess;
+use WPStaging\Core\Utils\Filesystem;
 
 /**
  * Upgrade Class
@@ -58,9 +58,9 @@ class Upgrade {
         $this->previousVersion = preg_replace( '/[^0-9.].*/', '', get_option( 'wpstgpro_version' ) );
 
         // Options earlier than version 2.0.0
-        $this->clones = get_option( "wpstg_existing_clones", array() );
+        $this->clones = get_option( "wpstg_existing_clones", [] );
 
-        $this->settings = ( object ) get_option( "wpstg_settings", array() );
+        $this->settings = ( object ) get_option( "wpstg_settings", [] );
 
         $this->db = WPStaging::getInstance()->get( "wpdb" );
 
@@ -86,9 +86,9 @@ class Upgrade {
         if( version_compare( $this->previousVersion, '2.8.6', '<' ) ) {
 
             // Current options
-            $sites = get_option( "wpstg_existing_clones_beta", array() );
+            $sites = get_option( "wpstg_existing_clones_beta", [] );
             
-            $new = array();
+            $new = [];
 
             // Fix keys. Replace white spaces with dash character
             foreach ( $sites as $oldKey => $site ) {
@@ -108,8 +108,8 @@ class Upgrade {
         if( version_compare( $this->previousVersion, '2.6.5', '<' ) ) {
             // Add htaccess to wp staging uploads folder
             $htaccess = new Htaccess();
-            $htaccess->create( trailingslashit( \WPStaging\WPStaging::getContentDir() ) . '.htaccess' );
-            $htaccess->create( trailingslashit( \WPStaging\WPStaging::getContentDir() ) . 'logs/.htaccess' );
+            $htaccess->create( trailingslashit( \WPStaging\Core\WPStaging::getContentDir() ) . '.htaccess' );
+            $htaccess->create( trailingslashit( \WPStaging\Core\WPStaging::getContentDir() ) . 'logs/.htaccess' );
 
             // Add litespeed htaccess to wp root folder
             if( extension_loaded( 'litespeed' ) ) {
@@ -118,13 +118,13 @@ class Upgrade {
 
             // Create empty index.php in wp staging uploads folder
             $filesystem = new Filesystem();
-            $filesystem->create( trailingslashit( \WPStaging\WPStaging::getContentDir() ) . 'index.php', "<?php // silence" );
-            $filesystem->create( trailingslashit( \WPStaging\WPStaging::getContentDir() ) . 'logs/index.php', "<?php // silence" );
+            $filesystem->create( trailingslashit( \WPStaging\Core\WPStaging::getContentDir() ) . 'index.php', "<?php // silence" );
+            $filesystem->create( trailingslashit( \WPStaging\Core\WPStaging::getContentDir() ) . 'logs/index.php', "<?php // silence" );
 
             // create web.config file for IIS in wp staging uploads folder
             $webconfig = new IISWebConfig();
-            $webconfig->create( trailingslashit( \WPStaging\WPStaging::getContentDir() ) . 'web.config' );
-            $webconfig->create( trailingslashit( \WPStaging\WPStaging::getContentDir() ) . 'logs/web.config' );
+            $webconfig->create( trailingslashit( \WPStaging\Core\WPStaging::getContentDir() ) . 'web.config' );
+            $webconfig->create( trailingslashit( \WPStaging\Core\WPStaging::getContentDir() ) . 'logs/web.config' );
         }
     }
 
@@ -133,7 +133,7 @@ class Upgrade {
      */
     public function upgrade2_0_3() {
         // Previous version lower than 2.0.2 or new install
-        if( false === $this->previousVersion || version_compare( $this->previousVersion, '2.0.2', '<' ) ) {
+        if( $this->previousVersion === false || version_compare( $this->previousVersion, '2.0.2', '<' ) ) {
             $this->upgradeOptions();
             $this->upgradeClonesBeta();
             $this->upgradeNotices();
@@ -144,10 +144,10 @@ class Upgrade {
      * Upgrade method 2.0.4
      */
     public function upgrade2_0_4() {
-        if( false === $this->previousVersion || version_compare( $this->previousVersion, '2.0.5', '<' ) ) {
+        if( $this->previousVersion === false || version_compare( $this->previousVersion, '2.0.5', '<' ) ) {
 
             // Register cron job.
-            $cron = new \WPStaging\Cron\Cron;
+            $cron = new \WPStaging\Core\Cron\Cron;
             $cron->schedule_event();
 
             // Install Optimizer 
@@ -161,8 +161,8 @@ class Upgrade {
      * Sanitize the clone key value.
      */
     private function upgrade2_1_7() {
-        if( false === $this->previousVersion || version_compare( $this->previousVersion, '2.1.7', '<' ) ) {
-            $sites = get_option( "wpstg_existing_clones_beta", array() );
+        if( $this->previousVersion === false || version_compare( $this->previousVersion, '2.1.7', '<' ) ) {
+            $sites = get_option( "wpstg_existing_clones_beta", [] );
             foreach ( $sites as $key => $value ) {
                 unset( $sites[$key] );
                 $sites[preg_replace( "#\W+#", '-', strtolower( $key ) )] = $value;
@@ -186,9 +186,9 @@ class Upgrade {
      */
     private function upgradeElements() {
         // Current options
-        $sites = get_option( "wpstg_existing_clones_beta", array() );
+        $sites = get_option( "wpstg_existing_clones_beta", [] );
 
-        if( false === $sites || count( $sites ) === 0 ) {
+        if( $sites === false || count( $sites ) === 0 ) {
             return;
         }
 
@@ -215,7 +215,7 @@ class Upgrade {
     private function getStagingPrefix( $directory ) {
         // Try to get staging prefix from wp-config.php of staging site
         $path    = ABSPATH . $directory . "/wp-config.php";
-        if( false === ($content = @file_get_contents( $path )) ) {
+        if( ($content = @file_get_contents( $path )) === false ) {
             $prefix = "";
         } else {
             // Get prefix from wp-config.php
@@ -271,7 +271,7 @@ class Upgrade {
             return false;
         }
 
-        $new = array();
+        $new = [];
         foreach ( $this->clones as $key => &$value ) {
 
             // Skip the rest of the loop if data is already compatible to wpstg 2.0.2
@@ -288,7 +288,7 @@ class Upgrade {
         }
         unset( $value );
 
-        if( empty( $new ) || false === update_option( 'wpstg_existing_clones_beta', $new ) ) {
+        if( empty( $new ) || update_option( 'wpstg_existing_clones_beta', $new ) === false ) {
             $this->logger->log( 'Failed to upgrade clone data from ' . $this->previousVersion . ' to ' . WPStaging::getVersion() );
         }
     }

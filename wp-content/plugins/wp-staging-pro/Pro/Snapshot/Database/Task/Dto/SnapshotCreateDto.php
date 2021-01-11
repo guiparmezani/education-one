@@ -132,7 +132,7 @@ class SnapshotCreateDto extends AbstractRequestDto
     public function setReset($reset)
     {
         if (!is_bool($reset)) {
-            $reset = 'true' === $reset || '1' === $reset || 1 === $reset;
+            $reset = $reset === 'true' || $reset === '1' || $reset === 1;
         }
         $this->reset = $reset;
     }

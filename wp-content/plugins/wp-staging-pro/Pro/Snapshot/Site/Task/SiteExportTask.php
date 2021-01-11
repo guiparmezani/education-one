@@ -7,7 +7,7 @@
 namespace WPStaging\Pro\Snapshot\Site\Task;
 
 use Exception;
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Component\Task\AbstractTask;
 use WPStaging\Framework\Traits\ResourceTrait;
 use WPStaging\Framework\Utils\Cache\Cache;
@@ -61,7 +61,7 @@ class SiteExportTask extends AbstractTask
             $this->logger->critical($e->getMessage());
         }
 
-        if (false !== $status) {
+        if ($status !== false) {
             $this->requestDto->getSteps()->incrementCurrentStep();
         }
 

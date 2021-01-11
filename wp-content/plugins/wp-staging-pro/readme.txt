@@ -8,8 +8,8 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: backup, staging, duplication, clone, migration
 Requires at least: 3.6+
-Tested up to: 5.5
-Stable tag: 3.1.5
+Tested up to: 5.6
+Stable tag: 3.1.8
 Requires PHP: 5.5
 
 A duplicator plugin - clone/move, duplicate & migrate websites to staging, backup and development sites that only authorized users can access.
@@ -166,6 +166,31 @@ https://wp-staging.com
 
 == Changelog ==
 
+= 3.1.8 =
+* New: Compatible up to WordPress 5.6
+* Fix: Can not clone properly network site if it is in a subfolder
+* Fix: Uninstall function throws fatal error
+* Fix: Do not write sensitive information into debug.log
+* Fix: Update notification shown even if there is no more recent version
+* Dev: Prefix composer vendor libraries
+* Dev: Add more tests to improve QA
+
+= 3.1.7 =
+* Fix: Update notification shown even though there is no more recent release
+
+= 3.1.6 =
+* Fix: Database restore fails
+* Fix: Do not show cache notice after push
+* Fix: memory exhaust on tests
+* New: Show confirmation alert on closing website while site cloning or pushing is executed
+* Enh: Change authentication to a combination of nonces and access tokens
+* Enh: Improve tests performance
+* Enh: Add tests for database export and restore
+
+= 3.1.5 =
+* HotFix: Activation hook is not fired after first time installation and wpstg optimizer and cron tasks are not set up
+* New: Add special admin notice if plugin is not tested with latest WordPress version
+
 = 3.1.4 =
 * Fix: Missed updating supported WordPress version
 
@@ -283,5 +308,12 @@ Full changelog:
 
 == Upgrade Notice ==
 
-= 3.1.4 =
-* Fix: Missed updating supported WordPress version
+
+= 3.1.8 =
+* New: Compatible up to WordPress 5.6
+* Fix: Can not clone properly network site if it is in a subfolder
+* Fix: Uninstall function throws fatal error
+* Fix: Do not write sensitive information into debug.log
+* Fix: Update notification shown even if there is no more recent version
+* Dev: Prefix composer vendor libraries
+* Dev: Add more tests to improve QA

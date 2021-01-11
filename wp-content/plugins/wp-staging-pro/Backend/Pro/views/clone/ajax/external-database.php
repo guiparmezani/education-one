@@ -5,7 +5,7 @@
  *
  * @file src/Backend/views/clone/ajax/external-database.php For the Free counterpart.
  */
-if( empty( $options->current ) || null === $options->current ) {
+if( empty( $options->current ) || $options->current === null ) {
     ?>
 
     <p><label><input type="checkbox" id="wpstg-ext-db" name="wpstg-ext-db" value="true">

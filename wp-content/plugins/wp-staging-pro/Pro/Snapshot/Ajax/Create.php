@@ -5,29 +5,13 @@
 
 namespace WPStaging\Pro\Snapshot\Ajax;
 
-use WPStaging\Framework\Adapter\HookedTemplate;
-use WPStaging\Framework\Container\Container;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
 use WPStaging\Pro\Snapshot\Database\Job\JobCreateSnapshot;
 use WPStaging\Pro\Snapshot\Site\Job\JobSiteExport;
+use WPStaging\Core\WPStaging;
 
 class Create extends AbstractTemplateComponent
 {
-
-    /** @var Container */
-    private $container;
-
-    // This is not right thing to do but "cheaper" thing to do
-    public function __construct(Container $container, HookedTemplate $hookedTemplate)
-    {
-        parent::__construct($hookedTemplate);
-        $this->container = $container;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--create', [$this, 'render']);
-    }
-
     public function render()
     {
         if ( ! $this->canRenderAjax()) {
@@ -42,8 +26,8 @@ class Create extends AbstractTemplateComponent
     private function getJob()
     {
         if (!empty($_POST['wpstg']['jobs']['snapshot']['site'])) {
-            return $this->container->get(JobSiteExport::class);
+            return WPStaging::getInstance()->get(JobSiteExport::class);
         }
-        return $this->container->get(JobCreateSnapshot::class);
+        return WPStaging::getInstance()->get(JobCreateSnapshot::class);
     }
 }

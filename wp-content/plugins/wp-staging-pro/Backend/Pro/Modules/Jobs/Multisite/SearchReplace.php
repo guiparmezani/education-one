@@ -7,9 +7,9 @@ if( !defined( "WPINC" ) ) {
     die;
 }
 
-use WPStaging\WPStaging;
+use WPStaging\Core\WPStaging;
 use WPStaging\Framework\Utils\Strings;
-use WPStaging\Utils\Helper;
+use WPStaging\Core\Utils\Helper;
 use Exception;
 
 /**
@@ -164,7 +164,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         );
 
         // Search & Replace
-        $this->searchReplace( $new, $rows, array() );
+        $this->searchReplace( $new, $rows, [] );
 
         // Set new offset
         $this->options->job->start += $this->settings->querySRLimit;
@@ -190,7 +190,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
      */
     private function get_columns( $table ) {
         $primary_key = null;
-        $columns     = array();
+        $columns     = [];
         $fields      = $this->db->get_results( 'DESCRIBE ' . $table );
         if( is_array( $fields ) ) {
             foreach ( $fields as $column ) {
@@ -200,7 +200,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 }
             }
         }
-        return array($primary_key, $columns);
+        return [$primary_key, $columns];
     }
 
     /**
@@ -229,7 +229,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
     private function searchReplace( $table, $page, $args ) {
 
         if( $this->thirdParty->isSearchReplaceExcluded( $table ) ) {
-            $this->log( "DB Search & Replace: Skip {$table}", \WPStaging\Utils\Logger::TYPE_INFO );
+            $this->log( "DB Search & Replace: Skip {$table}", \WPStaging\Core\Utils\Logger::TYPE_INFO );
             return true;
         }
 
@@ -239,35 +239,35 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         // Staging site has been created with WPSTG 2.8.2 or later. Do not search & replace the links to the uploads folder
         if( !empty( $this->options->existingClones[$this->options->current]["version"] ) && version_compare( $this->options->existingClones[$this->options->current]["version"], '2.8.2', '>=' ) ) {
             // Search URL example.com/staging and root path to staging site /var/www/htdocs/staging
-            $args['search_for']   = array(
+            $args['search_for']   = [
                 '\/\/' . str_replace( '/', '\/', $this->get_url_without_scheme( $this->options->url ) ),
                 '//' . $this->get_url_without_scheme( $this->options->url ),
                 rtrim( $this->options->path, DIRECTORY_SEPARATOR ),
                 $this->homeHost . '%2F' . $this->options->directoryName
-            );
-            $args['replace_with'] = array(
+            ];
+            $args['replace_with'] = [
                 '\/\/' . str_replace( '/', '\/', $this->homeUrlWithoutScheme ),
                 '//' . $this->homeUrlWithoutScheme,
                 rtrim( ABSPATH, '/' ),
                 $this->homeUrlWithoutScheme
-            );
+            ];
         } else {
             // Staging site has been created with WPSTG 2.8.1 or earlier. Search & replace the links to the uploads folder
             // Search URL example.com/staging and root path to staging site /var/www/htdocs/staging
-            $args['search_for']   = array(
+            $args['search_for']   = [
                 '\/\/' . str_replace( '/', '\/', $this->get_url_without_scheme( $this->options->url ) ),
                 '//' . $this->get_url_without_scheme( $this->options->url ),
                 rtrim( $this->options->path, DIRECTORY_SEPARATOR ),
                 $this->getImagePathStaging(),
                 $this->homeHost . '%2F' . $this->options->directoryName
-            );
-            $args['replace_with'] = array(
+            ];
+            $args['replace_with'] = [
                 '\/\/' . str_replace( '/', '\/', $this->homeUrlWithoutScheme ),
                 '//' . $this->homeUrlWithoutScheme,
                 rtrim( ABSPATH, '/' ),
                 $this->getImagePathLive(),
                 $this->homeUrlWithoutScheme
-            );
+            ];
         }
         $args['replace_guids']    = 'off';
         $args['dry_run']          = 'off';
@@ -290,7 +290,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         $data = $this->db->get_results( "SELECT * FROM $table LIMIT $start, $end", ARRAY_A );
 
         // Filter certain rows (of other plugins)
-        $filter = array(
+        $filter = [
             'Admin_custome_login_Slidshow',
             'Admin_custome_login_Social',
             'Admin_custome_login_logo',
@@ -299,15 +299,15 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
             'Admin_custome_login_top',
             'Admin_custome_login_dashboard',
             'Admin_custome_login_Version',
-        );
+        ];
 
         $filter = apply_filters( 'wpstg_clone_searchreplace_excl_rows', $filter );
 
         // Loop through the data.
         foreach ( $data as $row ) {
             $current_row++;
-            $update_sql = array();
-            $where_sql  = array();
+            $update_sql = [];
+            $where_sql  = [];
             $upd        = false;
 
             // Skip rows below
@@ -316,7 +316,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
             }
 
             // Skip rows with transients (They can store huge data and we need to save memory)
-            if( isset( $row['option_name'] ) && 'on' === $args['skip_transients'] && false !== strpos( $row['option_name'], '_transient' ) ) {
+            if( isset( $row['option_name'] ) && $args['skip_transients'] === 'on' && strpos( $row['option_name'], '_transient' ) !== false ) {
                 continue;
             }
             // Skip rows with more than 5MB to save memory
@@ -342,12 +342,12 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 }
 
                 // Skip GUIDs by default.
-                if( 'on' !== $args['replace_guids'] && 'guid' == $column ) {
+                if( $args['replace_guids'] !== 'on' && $column == 'guid' ) {
                     continue;
                 }
 
                 // Skip mail addresses
-                if( 'off' === $args['replace_mails'] && false !== strpos( $dataRow, '@' . $this->homeHost ) ) {
+                if( $args['replace_mails'] === 'off' && strpos( $dataRow, '@' . $this->homeHost ) !== false ) {
                     continue;
                 }
 
@@ -376,7 +376,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 $result = $this->db->query( $sql );
 
                 if( !$result ) {
-                    $this->log( "Error updating row {$current_row} SQL: {$sql}", \WPStaging\Utils\Logger::TYPE_ERROR );
+                    $this->log( "Error updating row {$current_row} SQL: {$sql}", \WPStaging\Core\Utils\Logger::TYPE_ERROR );
                 }
             }
         } // end row loop
@@ -419,7 +419,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
             if( is_serialized( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
                 $data = $this->recursive_unserialize_replace( $from, $to, $unserialized, true, $case_insensitive );
             } elseif( is_array( $data ) ) {
-                $tmp = array();
+                $tmp = [];
                 foreach ( $data as $key => $value ) {
                     $tmp[$key] = $this->recursive_unserialize_replace( $from, $to, $value, false, $case_insensitive );
                 }
@@ -474,7 +474,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
             return array_map( __METHOD__, $input );
         }
         if( !empty( $input ) && is_string( $input ) ) {
-            return str_replace( array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $input );
+            return str_replace( ['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $input );
         }
 
         return $input;
@@ -521,7 +521,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
 //      }
 
 
-        if( 'on' === $case_insensitive ) {
+        if( $case_insensitive === 'on' ) {
             $data = str_ireplace( $from, $to, $data );
             //$data = preg_replace( '#' . $regexExclude . preg_quote( $from ) . '#i', $to, $data );
         } else {
@@ -552,13 +552,13 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
      * @return bool
      */
     private function startJob( $new, $old ) {
-        if( 0 != $this->options->job->start ) {
+        if( $this->options->job->start != 0 ) {
             return true;
         }
 
         $this->options->job->total = ( int ) $this->db->get_var( "SELECT COUNT(1) FROM {$old}" );
 
-        if( 0 == $this->options->job->total ) {
+        if( $this->options->job->total == 0 ) {
             $this->finishStep();
             return false;
         }
@@ -611,7 +611,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
                 (
                 !isset( $this->options->job->current ) ||
                 !isset( $this->options->job->start ) ||
-                0 == $this->options->job->start
+                $this->options->job->start == 0
                 )
                 );
     }
@@ -626,7 +626,7 @@ class SearchReplace extends \WPStaging\Backend\Modules\Jobs\JobExecutable {
         $basedir = $uploads['basedir'];
         $blogId  = get_current_blog_id();
 
-        if( false === strpos( $basedir, 'blogs.dir' ) ) {
+        if( strpos( $basedir, 'blogs.dir' ) === false ) {
             // Since WP 3.5
             $path = $blogId > 1 ?
                     'wp-content' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'sites' . DIRECTORY_SEPARATOR . get_current_blog_id() . DIRECTORY_SEPARATOR :

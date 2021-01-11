@@ -20,6 +20,7 @@ use WPStaging\Pro\Snapshot\Site\Task\RestorePluginsTask;
 use WPStaging\Pro\Snapshot\Site\Task\RestoreThemesTask;
 use WPStaging\Pro\Snapshot\Site\Task\RestoreWpContentTask;
 use WPStaging\Framework\Filesystem\Filesystem;
+use WPStaging\Core\WPStaging;
 
 // Need to make sure the destination is not already there before we extract or will create problems with file contents
 class JobSiteRestore extends AbstractQueueJob
@@ -213,7 +214,7 @@ class JobSiteRestore extends AbstractQueueJob
     private function withExtractedPath($relativePath = null)
     {
         /** @var Directory $adapter */
-        $adapter = $this->container->get(Directory::class);
+        $adapter = WPStaging::getInstance()->get(Directory::class);
         $dir = $adapter->getPluginUploadsDirectory() . Extractor::TMP_DIRECTORY . $this->requestDto->getId();
         $fs = new Filesystem;
         $dir = $fs->mkdir($dir);

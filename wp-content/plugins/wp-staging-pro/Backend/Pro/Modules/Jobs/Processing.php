@@ -3,8 +3,7 @@
 namespace WPStaging\Backend\Pro\Modules\Jobs;
 
 use WPStaging\Framework\Security\AccessToken;
-use WPStaging\WPStaging;
-use WPStaging\Plugin;
+use WPStaging\Core\WPStaging;
 use RuntimeException;
 use WPStaging\Backend\Modules\Jobs\Job;
 use WPStaging\Backend\Pro\Modules\Jobs\Multisite\ScanDirectories as muScanDirectories;
@@ -67,8 +66,8 @@ class Processing extends Job
         $this->cache->delete('files_to_copy');
 
         // Basic Options
-        $this->options->root = str_replace(array("\\", '/'), DIRECTORY_SEPARATOR, ABSPATH);
-        $this->options->existingClones = get_option("wpstg_existing_clones_beta", array());
+        $this->options->root = str_replace(["\\", '/'], DIRECTORY_SEPARATOR, ABSPATH);
+        $this->options->existingClones = get_option("wpstg_existing_clones_beta", []);
 
         if (isset($_POST["clone"]) && array_key_exists($_POST["clone"], $this->options->existingClones)) {
             $this->options->current = $_POST["clone"];
@@ -88,19 +87,19 @@ class Processing extends Job
         $this->options->prefix = $this->getPrefix();
 
 
-        $this->options->excludedTables = array();
-        $this->options->clonedTables = array();
+        $this->options->excludedTables = [];
+        $this->options->clonedTables = [];
 
         // Files
         $this->options->totalFiles = 0;
         $this->options->copiedFiles = 0;
 
         // Directories
-        $this->options->includedDirectories = array();
-        $this->options->excludedDirectories = array();
-        $this->options->extraDirectories = array();
-        $this->options->directoriesToCopy = array();
-        $this->options->scannedDirectories = array();
+        $this->options->includedDirectories = [];
+        $this->options->excludedDirectories = [];
+        $this->options->extraDirectories = [];
+        $this->options->directoriesToCopy = [];
+        $this->options->scannedDirectories = [];
 
         // TODO REF: Job Queue; FIFO
         // Job
@@ -117,7 +116,7 @@ class Processing extends Job
         if (isset($_POST["excludedTables"]) && is_array($_POST["excludedTables"])) {
             $this->options->excludedTables = $_POST["excludedTables"];
         } else {
-            $this->options->excludedTables = array();
+            $this->options->excludedTables = [];
         }
 
         // Excluded Directories POST
@@ -137,17 +136,17 @@ class Processing extends Job
         }
 
         // Never copy these folders
-        $excludedDirectories = array(
+        $excludedDirectories = [
             $this->options->path . 'wp-content/plugins/wp-staging-pro',
             $this->options->path . 'wp-content/plugins/wp-staging-pro-1',
             $this->options->path . 'wp-content/plugins/wp-staging',
             $this->options->path . 'wp-content/plugins/wp-staging-1',
             $this->options->path . 'wp-content/uploads/wp-staging',
-        );
+        ];
         $this->options->excludedDirectories = array_merge($excludedDirectories, $this->options->excludedDirectories);
 
         // Excluded Files
-        $this->options->excludedFiles = apply_filters('wpstg_push_excluded_files', array(
+        $this->options->excludedFiles = apply_filters('wpstg_push_excluded_files', [
             '.htaccess',
             '.DS_Store',
             '*.git',
@@ -158,7 +157,7 @@ class Processing extends Job
             '*.log',
             'wp-staging-optimizer.php',
             '.wp-staging'
-        ));
+        ]);
 
         // Directories to Copy Total
         $this->options->directoriesToCopy = array_merge(
@@ -190,7 +189,7 @@ class Processing extends Job
 
         $this->options->existingClones[$this->options->clone]['excludedDirs'] = $this->options->excludedDirectories;
 
-        if (false === update_option("wpstg_existing_clones_beta", $this->options->existingClones)) {
+        if (update_option("wpstg_existing_clones_beta", $this->options->existingClones) === false) {
             return false;
         }
         return true;
@@ -209,7 +208,7 @@ class Processing extends Job
 
         $this->options->existingClones[$this->options->clone]['excludedTables'] = $this->options->excludedTables;
 
-        if (false === update_option("wpstg_existing_clones_beta", $this->options->existingClones)) {
+        if (update_option("wpstg_existing_clones_beta", $this->options->existingClones) === false) {
             return false;
         }
         return true;
@@ -253,7 +252,7 @@ class Processing extends Job
         // If status is not set, then this should throw exception as this is something that's expected
         // Response should be a DTO (we have it now; cloneDTO, perhaps needs extension)
         // TODO Ref: saving options should be here! Single point not spread throughout the code base just like below $this->saveOptions(), why not saving here too?
-        if( isset( $response->status ) && true !== $response->status ) {
+        if( isset( $response->status ) && $response->status !== true ) {
             return $response;
         }
 
@@ -292,7 +291,7 @@ class Processing extends Job
         }
 
         /** @var JobCreateSnapshot $job */
-        $job = $this->getFromContainer(JobCreateSnapshot::class);
+	    $job = WPStaging::getInstance()->get(JobCreateSnapshot::class);
         if (!$job) {
             throw new RuntimeException('Failed to get Job Create Snapshot');
         }
@@ -428,15 +427,5 @@ class Processing extends Job
                 'current' => $this->options->currentStep ?: 0,
             ],
         ];
-    }
-
-    protected function getFromContainer($service)
-    {
-        $plugin = WPStaging::getInstance()->get(Plugin::class);
-        if (!$plugin) {
-            return null;
-        }
-
-        return $plugin->getContainer()->get($service);
     }
 }

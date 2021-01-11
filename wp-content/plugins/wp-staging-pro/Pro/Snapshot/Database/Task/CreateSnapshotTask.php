@@ -15,7 +15,7 @@ use WPStaging\Pro\Snapshot\Database\Task\Dto\SnapshotCreateDto;
 use WPStaging\Pro\Snapshot\Entity\Snapshot;
 use WPStaging\Framework\Database\TableDto;
 use WPStaging\Pro\Snapshot\Database\Service\SnapshotService;
-use WPStaging\Utils\Logger;
+use WPStaging\Core\Utils\Logger;
 
 class CreateSnapshotTask extends AbstractTask
 {

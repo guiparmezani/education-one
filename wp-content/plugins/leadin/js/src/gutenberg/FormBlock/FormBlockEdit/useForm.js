@@ -15,10 +15,7 @@ export default function useForm(id) {
           setForm(response);
           setLoading(false);
         })
-        .catch(error => {
-          setLoading(false);
-          console.error(error);
-        });
+        .catch(() => setLoading(false));
     }
   }, [id]);
 

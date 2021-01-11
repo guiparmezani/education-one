@@ -9,8 +9,7 @@ namespace WPStaging\Pro\Snapshot\Site\Service;
 
 use DateTime;
 use RuntimeException;
-use Symfony\Component\Filesystem\Exception\IOException;
-use WPStaging\Plugin;
+use WPStaging\Vendor\Symfony\Component\Filesystem\Exception\IOException;
 use WPStaging\Framework\Adapter\Directory;
 use WPStaging\Framework\Queue\Queue;
 use WPStaging\Framework\Queue\Storage\BufferedCacheStorage;
@@ -20,6 +19,7 @@ use WPStaging\Framework\Utils\Cache\Cache;
 use WPStaging\Framework\Filesystem\DiskFullException;
 use WPStaging\Framework\Filesystem\FileScanner;
 use WPStaging\Framework\Filesystem\Filesystem;
+use WPStaging\Core\WPStaging;
 
 class Compressor
 {
@@ -56,12 +56,12 @@ class Compressor
     private $exportDirectory;
 
     // TODO telescoped
-    public function __construct(Plugin $plugin, BufferedCache $cache, BufferedCacheStorage $storage, Directory $directory)
+    public function __construct(BufferedCache $cache, BufferedCacheStorage $storage, Directory $directory)
     {
         $this->initiateStartTime();
         $this->dto = new ExporterDto;
 
-        $this->dto->getFileHeaders()->setVersion($plugin->getVersion());
+        $this->dto->getFileHeaders()->setVersion(WPStaging::getVersion());
 
         $cache->setLifetime(DAY_IN_SECONDS);
 
@@ -292,7 +292,7 @@ class Compressor
     private function addIndex($writtenBytes)
     {
         $start = $this->compressedFileSize - $this->dto->getFileSize();
-        if (0 > $start) {
+        if ($start < 0) {
             $start = 0;
         }
 

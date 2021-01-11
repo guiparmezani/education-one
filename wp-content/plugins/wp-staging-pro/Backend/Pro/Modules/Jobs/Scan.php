@@ -8,10 +8,11 @@ if (!defined("WPINC")) {
 }
 
 use WPStaging\Backend\Modules\Jobs\Job;
-use WPStaging\Utils\Logger;
-use WPStaging\WPStaging;
-use WPStaging\Utils\Directories;
+use WPStaging\Core\Utils\Logger;
+use WPStaging\Core\WPStaging;
+use WPStaging\Core\Utils\Directories;
 use WPStaging\Backend\Optimizer\Optimizer;
+use WPStaging\Framework\Utils\WpDefaultDirectories;
 
 /**
  * Class Scan
@@ -26,7 +27,7 @@ class Scan extends Job
     /**
      * @var array
      */
-    private $directories = array();
+    private $directories = [];
 
     /**
      * @var Directories
@@ -66,7 +67,7 @@ class Scan extends Job
      */
     protected function getDb()
     {
-        $this->options->existingClones = get_option("wpstg_existing_clones_beta", array());
+        $this->options->existingClones = get_option("wpstg_existing_clones_beta", []);
         if (isset($_POST["clone"]) &&
             !empty($this->options->existingClones[$this->options->current]['databaseUser']) &&
             !empty($this->options->existingClones[$this->options->current]['databasePassword']) &&
@@ -97,8 +98,8 @@ class Scan extends Job
         $this->cache->delete('files_to_copy');
 
         // Basic Options
-        $this->options->root = str_replace(array("\\", '/'), DIRECTORY_SEPARATOR, WPStaging::getWPpath());
-        $this->options->existingClones = array_change_key_case(get_option("wpstg_existing_clones_beta", array()), CASE_LOWER);
+        $this->options->root = str_replace(["\\", '/'], DIRECTORY_SEPARATOR, WPStaging::getWPpath());
+        $this->options->existingClones = array_change_key_case(get_option("wpstg_existing_clones_beta", []), CASE_LOWER);
         $this->options->current = null;
 
         // Get clone data
@@ -119,8 +120,8 @@ class Scan extends Job
             wp_die('Fatal error - The clone does not exist in database. This should not happen.');
         }
         // Tables
-        $this->options->excludedTables = array();
-        $this->options->clonedTables = array();
+        $this->options->excludedTables = [];
+        $this->options->clonedTables = [];
         $this->options->excludedTables = $this->getExcludedTables();
 
 
@@ -131,11 +132,11 @@ class Scan extends Job
 
 
         // Directories
-        $this->options->includedDirectories = array();
-        $this->options->excludedDirectories = array();
-        $this->options->extraDirectories = array();
-        $this->options->directoriesToCopy = array();
-        $this->options->scannedDirectories = array();
+        $this->options->includedDirectories = [];
+        $this->options->excludedDirectories = [];
+        $this->options->extraDirectories = [];
+        $this->options->directoriesToCopy = [];
+        $this->options->scannedDirectories = [];
 
         // Never copy these directories
         $this->options->excludedDirectories = $this->getExcludedDirectories();
@@ -164,7 +165,7 @@ class Scan extends Job
         if (!empty($this->options->existingClones[$this->options->clone]['excludedDirs'])) {
             return $this->options->existingClones[$this->options->clone]['excludedDirs'];
         }
-        return array();
+        return [];
     }
 
     /**
@@ -185,10 +186,10 @@ class Scan extends Job
      */
     protected function getExcludedCustomTables()
     {
-        $excludedTables = array();
+        $excludedTables = [];
         $excludedTables = apply_filters('wpstg_push_excluded_tables', $excludedTables);
 
-        $tables = array();
+        $tables = [];
         foreach ($excludedTables as $key => $value) {
             $tables[] = $this->options->prefix . $value;
         }
@@ -211,7 +212,7 @@ class Scan extends Job
      */
     public function directoryListing($directories = null, $forceDisabled = false)
     {
-        if (null == $directories) {
+        if ($directories == null) {
             $directories = $this->directories;
         }
 
@@ -280,20 +281,20 @@ class Scan extends Job
 
         $freeSpace = @disk_free_space($this->options->path);
 
-        if (false === $freeSpace) {
-            $data = array(
+        if ($freeSpace === false) {
+            $data = [
                 'freespace' => false,
                 'usedspace' => $this->formatSize($this->getDirectorySizeInclSubdirs($this->options->path))
-            );
+            ];
             echo json_encode($data);
             die();
         }
 
 
-        $data = array(
+        $data = [
             'freespace' => $this->formatSize($freeSpace),
             'usedspace' => $this->formatSize($this->getDirectorySizeInclSubdirs($this->options->path))
-        );
+        ];
 
         echo json_encode($data);
         die();
@@ -324,7 +325,7 @@ class Scan extends Job
 
         foreach ($directories as $directory) {
             //Not a valid directory. Continue iteration but do not loop through the current further and look for subdirectores
-            if (false === ($path = $this->getPath($directory))) {
+            if (($path = $this->getPath($directory)) === false) {
                 continue;
             }
 
@@ -341,22 +342,22 @@ class Scan extends Job
      */
     protected function buildUploadsDirectories()
     {
-        $relPath = rtrim(wpstg_get_rel_upload_dir(), '/\\');
+        $relPath = rtrim((new WpDefaultDirectories())->getRelativeUploadPath(), '/\\');
         $absPath = wpstg_get_abs_upload_dir();
         $path = $this->options->path . $relPath;
 
         // Do not do anything if the default uploads folder is used
-        if (false !== strpos($absPath, 'wp-content/uploads')) {
+        if (strpos($absPath, 'wp-content/uploads') !== false) {
             return false;
         }
 
 
         $currentArray = &$this->directories;
 
-        $currentArray[$relPath]["metaData"] = array(
+        $currentArray[$relPath]["metaData"] = [
             "size" => 0,
             "path" => $path,
-        );
+        ];
         return true;
     }
 
@@ -376,7 +377,7 @@ class Scan extends Job
          * Prevents open base dir restriction fatal errors
          */
         $realPath = wpstg_replace_windows_directory_separator($directory->getRealPath());
-        if (false === strpos($realPath, $this->options->path)) {
+        if (strpos($realPath, $this->options->path) === false) {
             return false;
         }
 
@@ -406,7 +407,7 @@ class Scan extends Job
 
         foreach ($directories as $directory) {
             // Not a valid directory
-            if (false === ($path = $this->getPath($directory))) {
+            if (($path = $this->getPath($directory)) === false) {
                 continue;
             }
 
@@ -433,7 +434,7 @@ class Scan extends Job
 
         for ($i = 0; $i <= $total; $i++) {
             if (!isset($currentArray[$directoryArray[$i]])) {
-                $currentArray[$directoryArray[$i]] = array();
+                $currentArray[$directoryArray[$i]] = [];
             }
 
             $currentArray = &$currentArray[$directoryArray[$i]];
@@ -446,10 +447,10 @@ class Scan extends Job
             $fullPath = $this->options->path . 'wp-content' . '/' . $path;
             $size = $this->getDirectorySize($fullPath);
 
-            $currentArray["metaData"] = array(
+            $currentArray["metaData"] = [
                 "size" => $size,
                 "path" => $this->options->path . 'wp-content' . '/' . $path,
-            );
+            ];
         }
     }
 
@@ -461,7 +462,7 @@ class Scan extends Job
      */
     protected function getDirectorySize($path)
     {
-        if (!isset($this->settings->checkDirectorySize) || '1' !== $this->settings->checkDirectorySize) {
+        if (!isset($this->settings->checkDirectorySize) || $this->settings->checkDirectorySize !== '1') {
             return null;
         }
 
@@ -494,7 +495,7 @@ class Scan extends Job
             return '';
         }
 
-        $units = array('B', "KB", "MB", "GB", "TB");
+        $units = ['B', "KB", "MB", "GB", "TB"];
 
         $bytes = ( double )$bytes;
         $base = log($bytes) / log(1000); // 1024 would be for MiB KiB etc
@@ -520,22 +521,22 @@ class Scan extends Job
         // todo: This will trigger a fatal, but seems to be dead code
         $tables = $this->db->get_results($sql);
 
-        $currentTables = array();
+        $currentTables = [];
 
         // Reset excluded Tables than loop through all tables
-        $this->options->excludedTables = array();
+        $this->options->excludedTables = [];
         foreach ($tables as $table) {
             // Create array of unchecked tables
             // Prefix of live site included
-            if (0 !== strpos($table->Name, $this->db->prefix)) {
+            if (strpos($table->Name, $this->db->prefix) !== 0) {
                 $this->options->excludedTables[] = $table->Name;
             }
 
             if ($table->Comment !== "VIEW") {
-                $currentTables[] = array(
+                $currentTables[] = [
                     "name" => $table->Name,
                     "size" => ($table->Data_length + $table->Index_length)
-                );
+                ];
             }
         }
 
@@ -561,7 +562,7 @@ class Scan extends Job
         // Try to get staging prefix from wp-config.php of staging site
 
         $path = $this->options->path . "wp-config.php";
-        if (false === ($content = @file_get_contents($path))) {
+        if (($content = @file_get_contents($path)) === false) {
             $this->log("Can not open {$path}. Can't read contents", Logger::TYPE_ERROR);
             // Create a random prefix which hopefully never exists.
             $this->options->prefix = mt_rand(7, 15) . '_';

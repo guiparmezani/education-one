@@ -6,26 +6,20 @@
 namespace WPStaging\Pro\Snapshot\Site\Ajax;
 
 use WPStaging\Framework\Adapter\Directory;
-use WPStaging\Framework\Component\AbstractComponent;
-use WPStaging\Framework\Component\AjaxTrait;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
+use WPStaging\Framework\TemplateEngine\TemplateEngine;
 use WPStaging\Framework\Utils\Size;
 use WPStaging\Framework\Filesystem\Filesystem;
 
-class FileList extends AbstractComponent
+class FileList extends AbstractTemplateComponent
 {
-    use AjaxTrait;
-
     /** @var Directory */
     private $directory;
 
-    public function __construct(Directory $directory)
+    public function __construct(Directory $directory, TemplateEngine $templateEngine)
     {
+        parent::__construct($templateEngine);
         $this->directory = $directory;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--import--file-list', [$this, 'render']);
     }
 
     public function render()

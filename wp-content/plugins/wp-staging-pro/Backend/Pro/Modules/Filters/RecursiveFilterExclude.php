@@ -3,13 +3,13 @@
 namespace WPStaging\Backend\Pro\Modules\Filters;
 
 use WPStaging\Backend\Pro\Modules\Jobs\Copiers\Copier;
-use WPStaging\Iterators\RecursiveFilterExclude as BaseRecursiveFilterExclude;
+use WPStaging\Core\Iterators\RecursiveFilterExclude as BaseRecursiveFilterExclude;
 
 /**
  * Class RecursiveFilterExclude
  *
- * @todo What's the difference between this and \WPStaging\Iterators\RecursiveFilterExclude?
- * @see \WPStaging\Iterators\RecursiveFilterExclude Maybe unify them.
+ * @todo What's the difference between this and \WPStaging\Core\Iterators\RecursiveFilterExclude?
+ * @see \WPStaging\Core\Iterators\RecursiveFilterExclude Maybe unify them.
  *
  * @package WPStaging\Backend\Pro\Modules\Filters
  */

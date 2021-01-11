@@ -6,7 +6,7 @@
  * Description: Create a staging clone site for testing & developing
  * Author: WP-STAGING
  * Author URI: https://wordpress.org/plugins/wp-staging
- * Version: 3.1.5
+ * Version: 3.1.8
  * Text Domain: wp-staging
  * Domain Path: /languages/
  *
@@ -14,6 +14,8 @@
  * @category Development, Migrating, Staging
  * @author WP STAGING
  */
+
+namespace WPStaging\Bootstrap\V1;
 
 if (!defined("WPINC")) {
     die;
@@ -23,69 +25,36 @@ if (!defined('WPSTG_PRO_LOADED')) {
     define('WPSTG_PRO_LOADED', __FILE__);
 }
 
-// Standalone requirement-checking script
-require_once 'Requirements/WpstgProRequirements.php';
+require_once __DIR__ . '/Bootstrap/V1/Requirements/WpstgProRequirements.php';
+require_once __DIR__ . '/Bootstrap/V1/WpstgBootstrap.php';
 
-if (!interface_exists('WpstgBootstrapInterface')) {
-    interface WpstgBootstrapInterface {
-        public function checkRequirements();
-        public function bootstrap();
-        public function passedRequirements();
-    }
-}
-
-if (!class_exists('WpstgProBootstrap')) {
-    class WpstgProBootstrap implements WpstgBootstrapInterface
+if (!class_exists(WpstgProBootstrap::class)) {
+    class WpstgProBootstrap extends WpstgBootstrap
     {
-        private $shouldBootstrap = true;
-        private $requirements;
-
-        public function __construct(WpstgRequirements $requirements)
+        protected function afterBootstrap()
         {
-            $this->requirements = $requirements;
-        }
-
-        public function checkRequirements()
-        {
-            try {
-                $this->requirements->checkRequirements();
-            } catch (Exception $e) {
-                $this->shouldBootstrap = false;
-
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log(sprintf("[Activation] WP STAGING Pro: %s", $e->getMessage()));
-                }
-            }
-        }
-
-        public function bootstrap()
-        {
-            // Early bail: Requirements not met.
-            if (!$this->shouldBootstrap) {
-                return;
-            }
-
-            // Absolute path to plugin dir /var/www/.../plugins/wp-staging(-pro)
-            if (!defined('WPSTG_PLUGIN_DIR')) {
-                define('WPSTG_PLUGIN_DIR', plugin_dir_path(__FILE__));
-            }
-
-            // Absolute path and name to main plugin entry file /var/www/.../plugins/wp-staging(-pro)/wp-staging(-pro).php
             if (!defined('WPSTG_PLUGIN_FILE')) {
                 define('WPSTG_PLUGIN_FILE', __FILE__);
             }
 
-            require_once(__DIR__ . '/_init.php');
-        }
+            // WP STAGING version number
+            if (!defined('WPSTGPRO_VERSION')) {
+                define('WPSTGPRO_VERSION', '3.1.8');
+            }
 
-        public function passedRequirements()
-        {
-            return $this->shouldBootstrap;
+            // Compatible up to WordPress Version
+            if (!defined('WPSTG_COMPATIBLE')) {
+                define('WPSTG_COMPATIBLE', '5.6');
+            }
+
+            require_once __DIR__ . '/constants.php';
+
+            require_once(__DIR__ . '/_init.php');
         }
     }
 }
 
-$bootstrap = new WpstgProBootstrap(new WpstgProRequirements(__FILE__));
+$bootstrap = new WpstgProBootstrap(__DIR__, new WpstgProRequirements(__FILE__));
 
 // Pro requirement-checking runs after Free requirement-checking.
 add_action('plugins_loaded', [$bootstrap, 'checkRequirements'], 6);

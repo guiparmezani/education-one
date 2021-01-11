@@ -113,7 +113,7 @@ class ExtractorFileDto
 
     public function addWrittenBytes($writtenBytes)
     {
-        if (null === $this->writtenBytes) {
+        if ($this->writtenBytes === null) {
             $this->writtenBytes = $writtenBytes;
             return;
         }

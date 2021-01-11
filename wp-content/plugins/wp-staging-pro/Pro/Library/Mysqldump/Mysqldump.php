@@ -68,20 +68,20 @@ class Mysqldump
     public $fileName = 'php://stdout';
 
     // Internal stuff.
-    private $tables = array();
-    private $views = array();
-    private $triggers = array();
-    private $procedures = array();
-    private $functions = array();
-    private $events = array();
+    private $tables = [];
+    private $views = [];
+    private $triggers = [];
+    private $procedures = [];
+    private $functions = [];
+    private $events = [];
     private $dbHandler = null;
     private $dbType = "";
     private $compressManager;
     private $typeAdapter;
-    private $dumpSettings = array();
-    private $pdoSettings = array();
+    private $dumpSettings = [];
+    private $pdoSettings = [];
     private $version;
-    private $tableColumnTypes = array();
+    private $tableColumnTypes = [];
     private $transformColumnValueCallable;
 
     /**
@@ -100,7 +100,7 @@ class Mysqldump
      * Dsn string parsed as an array.
      * @var array
      */
-    private $dsnArray = array();
+    private $dsnArray = [];
 
     /**
      * Keyed on table name, with the value as the conditions.
@@ -108,8 +108,8 @@ class Mysqldump
      *
      * @var array
      */
-    private $tableWheres = array();
-    private $tableLimits = array();
+    private $tableWheres = [];
+    private $tableLimits = [];
 
     /**
      * Constructor of Mysqldump. Note that in the case of an SQLite database
@@ -125,15 +125,15 @@ class Mysqldump
         $dsn = '',
         $user = '',
         $pass = '',
-        $dumpSettings = array(),
-        $pdoSettings = array()
+        $dumpSettings = [],
+        $pdoSettings = []
     ) {
-        $dumpSettingsDefault = array(
-            'include-tables' => array(),
-            'exclude-tables' => array(),
+        $dumpSettingsDefault = [
+            'include-tables' => [],
+            'exclude-tables' => [],
             'compress' => Mysqldump::NONE,
-            'init_commands' => array(),
-            'no-data' => array(),
+            'init_commands' => [],
+            'no-data' => [],
             'reset-auto-increment' => false,
             'add-drop-database' => false,
             'add-drop-table' => false,
@@ -162,19 +162,19 @@ class Mysqldump
             'version' => '',
             /* deprecated */
             'disable-foreign-keys-check' => true
-        );
+        ];
 
-        $pdoSettingsDefault = array(
+        $pdoSettingsDefault = [
             PDO::ATTR_PERSISTENT => true,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        );
+        ];
 
         $this->user = $user;
         $this->pass = $pass;
         $this->parseDsn($dsn);
 
         // This drops MYSQL dependency, only use the constant if it's defined.
-        if ("mysql" === $this->dbType) {
+        if ($this->dbType === "mysql") {
             $pdoSettingsDefault[PDO::MYSQL_ATTR_USE_BUFFERED_QUERY] = false;
         }
 
@@ -182,7 +182,7 @@ class Mysqldump
         $this->dumpSettings = self::array_replace_recursive($dumpSettingsDefault, $dumpSettings);
         $this->dumpSettings['init_commands'][] = "SET NAMES ".$this->dumpSettings['default-character-set'];
 
-        if (false === $this->dumpSettings['skip-tz-utc']) {
+        if ($this->dumpSettings['skip-tz-utc'] === false) {
             $this->dumpSettings['init_commands'][] = "SET TIME_ZONE='+00:00'";
         }
 
@@ -305,7 +305,7 @@ class Mysqldump
      */
     private function parseDsn($dsn)
     {
-        if (empty($dsn) || (false === ($pos = strpos($dsn, ":")))) {
+        if (empty($dsn) || (($pos = strpos($dsn, ":")) === false)) {
             throw new Exception("Empty DSN string");
         }
 
@@ -444,7 +444,7 @@ class Mysqldump
         // that means that some tables or views weren't found.
         // Give proper error and exit.
         // This check will be removed once include-tables supports regexps.
-        if (0 < count($this->dumpSettings['include-tables'])) {
+        if (count($this->dumpSettings['include-tables']) > 0) {
             $name = implode(",", $this->dumpSettings['include-tables']);
             throw new Exception("Table (".$name.") not found in database");
         }
@@ -582,7 +582,7 @@ class Mysqldump
     private function getDatabaseStructureTriggers()
     {
         // Listing all triggers from database
-        if (false === $this->dumpSettings['skip-triggers']) {
+        if ($this->dumpSettings['skip-triggers'] === false) {
             foreach ($this->dbHandler->query($this->typeAdapter->show_triggers($this->dbName)) as $row) {
                 array_push($this->triggers, $row['Trigger']);
             }
@@ -652,10 +652,10 @@ class Mysqldump
         $match = false;
 
         foreach ($arr as $pattern) {
-            if ('/' != $pattern[0]) {
+            if ($pattern[0] != '/') {
                 continue;
             }
-            if (1 == preg_match($pattern, $table)) {
+            if (preg_match($pattern, $table) == 1) {
                 $match = true;
             }
         }
@@ -676,9 +676,9 @@ class Mysqldump
                 continue;
             }
             $this->getTableStructure($table);
-            if (false === $this->dumpSettings['no-data']) { // don't break compatibility with old trigger
+            if ($this->dumpSettings['no-data'] === false) { // don't break compatibility with old trigger
                 $this->listValues($table);
-            } elseif (true === $this->dumpSettings['no-data']
+            } elseif ($this->dumpSettings['no-data'] === true
                  || $this->matches($table, $this->dumpSettings['no-data'])) {
                 continue;
             } else {
@@ -694,7 +694,7 @@ class Mysqldump
      */
     private function exportViews()
     {
-        if (false === $this->dumpSettings['no-create-info']) {
+        if ($this->dumpSettings['no-create-info'] === false) {
             // Exporting views one by one
             foreach ($this->views as $view) {
                 if ($this->matches($view, $this->dumpSettings['exclude-tables'])) {
@@ -807,7 +807,7 @@ class Mysqldump
 
     private function getTableColumnTypes($tableName)
     {
-        $columnTypes = array();
+        $columnTypes = [];
         $columns = $this->dbHandler->query(
             $this->typeAdapter->show_columns($tableName)
         );
@@ -815,13 +815,13 @@ class Mysqldump
 
         foreach ($columns as $key => $col) {
             $types = $this->typeAdapter->parseColumnType($col);
-            $columnTypes[$col['Field']] = array(
+            $columnTypes[$col['Field']] = [
                 'is_numeric'=> $types['is_numeric'],
                 'is_blob' => $types['is_blob'],
                 'type' => $types['type'],
                 'type_sql' => $col['Type'],
                 'is_virtual' => $types['is_virtual']
-            );
+            ];
         }
 
         return $columnTypes;
@@ -868,7 +868,7 @@ class Mysqldump
      */
     public function createStandInTable($viewName)
     {
-        $ret = array();
+        $ret = [];
         foreach ($this->tableColumnTypes[$viewName] as $k => $v) {
             $ret[] = "`${k}` ${v['type_sql']}";
         }
@@ -1013,7 +1013,7 @@ class Mysqldump
      */
     private function prepareColumnValues($tableName, $row)
     {
-        $ret = array();
+        $ret = [];
         $columnTypes = $this->tableColumnTypes[$tableName];
         foreach ($row as $colName => $colValue) {
             $colValue = $this->hookTransformColumnValue($tableName, $colName, $colValue, $row);
@@ -1075,12 +1075,12 @@ class Mysqldump
             return $colValue;
         }
 
-        return call_user_func_array($this->transformColumnValueCallable, array(
+        return call_user_func_array($this->transformColumnValueCallable, [
             $tableName,
             $colName,
             $colValue,
             $row
-        ));
+        ]);
     }
 
     /**
@@ -1265,7 +1265,7 @@ class Mysqldump
      */
     public function getColumnStmt($tableName)
     {
-        $colStmt = array();
+        $colStmt = [];
         foreach ($this->tableColumnTypes[$tableName] as $colName => $colType) {
             if ($colType['type'] == 'bit' && $this->dumpSettings['hex-blob']) {
                 $colStmt[] = "LPAD(HEX(`${colName}`),2,'0') AS `${colName}`";
@@ -1291,7 +1291,7 @@ class Mysqldump
      */
     public function getColumnNames($tableName)
     {
-        $colNames = array();
+        $colNames = [];
         foreach ($this->tableColumnTypes[$tableName] as $colName => $colType) {
             if ($colType['is_virtual']) {
                 $this->dumpSettings['complete-insert'] = true;
@@ -1310,11 +1310,11 @@ class Mysqldump
  */
 abstract class CompressMethod
 {
-    public static $enums = array(
+    public static $enums = [
         Mysqldump::NONE,
         Mysqldump::GZIP,
         Mysqldump::BZIP2,
-    );
+    ];
 
     /**
      * @param string $c
@@ -1362,7 +1362,7 @@ class CompressBzip2 extends CompressManagerFactory
     public function open($filename)
     {
         $this->fileHandler = bzopen($filename, "w");
-        if (false === $this->fileHandler) {
+        if ($this->fileHandler === false) {
             throw new Exception("Output file is not writable");
         }
 
@@ -1372,7 +1372,7 @@ class CompressBzip2 extends CompressManagerFactory
     public function write($str)
     {
         $bytesWritten = bzwrite($this->fileHandler, $str);
-        if (false === $bytesWritten) {
+        if ($bytesWritten === false) {
             throw new Exception("Writting to file failed! Probably, there is no more free space left?");
         }
         return $bytesWritten;
@@ -1401,7 +1401,7 @@ class CompressGzip extends CompressManagerFactory
     public function open($filename)
     {
         $this->fileHandler = gzopen($filename, "wb");
-        if (false === $this->fileHandler) {
+        if ($this->fileHandler === false) {
             throw new Exception("Output file is not writable");
         }
 
@@ -1411,7 +1411,7 @@ class CompressGzip extends CompressManagerFactory
     public function write($str)
     {
         $bytesWritten = gzwrite($this->fileHandler, $str);
-        if (false === $bytesWritten) {
+        if ($bytesWritten === false) {
             throw new Exception("Writting to file failed! Probably, there is no more free space left?");
         }
         return $bytesWritten;
@@ -1433,7 +1433,7 @@ class CompressNone extends CompressManagerFactory
     public function open($filename)
     {
         $this->fileHandler = fopen($filename, "wb");
-        if (false === $this->fileHandler) {
+        if ($this->fileHandler === false) {
             throw new Exception("Output file is not writable");
         }
 
@@ -1443,7 +1443,7 @@ class CompressNone extends CompressManagerFactory
     public function write($str)
     {
         $bytesWritten = fwrite($this->fileHandler, $str);
-        if (false === $bytesWritten) {
+        if ($bytesWritten === false) {
             throw new Exception("Writting to file failed! Probably, there is no more free space left?");
         }
         return $bytesWritten;
@@ -1461,10 +1461,10 @@ class CompressNone extends CompressManagerFactory
  */
 abstract class TypeAdapter
 {
-    public static $enums = array(
+    public static $enums = [
         "Sqlite",
         "Mysql"
-    );
+    ];
 
     /**
      * @param string $c
@@ -1483,13 +1483,13 @@ abstract class TypeAdapter
 abstract class TypeAdapterFactory
 {
     protected $dbHandler = null;
-    protected $dumpSettings = array();
+    protected $dumpSettings = [];
 
     /**
      * @param string $c Type of database factory to create (Mysql, Sqlite,...)
      * @param PDO $dbHandler
      */
-    public static function create($c, $dbHandler = null, $dumpSettings = array())
+    public static function create($c, $dbHandler = null, $dumpSettings = [])
     {
         $c = ucfirst(strtolower($c));
         if (!TypeAdapter::isValid($c)) {
@@ -1499,7 +1499,7 @@ abstract class TypeAdapterFactory
         return new $method($dbHandler, $dumpSettings);
     }
 
-    public function __construct($dbHandler = null, $dumpSettings = array())
+    public function __construct($dbHandler = null, $dumpSettings = [])
     {
         $this->dbHandler = $dbHandler;
         $this->dumpSettings = $dumpSettings;
@@ -1707,7 +1707,7 @@ abstract class TypeAdapterFactory
      */
     public function parseColumnType($colType)
     {
-        return array();
+        return [];
     }
 
     public function backup_parameters()
@@ -1739,8 +1739,8 @@ class TypeAdapterMysql extends TypeAdapterFactory
 
 
     // Numerical Mysql types
-    public $mysqlTypes = array(
-        'numerical' => array(
+    public $mysqlTypes = [
+        'numerical' => [
             'bit',
             'tinyint',
             'smallint',
@@ -1753,8 +1753,8 @@ class TypeAdapterMysql extends TypeAdapterFactory
             'float',
             'decimal',
             'numeric'
-        ),
-        'blob' => array(
+        ],
+        'blob' => [
             'tinyblob',
             'blob',
             'mediumblob',
@@ -1770,8 +1770,8 @@ class TypeAdapterMysql extends TypeAdapterFactory
             'multilinestring',
             'multipolygon',
             'geometrycollection',
-        )
-    );
+        ]
+    ];
 
     public function databases()
     {
@@ -2202,7 +2202,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
      */
     public function parseColumnType($colType)
     {
-        $colInfo = array();
+        $colInfo = [];
         $colParts = explode(" ", $colType['Type']);
 
         if ($fparen = strpos($colParts[0], "(")) {
@@ -2229,7 +2229,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
             "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;".PHP_EOL.
             "/*!40101 SET NAMES ".$this->dumpSettings['default-character-set']." */;".PHP_EOL;
 
-        if (false === $this->dumpSettings['skip-tz-utc']) {
+        if ($this->dumpSettings['skip-tz-utc'] === false) {
             $ret .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;".PHP_EOL.
                 "/*!40103 SET TIME_ZONE='+00:00' */;".PHP_EOL;
         }
@@ -2246,7 +2246,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
     {
         $ret = "";
 
-        if (false === $this->dumpSettings['skip-tz-utc']) {
+        if ($this->dumpSettings['skip-tz-utc'] === false) {
             $ret .= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;".PHP_EOL;
         }
 

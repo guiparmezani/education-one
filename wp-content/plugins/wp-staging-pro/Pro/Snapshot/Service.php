@@ -52,7 +52,7 @@ class Service
      */
     public function delete(Snapshot $snapshot, $skipDatabaseValidation = false)
     {
-        if (Snapshot::TYPE_DATABASE === $snapshot->getType()) {
+        if ($snapshot->getType() === Snapshot::TYPE_DATABASE) {
             $this->serviceDatabase->delete($snapshot->getId(), $skipDatabaseValidation);
             return;
         }

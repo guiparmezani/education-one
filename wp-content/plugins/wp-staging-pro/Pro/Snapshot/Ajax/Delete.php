@@ -5,7 +5,8 @@
 
 namespace WPStaging\Pro\Snapshot\Ajax;
 
-use WPStaging\Framework\Adapter\HookedTemplate;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
+use WPStaging\Framework\TemplateEngine\TemplateEngine;
 use WPStaging\Pro\Snapshot\Service;
 
 class Delete extends AbstractTemplateComponent
@@ -14,15 +15,10 @@ class Delete extends AbstractTemplateComponent
     /** @var Service */
     private $service;
 
-    public function __construct(Service $service, HookedTemplate $hookedTemplate)
+    public function __construct(Service $service, TemplateEngine $templateEngine)
     {
-        parent::__construct($hookedTemplate);
+        parent::__construct($templateEngine);
         $this->service = $service;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--delete', [$this, 'render']);
     }
 
     public function render()

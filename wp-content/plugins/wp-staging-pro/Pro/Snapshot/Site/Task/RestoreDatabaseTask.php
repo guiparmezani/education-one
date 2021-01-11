@@ -1,7 +1,7 @@
 <?php
 namespace WPStaging\Pro\Snapshot\Site\Task;
 
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Framework\Utils\Cache\Cache;
 use WPStaging\Component\Task\AbstractTask;
 use WPStaging\Framework\Traits\MaintenanceTrait;

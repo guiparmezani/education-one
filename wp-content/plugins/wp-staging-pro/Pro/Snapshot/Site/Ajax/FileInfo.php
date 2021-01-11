@@ -6,15 +6,12 @@
 namespace WPStaging\Pro\Snapshot\Site\Ajax;
 
 use WPStaging\Framework\Adapter\Directory;
-use WPStaging\Framework\Adapter\HookedTemplate;
-use WPStaging\Framework\Component\AjaxTrait;
-use WPStaging\Pro\Snapshot\Ajax\AbstractTemplateComponent;
+use WPStaging\Framework\Component\AbstractTemplateComponent;
+use WPStaging\Framework\TemplateEngine\TemplateEngine;
 use WPStaging\Pro\Snapshot\Site\Service\Compressor;
 
 class FileInfo extends AbstractTemplateComponent
 {
-    use AjaxTrait;
-
     /** @var Compressor */
     private $exporter;
     /**
@@ -22,16 +19,11 @@ class FileInfo extends AbstractTemplateComponent
      */
     private $directory;
 
-    public function __construct(Compressor $exporter, Directory $directory, HookedTemplate $hookedTemplate)
+    public function __construct(Compressor $exporter, Directory $directory, TemplateEngine $templateEngine)
     {
-        parent::__construct($hookedTemplate);
+        parent::__construct($templateEngine);
         $this->exporter = $exporter;
         $this->directory = $directory;
-    }
-
-    public function registerHooks()
-    {
-        add_action('wp_ajax_wpstg--snapshots--import--file-info', [$this, 'render']);
     }
 
     public function render()
@@ -46,7 +38,7 @@ class FileInfo extends AbstractTemplateComponent
         $info = $this->exporter->findExportFileInfo($file);
 
         $result = $this->templateEngine->render(
-            'Site/template/info.php',
+            'Pro/Snapshot/Site/template/info.php',
             [
                 'info' => $info,
             ]

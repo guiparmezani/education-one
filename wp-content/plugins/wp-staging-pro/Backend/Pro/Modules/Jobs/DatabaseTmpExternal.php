@@ -7,7 +7,7 @@ if (!defined("WPINC")) {
     die;
 }
 
-use WPStaging\WPStaging;
+use WPStaging\Core\WPStaging;
 
 /**
  * Class Database
@@ -124,7 +124,7 @@ class DatabaseTmpExternal extends \WPStaging\Backend\Modules\Jobs\JobExecutable 
      * @return bool
      */
     private function copyTable($tableName) {
-        $strings = new \WPStaging\Utils\Strings();
+        $strings = new \WPStaging\Core\Utils\Strings();
         $newTableName = $this->tmpPrefix . $strings->str_replace_first($this->options->prefix, null, $tableName);
 
         // Drop table if necessary
@@ -152,7 +152,7 @@ class DatabaseTmpExternal extends \WPStaging\Backend\Modules\Jobs\JobExecutable 
      * @return bool
      */
     private function startJob($new, $old) {
-        if (0 != $this->options->job->start) {
+        if ($this->options->job->start != 0) {
             return true;
         }
         
@@ -171,7 +171,7 @@ class DatabaseTmpExternal extends \WPStaging\Backend\Modules\Jobs\JobExecutable 
         $this->productionDb->query('SET FOREIGN_KEY_CHECKS=0;');
 
         // Execute Query
-        if (false === $this->productionDb->query($this->adaptCreateStatement($sql))) {
+        if ($this->productionDb->query($this->adaptCreateStatement($sql)) === false) {
             $this->returnException("DB Tmp Table: Error - Can not copy table {$old} TO {$new} Query: {$sql} db error - " . $this->productionDb->last_error);
         }
 
@@ -180,7 +180,7 @@ class DatabaseTmpExternal extends \WPStaging\Backend\Modules\Jobs\JobExecutable 
         // Count rows
         $this->options->job->total = (int) $this->stagingDb->get_var("SELECT COUNT(1) FROM `{$this->stagingDb->dbname}`.`{$old}`");
 
-        if (0 == $this->options->job->total) {
+        if ($this->options->job->total == 0) {
             $this->finishStep();
             return false;
         }
@@ -226,7 +226,7 @@ class DatabaseTmpExternal extends \WPStaging\Backend\Modules\Jobs\JobExecutable 
         if (isset($row[0]['Create Table'])) {
             return $row[0]['Create Table'];
         }
-        return array();
+        return [];
     }
 
     /**
@@ -243,7 +243,7 @@ class DatabaseTmpExternal extends \WPStaging\Backend\Modules\Jobs\JobExecutable 
 
         $limitation = '';
 
-        if (0 < (int) $this->settings->queryLimit) {
+        if ((int) $this->settings->queryLimit > 0) {
             $limitation = " LIMIT {$this->settings->queryLimit} OFFSET {$this->options->job->start}";
         }
 
@@ -315,7 +315,7 @@ class DatabaseTmpExternal extends \WPStaging\Backend\Modules\Jobs\JobExecutable 
                 (
                 !isset($this->options->job->current) ||
                 !isset($this->options->job->start) ||
-                0 == $this->options->job->start
+                $this->options->job->start == 0
                 )
                 );
     }

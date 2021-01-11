@@ -19,7 +19,7 @@
  * @link https://www.copyright.gov/title17/92chap5.html The link to U.S copyright law information.
  * @link https://europa.eu/youreurope/business/running-business/intellectual-property/copyright/index_en.htm The link to EU copyright law information.
  */
-if (isset($license->license) && 'valid' === $license->license || (isset($license->error) && 'expired' === $license->error) || wpstg_is_local()):
+if (isset($license->license) && $license->license === 'valid' || (isset($license->error) && $license->error === 'expired') || wpstg_is_local()):
 ?>
 <a href="#" class="wpstg-push-changes wpstg-merge-clone wpstg-clone-action"
    data-clone="<?php echo $data["directoryName"]; ?>"

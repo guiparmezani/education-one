@@ -1,7 +1,7 @@
 <?php
 namespace WPStaging\Pro\Snapshot\Site\Task;
 
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Component\Task\AbstractTask;
 use WPStaging\Component\Task\TaskResponseDto;
 use WPStaging\Framework\Traits\MaintenanceTrait;
@@ -57,7 +57,7 @@ class RestoreUploadsTask extends AbstractTask
     public function findRequestDto()
     {
         parent::findRequestDto();
-        if (null !== $this->requestDto->getSteps()->getTotal()) {
+        if ($this->requestDto->getSteps()->getTotal() !== null) {
             return;
         }
 
@@ -95,8 +95,8 @@ class RestoreUploadsTask extends AbstractTask
     private function shouldDeleteUploads()
     {
         return !$this->requestDto->isMergeFiles()
-            && 1 === $this->requestDto->getSteps()->getTotal()
-            && 0 === $this->requestDto->getSteps()->getCurrent()
+            && $this->requestDto->getSteps()->getTotal() === 1
+            && $this->requestDto->getSteps()->getCurrent() === 0
         ;
     }
 

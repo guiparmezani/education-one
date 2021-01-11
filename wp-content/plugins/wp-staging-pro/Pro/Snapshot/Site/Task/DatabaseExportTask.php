@@ -4,7 +4,7 @@ namespace WPStaging\Pro\Snapshot\Site\Task;
 
 use DateTime;
 use Exception;
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Component\Task\TaskResponseDto;
 use WPStaging\Component\Task\AbstractTask;
 use WPStaging\Framework\Utils\Cache\Cache;

@@ -10,7 +10,7 @@ use Exception;
 use WPStaging\Pro\Snapshot\Database\Command\Dto\ExportDto;
 use WPStaging\Pro\Snapshot\Database\Command\Exception\ExportSnapshotException;
 use WPStaging\Pro\Library\Mysqldump\Mysqldump;
-use Psr\Log\LoggerInterface;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Framework\Database\TableService;
 use WPStaging\Framework\Command\CommandInterface;
 

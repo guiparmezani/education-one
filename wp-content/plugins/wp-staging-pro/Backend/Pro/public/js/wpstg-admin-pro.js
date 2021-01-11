@@ -78,7 +78,8 @@ var WPStagingPro = function ($) {
                     that.data = {
                         action: 'wpstg_scan',
                         clone: cloneID,
-                        accessToken: wpstg.accessToken
+                        accessToken: wpstg.accessToken,
+                        nonce: wpstg.nonce
                     };
 
                     // Send ajax request
@@ -149,6 +150,7 @@ var WPStagingPro = function ($) {
                 cache.get('#wpstg-scanning-files').hide();
                 cache.get('.wpstg-progress-bar-wrapper').show();
                 WPStaging.switchStep(3);
+                window.addEventListener('beforeunload', wpstgWarnIfClose);
                 processing();
             }
         });
@@ -175,6 +177,7 @@ var WPStagingPro = function ($) {
                 {
                     action: "wpstg_push_processing",
                     accessToken: wpstg.accessToken,
+                    nonce: wpstg.nonce,
                     clone: cloneID,
                     excludedTables: getExcludedTables(),
                     includedDirectories: getIncludedDirectories(),
@@ -193,6 +196,7 @@ var WPStagingPro = function ($) {
                         "<a href='https://wp-staging.com/support/' target='_blank'>open a support ticket</a> "
                         );
                 cache.get(".wpstg-loader").hide();
+                window.removeEventListener('beforeunload', wpstgWarnIfClose);
                 return;
             }
 
@@ -204,7 +208,7 @@ var WPStagingPro = function ($) {
                         "and try again. If that does not help, " +
                         "<a href='https://wp-staging.com/support/' target='_blank'>open a support ticket</a> "
                         );
-
+                window.removeEventListener('beforeunload', wpstgWarnIfClose);
                 return;
             }
 
@@ -229,6 +233,7 @@ var WPStagingPro = function ($) {
                 console.log('Processing....');
                 processing();
             } else if ('finished' === response.status || ("undefined" !== typeof (response.job_done) && response.job_done)) {
+                window.removeEventListener('beforeunload', wpstgWarnIfClose);
                 isFinished(response);
             }
             ;
@@ -253,6 +258,7 @@ var WPStagingPro = function ($) {
                     {
                         action: "wpstg_database_connect",
                         accessToken: wpstg.accessToken,
+                        nonce: wpstg.nonce,
                         databaseUser: cache.get('#wpstg_db_username').val(),
                         databasePassword: cache.get('#wpstg_db_password').val(),
                         databaseServer: cache.get('#wpstg_db_server').val(),
@@ -346,7 +352,8 @@ var WPStagingPro = function ($) {
                 that.data = {
                     action: 'wpstg_edit_clone_data',
                     clone: cloneID,
-                    accessToken: wpstg.accessToken
+                    accessToken: wpstg.accessToken,
+                    nonce: wpstg.nonce
                 };
 
                 // Send ajax request
@@ -394,7 +401,8 @@ var WPStagingPro = function ($) {
                     externalDBDatabase: externalDBDatabase,
                     externalDBHost: externalDBHost,
                     externalDBPrefix: externalDBPrefix,
-                    accessToken: wpstg.accessToken
+                    accessToken: wpstg.accessToken,
+                    nonce: wpstg.nonce
                 };
 
                 WPStaging.ajax(
