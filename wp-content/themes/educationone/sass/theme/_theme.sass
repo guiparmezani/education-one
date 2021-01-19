@@ -809,9 +809,9 @@ body.page-template-template-careers
 							// position: absolute
 							left: 0
 
-
 // Personal Tutoring page
-.personal-tutoring-wrapper
+.personal-tutoring-wrapper,
+.the-tutorium-wrapper
 	.hero-section
 		background-image: url(../img/personal-bg.svg)
 		background-position: 93% top 
@@ -876,6 +876,267 @@ body.page-template-template-careers
 				.img-wrapper
 					min-height: 173px
 
+
+// The Tutorium Page
+body.page-template-template-the-tutorium
+	position: relative
+.the-tutorium-wrapper
+	.tutorium-nav-wrapper
+		background: $brand-dark-blue
+		color: #fff
+		text-align: center
+		margin-top: 60px
+		.tutorium-nav
+			display: flex
+			justify-content: space-around
+			a.nav-link
+				color: #fff
+	p
+		font-size: 18px
+	.hero-section
+		// background-image: linear-gradient(rgba(255,255,255,0.2),rgba(255,255,255,0.2)), url(../img/temporary-hero.jpg)
+		background-color: #f7f7f7
+		background-size: cover
+		background-position: center top
+		display: flex
+		justify-content: flex-end
+		min-height: 600px
+		margin-top: 0
+		.container
+			position: relative
+		.hero-content
+			text-align: right
+			max-width: 460px
+			position: absolute
+			transform: translateY(-50%)
+			right: 0
+			top: 40%
+			width: 100%
+			.btn
+				background-color: $brand-dark-blue
+				color: #fff
+			.form-area
+				form
+					display: flex
+					align-items: center
+					margin-top: 80px
+				.gform_heading,
+				.gfield_label
+					display: none
+				.gform_body
+					flex: 0 0 70%
+					.gfield
+						margin-top: 0
+						.ginput_container
+							margin-top: 0
+				.gform_footer
+					flex: 0 0 30%
+					padding: 0
+					margin: 0
+				input[type="text"]
+					width: 100%
+					border: 1px solid $brand-dark-blue
+					border-radius: 4px
+					padding: 8px 15px !important
+					border-radius: 10px
+					font-size: 14px !important
+				input[type="submit"]
+					background-color: $brand-dark-blue
+					padding: 4px 8px
+					min-width: 0
+					font-size: 20px !important
+					width: 100%
+					font-family: $font-barlow
+			h1.entry-title
+				text-transform: uppercase
+				letter-spacing: 1px
+				font-size: 55px
+				padding: 0
+			p
+				font-size: 30px
+				line-height: 36px
+				margin-top: 20px
+	.page-content
+		margin-top: 30px
+		.carousel
+			padding: 50px
+			background-color: #fff
+			border-radius: 10px
+			.carousel-item
+				.carousel-item-content-wrapper
+					max-width: 40vw
+			.carousel-control
+				width: auto
+				color: #fff
+				opacity: 1 !important
+				i
+					padding: 13px
+					background-color: $brand-dark-blue
+					border-radius: 50%
+					color: #fff
+					height: 45px
+					width: 45px
+				&.carousel-control-next
+					right: -23px
+				&.carousel-control-prev
+					left: -23px
+			.carousel-indicators
+				bottom: -50px
+				li
+					background-color: $brand-dark-blue
+					border: none
+					width: 8px
+					height: 8px
+					&.active
+						background-color: $brand-blue
+		.topics,
+		.promos
+			background-color: #fff
+			padding: 30px
+			padding-bottom: 50px
+			h2
+				font-weight: 700
+				text-align: center
+				margin: 30px auto 40px
+				max-width: 600px
+				line-height: 36px
+			p
+				text-align: center
+			h4
+				font-size: 18px
+				font-weight: 700
+				text-align: center
+		.promos
+			background-color: $brand-light-gray
+			h2,h3,h4,p,label,span
+				color: $brand-black
+			.scholar-wrapper
+				.promo:nth-of-type(3)
+					border: 3px solid $brand-lime
+				.promo:nth-of-type(4)
+					border: 3px solid $brand-orange
+			.promo
+				padding: 20px
+				background-color: #fff
+				border-radius: 15px
+				max-width: 320px
+				margin: 0 auto 30px
+				min-height: 230px
+				position: relative
+				&:first-of-type
+					border: 3px solid red
+				span.sticker
+					position: absolute
+					top: 20px
+					right: 15px
+					font-size: 14px
+					background-color: $brand-lime
+					color: #fff
+					padding: 5px 10px
+					border-radius: 8px
+					&.orange
+						background-color: $brand-orange
+				p
+					text-align: left
+				.btn
+					transition: all .2s
+					color: $brand-black !important
+					border: 1px solid $brand-dark-blue
+					border-radius: 12px
+					padding:  5px
+					font-size: 16px
+					font-weight: 700
+					min-width: 150px
+					display: table
+					margin: 0 auto
+					text-transform: none !important
+					&:hover
+						background-color: $brand-dark-blue
+						color: #fff !important
+				.scratched
+					position: relative
+					display: inline-block
+					&::after
+						content: ''
+						position: absolute
+						width: 100%
+						height: 3px
+						transform: rotate(9deg)
+						left: 0
+						bottom: 12px
+						background-color: red
+
+		.tutorium-enroll
+			background-color: $brand-dark-red
+			color: #fff
+			padding-top: 50px
+			padding-bottom: 60px
+			h2
+				text-align: center
+				color: #fff
+				font-weight: 700
+				margin-bottom: 50px
+				font-size: 36px
+			p,
+			h3
+				color: #fff
+			.enroll-form
+				text-align: center
+				padding: 0 30px
+				border-right: 1px solid #fff
+				form
+					input[type="text"],
+					select
+						padding: 4px 4px 8px 12px !important
+						border: 1px solid #fff
+						background-color: transparent
+						color: #fff
+						font-size: 16px
+						min-height: 44px
+						&::placeholder
+							font-size: 16px
+							color: #fff
+					.gfield_label
+						display: none
+					.gfield:last-child
+						margin-top: 25px
+						select
+							width: 100%
+					.gform_footer
+						display: flex
+						justify-content: center
+						input[type="submit"]
+							background-color: $brand-dark-blue
+							border-radius: 0
+							font-size: 18px !important
+							min-width: 150px
+			.form-area-copy
+				margin-top: 30px
+
+	@include media-breakpoint-down(sm)
+		.hero-section
+			background-position: 40% top
+			.hero-content
+				max-width: 390px
+				h1.entry-title
+					line-height: 52px
+		.tutorium-nav-wrapper
+			margin-top: 0
+			.tutorium-nav
+				flex-direction: column
+		.page-content
+			.carousel
+				.carousel-control
+					&.carousel-control-next
+						right: -10px
+					&.carousel-control-prev
+						left: -10px
+
+body.page-id-1825
+	#wrapper-footer-full
+		display: none
+	#wrapper-footer
+		margin-top: 0
 
 // Button
 .btn, input[type="submit"], .gform_submit .button, .gform_page_footer .button

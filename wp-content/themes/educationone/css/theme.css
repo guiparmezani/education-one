@@ -10328,22 +10328,30 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
     .page-template-template-philosophy .tutors-wrapper .tutors .row .col-md-6 img {
       left: 0; } }
 
-.personal-tutoring-wrapper .hero-section {
+.personal-tutoring-wrapper .hero-section,
+.the-tutorium-wrapper .hero-section {
   background-image: url(../img/personal-bg.svg);
   background-position: 93% top;
   background-repeat: no-repeat; }
-  .personal-tutoring-wrapper .hero-section .hero-content {
+  .personal-tutoring-wrapper .hero-section .hero-content,
+  .the-tutorium-wrapper .hero-section .hero-content {
     padding: 0px 30px;
     max-width: 600px; }
-    .personal-tutoring-wrapper .hero-section .hero-content h2 {
+    .personal-tutoring-wrapper .hero-section .hero-content h2,
+    .the-tutorium-wrapper .hero-section .hero-content h2 {
       font-weight: bold; }
-    .personal-tutoring-wrapper .hero-section .hero-content .btn, .personal-tutoring-wrapper .hero-section .hero-content .wpcf7 input[type=submit], .wpcf7 .personal-tutoring-wrapper .hero-section .hero-content input[type=submit] {
+    .personal-tutoring-wrapper .hero-section .hero-content .btn, .personal-tutoring-wrapper .hero-section .hero-content .wpcf7 input[type=submit], .wpcf7 .personal-tutoring-wrapper .hero-section .hero-content input[type=submit],
+    .the-tutorium-wrapper .hero-section .hero-content .btn,
+    .the-tutorium-wrapper .hero-section .hero-content .wpcf7 input[type=submit], .wpcf7
+    .the-tutorium-wrapper .hero-section .hero-content input[type=submit] {
       margin-top: 50px; }
 
-.personal-tutoring-wrapper .callouts {
+.personal-tutoring-wrapper .callouts,
+.the-tutorium-wrapper .callouts {
   padding-bottom: 0; }
 
-.personal-tutoring-wrapper .bottom-copy {
+.personal-tutoring-wrapper .bottom-copy,
+.the-tutorium-wrapper .bottom-copy {
   padding: 60px 30px;
   margin-top: 30px;
   margin-bottom: 0;
@@ -10351,18 +10359,22 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
   color: #FFF;
   text-align: center; }
 
-.personal-tutoring-wrapper .topics {
+.personal-tutoring-wrapper .topics,
+.the-tutorium-wrapper .topics {
   padding: 30px;
   margin-top: 60px; }
-  .personal-tutoring-wrapper .topics .row {
+  .personal-tutoring-wrapper .topics .row,
+  .the-tutorium-wrapper .topics .row {
     margin-bottom: 10px;
     margin-left: -5px;
     margin-right: -5px; }
-  .personal-tutoring-wrapper .topics .topic-item {
+  .personal-tutoring-wrapper .topics .topic-item,
+  .the-tutorium-wrapper .topics .topic-item {
     background-size: cover;
     background-position: center;
     position: relative; }
-    .personal-tutoring-wrapper .topics .topic-item .topic-title {
+    .personal-tutoring-wrapper .topics .topic-item .topic-title,
+    .the-tutorium-wrapper .topics .topic-item .topic-title {
       position: absolute;
       bottom: 0;
       padding: 10px;
@@ -10371,22 +10383,287 @@ body.page-template-template-careers .eo-form-wrapper .form-wrapper {
       background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
       width: 100%;
       color: #FFF; }
-      .personal-tutoring-wrapper .topics .topic-item .topic-title span {
+      .personal-tutoring-wrapper .topics .topic-item .topic-title span,
+      .the-tutorium-wrapper .topics .topic-item .topic-title span {
         font-family: "Barlow", sans-serif;
         font-weight: bold;
         font-size: 26px; }
 
 @media (max-width: 991px) {
-  .personal-tutoring-wrapper .hero-section {
+  .personal-tutoring-wrapper .hero-section,
+  .the-tutorium-wrapper .hero-section {
     background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url(../img/personal-bg.svg); }
-  .personal-tutoring-wrapper .topics .topic-item {
+  .personal-tutoring-wrapper .topics .topic-item,
+  .the-tutorium-wrapper .topics .topic-item {
     margin-bottom: 30px; }
-  .personal-tutoring-wrapper .btn, .personal-tutoring-wrapper .wpcf7 input[type=submit], .wpcf7 .personal-tutoring-wrapper input[type=submit] {
+  .personal-tutoring-wrapper .btn, .personal-tutoring-wrapper .wpcf7 input[type=submit], .wpcf7 .personal-tutoring-wrapper input[type=submit],
+  .the-tutorium-wrapper .btn,
+  .the-tutorium-wrapper .wpcf7 input[type=submit], .wpcf7
+  .the-tutorium-wrapper input[type=submit] {
     font-size: 13px; } }
 
 @media (min-width: 768px) {
-  .personal-tutoring-wrapper .callouts .callout .img-wrapper {
+  .personal-tutoring-wrapper .callouts .callout .img-wrapper,
+  .the-tutorium-wrapper .callouts .callout .img-wrapper {
     min-height: 173px; } }
+
+body.page-template-template-the-tutorium {
+  position: relative; }
+
+.the-tutorium-wrapper .tutorium-nav-wrapper {
+  background: #2D556B;
+  color: #fff;
+  text-align: center;
+  margin-top: 60px; }
+  .the-tutorium-wrapper .tutorium-nav-wrapper .tutorium-nav {
+    display: flex;
+    justify-content: space-around; }
+    .the-tutorium-wrapper .tutorium-nav-wrapper .tutorium-nav a.nav-link {
+      color: #fff; }
+
+.the-tutorium-wrapper p {
+  font-size: 18px; }
+
+.the-tutorium-wrapper .hero-section {
+  background-color: #f7f7f7;
+  background-size: cover;
+  background-position: center top;
+  display: flex;
+  justify-content: flex-end;
+  min-height: 600px;
+  margin-top: 0; }
+  .the-tutorium-wrapper .hero-section .container {
+    position: relative; }
+  .the-tutorium-wrapper .hero-section .hero-content {
+    text-align: right;
+    max-width: 460px;
+    position: absolute;
+    transform: translateY(-50%);
+    right: 0;
+    top: 40%;
+    width: 100%; }
+    .the-tutorium-wrapper .hero-section .hero-content .btn, .the-tutorium-wrapper .hero-section .hero-content .wpcf7 input[type=submit], .wpcf7 .the-tutorium-wrapper .hero-section .hero-content input[type=submit] {
+      background-color: #2D556B;
+      color: #fff; }
+    .the-tutorium-wrapper .hero-section .hero-content .form-area form {
+      display: flex;
+      align-items: center;
+      margin-top: 80px; }
+    .the-tutorium-wrapper .hero-section .hero-content .form-area .gform_heading,
+    .the-tutorium-wrapper .hero-section .hero-content .form-area .gfield_label {
+      display: none; }
+    .the-tutorium-wrapper .hero-section .hero-content .form-area .gform_body {
+      flex: 0 0 70%; }
+      .the-tutorium-wrapper .hero-section .hero-content .form-area .gform_body .gfield {
+        margin-top: 0; }
+        .the-tutorium-wrapper .hero-section .hero-content .form-area .gform_body .gfield .ginput_container {
+          margin-top: 0; }
+    .the-tutorium-wrapper .hero-section .hero-content .form-area .gform_footer {
+      flex: 0 0 30%;
+      padding: 0;
+      margin: 0; }
+    .the-tutorium-wrapper .hero-section .hero-content .form-area input[type="text"] {
+      width: 100%;
+      border: 1px solid #2D556B;
+      border-radius: 4px;
+      padding: 8px 15px !important;
+      border-radius: 10px;
+      font-size: 14px !important; }
+    .the-tutorium-wrapper .hero-section .hero-content .form-area input[type="submit"] {
+      background-color: #2D556B;
+      padding: 4px 8px;
+      min-width: 0;
+      font-size: 20px !important;
+      width: 100%;
+      font-family: "Barlow", sans-serif; }
+    .the-tutorium-wrapper .hero-section .hero-content h1.entry-title {
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 55px;
+      padding: 0; }
+    .the-tutorium-wrapper .hero-section .hero-content p {
+      font-size: 30px;
+      line-height: 36px;
+      margin-top: 20px; }
+
+.the-tutorium-wrapper .page-content {
+  margin-top: 30px; }
+  .the-tutorium-wrapper .page-content .carousel {
+    padding: 50px;
+    background-color: #fff;
+    border-radius: 10px; }
+    .the-tutorium-wrapper .page-content .carousel .carousel-item .carousel-item-content-wrapper {
+      max-width: 40vw; }
+    .the-tutorium-wrapper .page-content .carousel .carousel-control {
+      width: auto;
+      color: #fff;
+      opacity: 1 !important; }
+      .the-tutorium-wrapper .page-content .carousel .carousel-control i {
+        padding: 13px;
+        background-color: #2D556B;
+        border-radius: 50%;
+        color: #fff;
+        height: 45px;
+        width: 45px; }
+      .the-tutorium-wrapper .page-content .carousel .carousel-control.carousel-control-next {
+        right: -23px; }
+      .the-tutorium-wrapper .page-content .carousel .carousel-control.carousel-control-prev {
+        left: -23px; }
+    .the-tutorium-wrapper .page-content .carousel .carousel-indicators {
+      bottom: -50px; }
+      .the-tutorium-wrapper .page-content .carousel .carousel-indicators li {
+        background-color: #2D556B;
+        border: none;
+        width: 8px;
+        height: 8px; }
+        .the-tutorium-wrapper .page-content .carousel .carousel-indicators li.active {
+          background-color: #2a9ec4; }
+  .the-tutorium-wrapper .page-content .topics,
+  .the-tutorium-wrapper .page-content .promos {
+    background-color: #fff;
+    padding: 30px;
+    padding-bottom: 50px; }
+    .the-tutorium-wrapper .page-content .topics h2,
+    .the-tutorium-wrapper .page-content .promos h2 {
+      font-weight: 700;
+      text-align: center;
+      margin: 30px auto 40px;
+      max-width: 600px;
+      line-height: 36px; }
+    .the-tutorium-wrapper .page-content .topics p,
+    .the-tutorium-wrapper .page-content .promos p {
+      text-align: center; }
+    .the-tutorium-wrapper .page-content .topics h4,
+    .the-tutorium-wrapper .page-content .promos h4 {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center; }
+  .the-tutorium-wrapper .page-content .promos {
+    background-color: #eaeaea; }
+    .the-tutorium-wrapper .page-content .promos h2, .the-tutorium-wrapper .page-content .promos h3, .the-tutorium-wrapper .page-content .promos h4, .the-tutorium-wrapper .page-content .promos p, .the-tutorium-wrapper .page-content .promos label, .the-tutorium-wrapper .page-content .promos span {
+      color: #474747; }
+    .the-tutorium-wrapper .page-content .promos .scholar-wrapper .promo:nth-of-type(3) {
+      border: 3px solid #82B151; }
+    .the-tutorium-wrapper .page-content .promos .scholar-wrapper .promo:nth-of-type(4) {
+      border: 3px solid #FF9C18; }
+    .the-tutorium-wrapper .page-content .promos .promo {
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 15px;
+      max-width: 320px;
+      margin: 0 auto 30px;
+      min-height: 230px;
+      position: relative; }
+      .the-tutorium-wrapper .page-content .promos .promo:first-of-type {
+        border: 3px solid red; }
+      .the-tutorium-wrapper .page-content .promos .promo span.sticker {
+        position: absolute;
+        top: 20px;
+        right: 15px;
+        font-size: 14px;
+        background-color: #82B151;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 8px; }
+        .the-tutorium-wrapper .page-content .promos .promo span.sticker.orange {
+          background-color: #FF9C18; }
+      .the-tutorium-wrapper .page-content .promos .promo p {
+        text-align: left; }
+      .the-tutorium-wrapper .page-content .promos .promo .btn, .the-tutorium-wrapper .page-content .promos .promo .wpcf7 input[type=submit], .wpcf7 .the-tutorium-wrapper .page-content .promos .promo input[type=submit] {
+        transition: all .2s;
+        color: #474747 !important;
+        border: 1px solid #2D556B;
+        border-radius: 12px;
+        padding: 5px;
+        font-size: 16px;
+        font-weight: 700;
+        min-width: 150px;
+        display: table;
+        margin: 0 auto;
+        text-transform: none !important; }
+        .the-tutorium-wrapper .page-content .promos .promo .btn:hover, .the-tutorium-wrapper .page-content .promos .promo .wpcf7 input[type=submit]:hover, .wpcf7 .the-tutorium-wrapper .page-content .promos .promo input[type=submit]:hover {
+          background-color: #2D556B;
+          color: #fff !important; }
+      .the-tutorium-wrapper .page-content .promos .promo .scratched {
+        position: relative;
+        display: inline-block; }
+        .the-tutorium-wrapper .page-content .promos .promo .scratched::after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 3px;
+          transform: rotate(9deg);
+          left: 0;
+          bottom: 12px;
+          background-color: red; }
+  .the-tutorium-wrapper .page-content .tutorium-enroll {
+    background-color: #912A2A;
+    color: #fff;
+    padding-top: 50px;
+    padding-bottom: 60px; }
+    .the-tutorium-wrapper .page-content .tutorium-enroll h2 {
+      text-align: center;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 50px;
+      font-size: 36px; }
+    .the-tutorium-wrapper .page-content .tutorium-enroll p,
+    .the-tutorium-wrapper .page-content .tutorium-enroll h3 {
+      color: #fff; }
+    .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form {
+      text-align: center;
+      padding: 0 30px;
+      border-right: 1px solid #fff; }
+      .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="text"],
+      .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form select {
+        padding: 4px 4px 8px 12px !important;
+        border: 1px solid #fff;
+        background-color: transparent;
+        color: #fff;
+        font-size: 16px;
+        min-height: 44px; }
+        .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="text"]::placeholder,
+        .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form select::placeholder {
+          font-size: 16px;
+          color: #fff; }
+      .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form .gfield_label {
+        display: none; }
+      .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form .gfield:last-child {
+        margin-top: 25px; }
+        .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form .gfield:last-child select {
+          width: 100%; }
+      .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form .gform_footer {
+        display: flex;
+        justify-content: center; }
+        .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form .gform_footer input[type="submit"] {
+          background-color: #2D556B;
+          border-radius: 0;
+          font-size: 18px !important;
+          min-width: 150px; }
+    .the-tutorium-wrapper .page-content .tutorium-enroll .form-area-copy {
+      margin-top: 30px; }
+
+@media (max-width: 767px) {
+  .the-tutorium-wrapper .hero-section {
+    background-position: 40% top; }
+    .the-tutorium-wrapper .hero-section .hero-content {
+      max-width: 390px; }
+      .the-tutorium-wrapper .hero-section .hero-content h1.entry-title {
+        line-height: 52px; }
+  .the-tutorium-wrapper .tutorium-nav-wrapper {
+    margin-top: 0; }
+    .the-tutorium-wrapper .tutorium-nav-wrapper .tutorium-nav {
+      flex-direction: column; }
+  .the-tutorium-wrapper .page-content .carousel .carousel-control.carousel-control-next {
+    right: -10px; }
+  .the-tutorium-wrapper .page-content .carousel .carousel-control.carousel-control-prev {
+    left: -10px; } }
+
+body.page-id-1825 #wrapper-footer-full {
+  display: none; }
+
+body.page-id-1825 #wrapper-footer {
+  margin-top: 0; }
 
 .btn, .wpcf7 input[type=submit], input[type="submit"], .gform_submit .button, .gform_page_footer .button {
   transition: all .2s ease;

@@ -22,6 +22,8 @@ $container = get_theme_mod( 'understrap_container_type' );
 	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
 
 	<link href="https://fonts.googleapis.com/css?family=Barlow+Condensed:400,500|Barlow:300i,400,700,900" rel="stylesheet">
+	<script src="https://kit.fontawesome.com/597a411169.js" crossorigin="anonymous"></script>
+	<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script> -->
 
 	<!-- Google Tag Manager -->
 	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

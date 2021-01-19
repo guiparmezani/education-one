@@ -4125,6 +4125,14 @@ $(window).scroll(function(){
 	}
 });
 
+$('.anchor-link').on('click', function(){
+	$(window).scrollTo($(this).attr('href'), 500);
+});
+
+if ($('body').hasClass('page-template-template-the-tutorium')) {
+	// $('body').scrollspy({ target: '#tutoriumNav' });
+}
+
 $(window).on('load', function(){
 	if (window.location.hash == '#form' && $('.form-wrapper').length > 0) {
 		$(window).scrollTo('.form-wrapper', 500);
