@@ -10436,7 +10436,7 @@ body.page-template-template-the-tutorium {
     position: relative; }
   .the-tutorium-wrapper .hero-section .hero-content {
     text-align: right;
-    max-width: 460px;
+    max-width: 590px;
     position: absolute;
     transform: translateY(-50%);
     right: 0;
@@ -10479,9 +10479,13 @@ body.page-template-template-the-tutorium {
     .the-tutorium-wrapper .hero-section .hero-content h1.entry-title {
       text-transform: uppercase;
       letter-spacing: 1px;
-      font-size: 55px;
+      font-size: 75px;
+      line-height: 80px;
       padding: 0; }
-    .the-tutorium-wrapper .hero-section .hero-content p {
+      .the-tutorium-wrapper .hero-section .hero-content h1.entry-title img {
+        width: 66px;
+        margin-top: -14px; }
+    .the-tutorium-wrapper .hero-section .hero-content span {
       font-size: 30px;
       line-height: 36px;
       margin-top: 20px; }
@@ -10489,11 +10493,13 @@ body.page-template-template-the-tutorium {
 .the-tutorium-wrapper .page-content {
   margin-top: 30px; }
   .the-tutorium-wrapper .page-content .carousel {
-    padding: 50px;
+    padding: 15px 50px;
     background-color: #fff;
     border-radius: 10px; }
-    .the-tutorium-wrapper .page-content .carousel .carousel-item .carousel-item-content-wrapper {
-      max-width: 40vw; }
+    .the-tutorium-wrapper .page-content .carousel .carousel-inner {
+      height: auto; }
+      .the-tutorium-wrapper .page-content .carousel .carousel-inner .row {
+        align-items: center; }
     .the-tutorium-wrapper .page-content .carousel .carousel-control {
       width: auto;
       color: #fff;
@@ -10606,14 +10612,14 @@ body.page-template-template-the-tutorium {
       color: #fff;
       font-weight: 700;
       margin-bottom: 50px;
-      font-size: 36px; }
+      font-size: 36px;
+      line-height: 40px; }
     .the-tutorium-wrapper .page-content .tutorium-enroll p,
     .the-tutorium-wrapper .page-content .tutorium-enroll h3 {
       color: #fff; }
     .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form {
       text-align: center;
-      padding: 0 30px;
-      border-right: 1px solid #fff; }
+      padding: 0 30px; }
       .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="text"],
       .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form select {
         padding: 4px 4px 8px 12px !important;
@@ -10643,13 +10649,21 @@ body.page-template-template-the-tutorium {
     .the-tutorium-wrapper .page-content .tutorium-enroll .form-area-copy {
       margin-top: 30px; }
 
+@media (min-width: 768px) {
+  .the-tutorium-wrapper .tutorium-enroll .enroll-form {
+    border-right: 1px solid #fff; } }
+
 @media (max-width: 767px) {
   .the-tutorium-wrapper .hero-section {
     background-position: 40% top; }
     .the-tutorium-wrapper .hero-section .hero-content {
       max-width: 390px; }
       .the-tutorium-wrapper .hero-section .hero-content h1.entry-title {
-        line-height: 52px; }
+        font-family: 44px;
+        line-height: 46px; }
+        .the-tutorium-wrapper .hero-section .hero-content h1.entry-title img {
+          width: 36px;
+          margin-top: -10px; }
   .the-tutorium-wrapper .tutorium-nav-wrapper {
     margin-top: 0; }
     .the-tutorium-wrapper .tutorium-nav-wrapper .tutorium-nav {
@@ -10658,6 +10672,18 @@ body.page-template-template-the-tutorium {
     right: -10px; }
   .the-tutorium-wrapper .page-content .carousel .carousel-control.carousel-control-prev {
     left: -10px; } }
+
+body.page-id-1863 .the-tutorium-wrapper .tutorium-nav-wrapper {
+  background-color: #FF9C18; }
+
+body.page-id-1863 .the-tutorium-wrapper .hero-content h1.entry-title {
+  text-align: center;
+  margin-bottom: 60px; }
+
+body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area {
+  text-align: center; }
+  body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area .btn, body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area .wpcf7 input[type=submit], .wpcf7 body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area input[type=submit] {
+    background-color: #82B151; }
 
 body.page-id-1825 #wrapper-footer-full {
   display: none; }

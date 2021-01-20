@@ -906,7 +906,7 @@ body.page-template-template-the-tutorium
 			position: relative
 		.hero-content
 			text-align: right
-			max-width: 460px
+			max-width: 590px
 			position: absolute
 			transform: translateY(-50%)
 			right: 0
@@ -950,21 +950,26 @@ body.page-template-template-the-tutorium
 			h1.entry-title
 				text-transform: uppercase
 				letter-spacing: 1px
-				font-size: 55px
+				font-size: 75px
+				line-height: 80px
 				padding: 0
-			p
+				img
+					width: 66px
+					margin-top: -14px
+			span
 				font-size: 30px
 				line-height: 36px
 				margin-top: 20px
 	.page-content
 		margin-top: 30px
 		.carousel
-			padding: 50px
+			padding: 15px 50px
 			background-color: #fff
 			border-radius: 10px
-			.carousel-item
-				.carousel-item-content-wrapper
-					max-width: 40vw
+			.carousel-inner
+				height: auto
+				.row
+					align-items: center
 			.carousel-control
 				width: auto
 				color: #fff
@@ -1077,13 +1082,13 @@ body.page-template-template-the-tutorium
 				font-weight: 700
 				margin-bottom: 50px
 				font-size: 36px
+				line-height: 40px
 			p,
 			h3
 				color: #fff
 			.enroll-form
 				text-align: center
 				padding: 0 30px
-				border-right: 1px solid #fff
 				form
 					input[type="text"],
 					select
@@ -1113,13 +1118,22 @@ body.page-template-template-the-tutorium
 			.form-area-copy
 				margin-top: 30px
 
+	@include media-breakpoint-up(md)
+		.tutorium-enroll
+			.enroll-form
+				border-right: 1px solid #fff
+
 	@include media-breakpoint-down(sm)
 		.hero-section
 			background-position: 40% top
 			.hero-content
 				max-width: 390px
 				h1.entry-title
-					line-height: 52px
+					font-family: 44px
+					line-height: 46px
+					img
+						width: 36px
+						margin-top: -10px
 		.tutorium-nav-wrapper
 			margin-top: 0
 			.tutorium-nav
@@ -1131,6 +1145,22 @@ body.page-template-template-the-tutorium
 						right: -10px
 					&.carousel-control-prev
 						left: -10px
+
+body.page-id-1863
+	.the-tutorium-wrapper
+		.tutorium-nav-wrapper
+			background-color: $brand-orange
+		.hero-content
+			h1.entry-title
+				text-align: center
+				margin-bottom: 60px
+			.form-area
+				text-align: center
+				.btn
+					background-color: $brand-lime
+
+
+
 
 body.page-id-1825
 	#wrapper-footer-full
