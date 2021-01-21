@@ -10548,6 +10548,8 @@ body.page-template-template-the-tutorium {
     background-color: #eaeaea; }
     .the-tutorium-wrapper .page-content .promos h2, .the-tutorium-wrapper .page-content .promos h3, .the-tutorium-wrapper .page-content .promos h4, .the-tutorium-wrapper .page-content .promos p, .the-tutorium-wrapper .page-content .promos label, .the-tutorium-wrapper .page-content .promos span {
       color: #474747; }
+    .the-tutorium-wrapper .page-content .promos p.memberships-paragraph {
+      margin-bottom: 40px; }
     .the-tutorium-wrapper .page-content .promos .scholar-wrapper .promo:nth-of-type(3) {
       border: 3px solid #82B151; }
     .the-tutorium-wrapper .page-content .promos .scholar-wrapper .promo:nth-of-type(4) {

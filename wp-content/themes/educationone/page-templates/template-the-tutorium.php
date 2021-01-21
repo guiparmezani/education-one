@@ -109,7 +109,7 @@ get_header();
         <div class="promos" id="section3">
           <div class="container">
             <h2><?php the_field('offers_heading') ?></h2>
-            <p>Find a membershit that's right for you</p>
+            <p class="memberships-paragraph">Find a membershit that's right for you</p>
             <div class="promos-content-wrapper">
               <div class="row">
                 <div class="col-md-6">
@@ -150,25 +150,27 @@ get_header();
         </div>
       <?php endif ?>
 
-      <div id="section4" class="tutorium-enroll bottom-form">
-        <h2>Online private tutoring right at your fingertips</h2>
-        <div class="container">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="enroll-form">
-                <h3>Get Started</h3>
-                <p>Boost your child's grades and test scores!</p>
-                <?php gravity_form(7, false, true, false, '', true, 12); ?>
+      <?php if (get_field('show_enroll_form_at_bottom')): ?>
+        <div id="section4" class="tutorium-enroll bottom-form">
+          <h2>Online private tutoring right at your fingertips</h2>
+          <div class="container">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="enroll-form">
+                  <h3>Get Started</h3>
+                  <p>Boost your child's grades and test scores!</p>
+                  <?php gravity_form(7, false, true, false, '', true, 12); ?>
+                </div>
               </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-area-copy">
-                <p><?php the_field('form_area_copy') ?></p>
+              <div class="col-md-6">
+                <div class="form-area-copy">
+                  <p><?php the_field('form_area_copy') ?></p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      <?php endif ?>
     </div>
   </div>
 

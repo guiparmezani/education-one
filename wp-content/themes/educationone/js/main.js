@@ -29,7 +29,7 @@ $(window).scroll(function(){
 	}
 });
 
-$('.anchor-link').on('click', function(){
+$('a[href^="#"]').on('click', function(){
 	$(window).scrollTo($(this).attr('href'), 500);
 });
 
