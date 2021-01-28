@@ -4125,7 +4125,7 @@ $(window).scroll(function(){
 	}
 });
 
-$('a[href^="#"]').on('click', function(){
+$('.tutorium-nav a[href^="#"], a.anchor-link').on('click', function(){
 	$(window).scrollTo($(this).attr('href'), 500);
 });
 

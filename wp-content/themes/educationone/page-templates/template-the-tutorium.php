@@ -21,7 +21,7 @@ get_header();
             
             <?php $i=0; while (have_rows('subnavs')): the_row() ?>
               <li class="nav-item">
-                <a class="nav-link anchor-link <?php if($i=0) echo 'active' ?>" href="#section<?php the_sub_field('section_number') ?>"><?php the_sub_field('label') ?></a>
+                <a class="nav-link <?php if(strpos(get_sub_field('section_number'), '#') === 0) echo 'anchor-link'; if($i=0) echo 'active' ?>" href="<?php the_sub_field('section_number') ?>"><?php the_sub_field('label') ?></a>
               </li>
             <?php $i++; endwhile ?>
           </ul>
@@ -53,6 +53,7 @@ get_header();
                       <div class="row">
                         <div class="col-md-6">
                           <?php the_sub_field('copy'); ?>
+                          <a href="#section4" class="btn btn-brand btn-blue anchor-link">Try The Tutorium</a>
                         </div>
                         <div class="col-md-6">
                           <div class="slider-image-wrapper">
@@ -109,7 +110,7 @@ get_header();
         <div class="promos" id="section3">
           <div class="container">
             <h2><?php the_field('offers_heading') ?></h2>
-            <p class="memberships-paragraph">Find a membershit that's right for you</p>
+            <p class="memberships-paragraph">Find a membership that's right for you</p>
             <div class="promos-content-wrapper">
               <div class="row">
                 <div class="col-md-6">

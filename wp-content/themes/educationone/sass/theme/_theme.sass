@@ -960,16 +960,27 @@ body.page-template-template-the-tutorium
 				font-size: 30px
 				line-height: 36px
 				margin-top: 20px
+			p
+				font-size: 24px
 	.page-content
 		margin-top: 30px
 		.carousel
-			padding: 15px 50px
+			padding: 30px 50px
 			background-color: #fff
 			border-radius: 10px
 			.carousel-inner
 				height: auto
 				.row
 					align-items: center
+				.btn
+					background-color: $brand-dark-blue
+					color: #fff
+					font-family: $font-barlow-condensed
+					font-weight: 900
+					font-size: 20px
+					display: table
+					margin: 0 auto
+					margin-top: 30px
 			.carousel-control
 				width: auto
 				color: #fff
@@ -1121,6 +1132,8 @@ body.page-template-template-the-tutorium
 				margin-top: 30px
 
 	@include media-breakpoint-up(md)
+		.page-content .carousel .carousel-inner .carousel-item .row
+			min-height: 330px
 		.tutorium-enroll
 			.enroll-form
 				border-right: 1px solid #fff
@@ -1131,7 +1144,7 @@ body.page-template-template-the-tutorium
 			.hero-content
 				max-width: 390px
 				h1.entry-title
-					font-family: 44px
+					font-size: 44px
 					line-height: 46px
 					img
 						width: 36px
@@ -1153,6 +1166,7 @@ body.page-id-1863
 		.tutorium-nav-wrapper
 			background-color: $brand-orange
 		.hero-content
+			top: 50%
 			h1.entry-title
 				text-align: center
 				margin-bottom: 60px
@@ -1160,7 +1174,11 @@ body.page-id-1863
 				text-align: center
 				.btn
 					background-color: $brand-lime
-
+	#wrapper-footer-full
+		display: none
+	footer#wrapper-footer,
+	.page-content
+		margin-top: 0
 
 
 

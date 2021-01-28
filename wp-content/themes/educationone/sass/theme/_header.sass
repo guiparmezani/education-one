@@ -68,6 +68,9 @@ header
 			padding: 0
 		.navbar
 			background-color: $brand-dark-blue
+			.call-us
+				width: 100%
+				text-align: center
 			.home-link-wrapper
 				max-width: 240px
 				padding: 20px 15px
@@ -78,6 +81,9 @@ header
 						text-align: center
 					&:last-child
 						padding-bottom: 20px
+			.dropdown-menu
+				background-color: transparent
+				border: none
 
 	@include media-breakpoint-up(md)
 		margin-top: 35px
@@ -91,6 +97,13 @@ header
 				#main-menu
 					width: 100%
 					justify-content: space-between
+				.menu-item
+					&.dropdown
+						margin-right: 10px
+						.dropdown-toggle::after
+							position: absolute
+							bottom: 15px
+							right: -8px
 
 	@media (min-width: 768px) and (max-width: 1199px)
 		.navbar

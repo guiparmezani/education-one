@@ -9480,6 +9480,9 @@ header .navbar-toggler {
       padding: 0; }
     header .navbar {
       background-color: #2D556B; }
+      header .navbar .call-us {
+        width: 100%;
+        text-align: center; }
       header .navbar .home-link-wrapper {
         max-width: 240px;
         padding: 20px 15px; }
@@ -9487,7 +9490,10 @@ header .navbar-toggler {
         color: #FFF;
         text-align: center; }
       header .navbar .navbar-nav .menu-item:last-child {
-        padding-bottom: 20px; } }
+        padding-bottom: 20px; }
+      header .navbar .dropdown-menu {
+        background-color: transparent;
+        border: none; } }
 
 @media (min-width: 768px) {
   header {
@@ -9501,7 +9507,13 @@ header .navbar-toggler {
         width: 55%; }
         header .navbar .navbar-collapse #main-menu {
           width: 100%;
-          justify-content: space-between; } }
+          justify-content: space-between; }
+        header .navbar .navbar-collapse .menu-item.dropdown {
+          margin-right: 10px; }
+          header .navbar .navbar-collapse .menu-item.dropdown .dropdown-toggle::after {
+            position: absolute;
+            bottom: 15px;
+            right: -8px; } }
 
 @media (min-width: 768px) and (max-width: 1199px) {
   header .navbar .navbar-collapse {
@@ -9563,7 +9575,11 @@ footer {
       footer .navbar .home-link-wrapper {
         margin-bottom: 20px; }
       footer .navbar .footer-menu {
-        width: 100%; } }
+        width: 100%; }
+        footer .navbar .footer-menu .dropdown-menu {
+          background-color: transparent;
+          border: none;
+          text-align: center; } }
   @media (max-width: 991px) {
     footer .navbar .menu-item a {
       line-height: 16px; } }
@@ -9572,7 +9588,13 @@ footer {
       width: 55%; }
       footer .navbar .navbar-collapse #main-menu {
         width: 100%;
-        justify-content: space-between; } }
+        justify-content: space-between; }
+      footer .navbar .navbar-collapse .menu-item.dropdown {
+        margin-right: 10px; }
+        footer .navbar .navbar-collapse .menu-item.dropdown .dropdown-toggle::after {
+          position: absolute;
+          bottom: 15px;
+          right: -8px; } }
 
 .carousel-fade .carousel-item {
   display: block;
@@ -10489,17 +10511,28 @@ body.page-template-template-the-tutorium {
       font-size: 30px;
       line-height: 36px;
       margin-top: 20px; }
+    .the-tutorium-wrapper .hero-section .hero-content p {
+      font-size: 24px; }
 
 .the-tutorium-wrapper .page-content {
   margin-top: 30px; }
   .the-tutorium-wrapper .page-content .carousel {
-    padding: 15px 50px;
+    padding: 30px 50px;
     background-color: #fff;
     border-radius: 10px; }
     .the-tutorium-wrapper .page-content .carousel .carousel-inner {
       height: auto; }
       .the-tutorium-wrapper .page-content .carousel .carousel-inner .row {
         align-items: center; }
+      .the-tutorium-wrapper .page-content .carousel .carousel-inner .btn, .the-tutorium-wrapper .page-content .carousel .carousel-inner .wpcf7 input[type=submit], .wpcf7 .the-tutorium-wrapper .page-content .carousel .carousel-inner input[type=submit] {
+        background-color: #2D556B;
+        color: #fff;
+        font-family: "Barlow Condensed", sans-serif;
+        font-weight: 900;
+        font-size: 20px;
+        display: table;
+        margin: 0 auto;
+        margin-top: 30px; }
     .the-tutorium-wrapper .page-content .carousel .carousel-control {
       width: auto;
       color: #fff;
@@ -10652,6 +10685,8 @@ body.page-template-template-the-tutorium {
       margin-top: 30px; }
 
 @media (min-width: 768px) {
+  .the-tutorium-wrapper .page-content .carousel .carousel-inner .carousel-item .row {
+    min-height: 330px; }
   .the-tutorium-wrapper .tutorium-enroll .enroll-form {
     border-right: 1px solid #fff; } }
 
@@ -10661,7 +10696,7 @@ body.page-template-template-the-tutorium {
     .the-tutorium-wrapper .hero-section .hero-content {
       max-width: 390px; }
       .the-tutorium-wrapper .hero-section .hero-content h1.entry-title {
-        font-family: 44px;
+        font-size: 44px;
         line-height: 46px; }
         .the-tutorium-wrapper .hero-section .hero-content h1.entry-title img {
           width: 36px;
@@ -10678,14 +10713,22 @@ body.page-template-template-the-tutorium {
 body.page-id-1863 .the-tutorium-wrapper .tutorium-nav-wrapper {
   background-color: #FF9C18; }
 
-body.page-id-1863 .the-tutorium-wrapper .hero-content h1.entry-title {
-  text-align: center;
-  margin-bottom: 60px; }
+body.page-id-1863 .the-tutorium-wrapper .hero-content {
+  top: 50%; }
+  body.page-id-1863 .the-tutorium-wrapper .hero-content h1.entry-title {
+    text-align: center;
+    margin-bottom: 60px; }
+  body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area {
+    text-align: center; }
+    body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area .btn, body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area .wpcf7 input[type=submit], .wpcf7 body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area input[type=submit] {
+      background-color: #82B151; }
 
-body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area {
-  text-align: center; }
-  body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area .btn, body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area .wpcf7 input[type=submit], .wpcf7 body.page-id-1863 .the-tutorium-wrapper .hero-content .form-area input[type=submit] {
-    background-color: #82B151; }
+body.page-id-1863 #wrapper-footer-full {
+  display: none; }
+
+body.page-id-1863 footer#wrapper-footer,
+body.page-id-1863 .page-content {
+  margin-top: 0; }
 
 body.page-id-1825 #wrapper-footer-full {
   display: none; }

@@ -48,6 +48,10 @@ footer
 				margin-bottom: 20px
 			.footer-menu
 				width: 100%
+				.dropdown-menu
+					background-color: transparent
+					border: none
+					text-align: center
 	
 	@include media-breakpoint-down(md)
 		.navbar
@@ -62,3 +66,10 @@ footer
 				#main-menu
 					width: 100%
 					justify-content: space-between
+				.menu-item
+					&.dropdown
+						margin-right: 10px
+						.dropdown-toggle::after
+							position: absolute
+							bottom: 15px
+							right: -8px

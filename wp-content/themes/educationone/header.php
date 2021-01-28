@@ -61,6 +61,7 @@ $container = get_theme_mod( 'understrap_container_type' );
 					<span class="icon-bar"></span>
 				</button>
 
+
 				<!-- The WordPress Menu goes here -->
 				<?php wp_nav_menu(
 					array(
@@ -73,6 +74,10 @@ $container = get_theme_mod( 'understrap_container_type' );
 						'walker'          => new WP_Bootstrap_Navwalker(),
 					)
 				); ?>
+				<div class="call-us mobile">
+					<span>GIVE US A CALL <i class="fa fa-phone" aria-hidden="true"></i></span>
+					<a href="tel:<?php the_field('phone_number', 'options'); ?>"><?php the_field('phone_number', 'options'); ?></a>
+				</div>
 				
 				<div class="call-us desktop-wide">
 					<span>GIVE US A CALL <i class="fa fa-phone" aria-hidden="true"></i></span>
