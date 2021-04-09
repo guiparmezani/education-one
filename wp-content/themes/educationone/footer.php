@@ -13,6 +13,22 @@ $container = get_theme_mod( 'understrap_container_type' );
 
 <?php get_sidebar( 'footerfull' ); ?>
 
+<script SameSite="None; Secure" src="https://static.landbot.io/landbot-3/landbot-3.0.0.js"></script>
+<div id="myLandbot" style="width: 0; height: 0"></div>
+<!-- <script>
+  var myLandbot = new Landbot.Container({
+    container: '#myLandbot',
+    configUrl: 'https://chats.landbot.io/v3/H-840802-4VYFFDRM62E67JW0/index.json',
+  });
+</script> -->
+
+<script SameSite="None; Secure" src="https://static.landbot.io/landbot-3/landbot-3.0.0.js"></script>
+<script>
+  var myLandbot = new Landbot.Livechat({
+    configUrl: 'https://chats.landbot.io/v3/H-834228-3O9VB829TY96GLBU/index.json',
+  });
+</script>
+
 <footer class="wrapper" id="wrapper-footer">
 	<div class="container">
 		<div class="row">

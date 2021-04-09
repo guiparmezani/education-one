@@ -1103,14 +1103,33 @@ body.page-template-template-the-tutorium
 				text-align: center
 				padding: 0 30px
 				form
+					.ginput_container_select
+						position: relative
+						&::after
+							display: inline-block
+							width: 0
+							height: 0
+							content: ""
+							border-top: .3em solid
+							border-right: .3em solid transparent
+							border-bottom: 0
+							border-left: .3em solid transparent
+							position: absolute
+							right: 10px
+							top: 50%
+							transform: translateY(-50%)
 					input[type="text"],
 					select
 						padding: 4px 4px 8px 12px !important
 						border: 1px solid #fff
 						background-color: transparent
 						color: #fff
-						font-size: 16px
+						font-size: 16px !important
 						min-height: 44px
+						-webkit-appearance: none
+						border-radius: 0
+						option
+							color: $brand-black !important
 						&::placeholder
 							font-size: 16px
 							color: #fff
@@ -1160,6 +1179,13 @@ body.page-template-template-the-tutorium
 						right: -10px
 					&.carousel-control-prev
 						left: -10px
+
+#myLandbot
+		display: none
+		
+body.uiasdhfiuhasdfuih
+	#myLandbot
+		display: block
 
 body.page-id-1863
 	.the-tutorium-wrapper
