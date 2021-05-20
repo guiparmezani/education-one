@@ -34,6 +34,25 @@ $container = get_theme_mod( 'understrap_container_type' );
 	<!-- End Google Tag Manager -->
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+	<script SameSite="None; Secure" src="https://static.landbot.io/landbot-3/landbot-3.0.0.js"></script>
+	<div id="myLandbot" style="width: 0; height: 0"></div>
+
+	<script>
+	  var myLandbot = new Landbot.Livechat({
+	    configUrl: 'https://chats.landbot.io/v3/H-834228-3O9VB829TY96GLBU/index.json',
+	  });
+	</script>
+
+	<!-- Global site tag (gtag.js) - Google Ads: 776932128 -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=AW-776932128"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'AW-776932128');
+	</script>
 	<?php wp_head(); ?>
 </head>
 
@@ -87,4 +106,21 @@ $container = get_theme_mod( 'understrap_container_type' );
 		</div>
 
 	</header>
+
+	<?php if (strlen($_GET['diagnostic-test'])): ?>
+		<!-- Event snippet for Chat Form Diagnostic conversion page -->
+		<script>
+		  gtag('event', 'conversion', {'send_to': 'AW-776932128/FITACPCK9okCEKCWvPIC'});
+		</script>
+		
+		<div class="container">
+			<div id="myDiagnosticLandbot" style="width: 100%; height: 500px; margin-top: 80px;"></div>
+		</div>
+		<script>
+		  var myDiagnosticLandbot = new Landbot.Container({
+		    container: '#myDiagnosticLandbot',
+		    configUrl: 'https://chats.landbot.io/v3/H-840802-4VYFFDRM62E67JW0/index.json',
+		  });
+		</script>
+	<?php endif ?>
 
