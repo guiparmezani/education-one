@@ -61,17 +61,6 @@ $container = get_theme_mod( 'understrap_container_type' );
 </footer><!-- wrapper end -->
 </div><!-- #page we need this extra closing tag here -->
 
-<script type="application/javascript ">
-  const ipFormInput = document.getElementById('ipFormInput');
-
-  fetch('https://api.ipify.org?format=json')
-      .then((response) => { return response.json() })
-      .then((json) => {
-          const ip = json.ip;
-          ipFormInput.value = ip;
-      })
-      .catch((err) => { console.error(`Error getting IP Address: ${err}`) })
-</script>
 <?php wp_footer(); ?>
 
 </body>
