@@ -33,13 +33,11 @@ class GF_Field_SingleShipping extends GF_Field {
 		if ( empty( $price ) ) {
 			$price = 0;
 		}
-
-		$price = esc_attr( $price );
+		$price = esc_attr( GFCommon::to_money( $price ) );
 
 		return "<div class='ginput_container ginput_container_singleshipping'>
-					<input type='hidden' name='input_{$id}' value='{$price}' class='gform_hidden'/>
-					<span class='ginput_shipping_price' id='{$field_id}'>" . GFCommon::to_money( $price, $currency ) . '</span>
-				</div>';
+					<input readonly class='ginput_shipping_price gform-text-input-reset' id='{$field_id}' name='input_{$id}' value='{$price}' />
+				</div>";
 	}
 
 	public function get_value_entry_detail( $value, $currency = '', $use_text = false, $format = 'html', $media = 'screen' ) {
@@ -51,6 +49,27 @@ class GF_Field_SingleShipping extends GF_Field {
 		$price_number    = GFCommon::to_number( $this->basePrice );
 		$this->basePrice = GFCommon::to_money( $price_number );
 	}
+
+	public function get_value_default() {
+		$value = $this->is_form_editor() ? $this->defaultValue : GFCommon::replace_variables_prepopulate( $this->defaultValue );
+		if( rgblank( $value ) ) {
+			$value = $this->basePrice;
+		}
+		return $value;
+	}
+
+	/**
+	 * Actions to be performed after the field has been converted to an object.
+	 *
+	 * @since 2.4.8.2
+	 */
+	public function post_convert_field() {
+		parent::post_convert_field();
+
+		// Ensure the choices property is not an array to prevent issues with some features such as the conditional logic reset to default.
+		$this->choices = null;
+	}
+
 }
 
 GF_Fields::register( new GF_Field_SingleShipping() );

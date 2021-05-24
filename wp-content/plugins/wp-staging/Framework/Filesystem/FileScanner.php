@@ -6,125 +6,149 @@
 
 namespace WPStaging\Framework\Filesystem;
 
-use InvalidArgumentException;
-use RuntimeException;
-use WPStaging\Vendor\Symfony\Component\Finder\Finder;
-use WPStaging\Framework\Queue\FinishedQueueException;
-use WPStaging\Framework\Queue\Queue;
-use WPStaging\Framework\Queue\Storage\BufferedCacheStorage;
-use WPStaging\Framework\Utils\Cache\BufferedCache;
+use WPStaging\Framework\Adapter\Directory;
+use WPStaging\Vendor\Psr\Log\LoggerInterface;
 
 class FileScanner
 {
-    const DATA_CACHE_FILE = 'filesystem_scanner_file_data';
-    const QUEUE_CACHE_FILE = 'file_scanner';
+    private $directory;
+    private $filesystem;
+    private $logger;
 
-    /** @var BufferedCache */
-    private $cache;
-
-    /** @var BufferedCacheStorage */
-    private $storage;
-
-    /** @var DirectoryService */
-    private $service;
-
-    /** @var Queue|null */
-    private $queue;
-
-    /** @var array */
-    private $newQueueItems;
-
-    public function __construct(BufferedCache $cache, BufferedCacheStorage $storage, FileService $service)
+    public function __construct(Directory $directory, Filesystem $filesystem, LoggerInterface $logger)
     {
-        $this->newQueueItems = [];
-        $this->cache = clone $cache;
-        $this->storage = clone $storage;
-        $this->service = $service;
-    }
-
-    public function __destruct()
-    {
-        if ($this->newQueueItems && $this->queue) {
-            $this->queue->pushAsArray($this->newQueueItems);
-        }
+        $this->directory  = $directory;
+        $this->filesystem = $filesystem;
+        $this->logger     = $logger;
     }
 
     /**
-     * @param string $name
+     * @param string $directory
+     * @param bool   $includeOtherFilesInWpContent
+     * @param array  $excludedDirectories
+     *
+     * @return array
      */
-    public function setQueueByName($name = self::QUEUE_CACHE_FILE)
+    public function scan($directory, $includeOtherFilesInWpContent, $excludedDirectories = [])
     {
-        $this->queue = new Queue;
-        $this->queue->setName($name);
-        $this->queue->setStorage($this->storage);
-    }
-
-    /**
-     * @param array|null $excluded
-     * @param int $depth
-     * @return Finder|null
-     */
-    public function scanCurrentPath(array $excluded = null, $depth = 0)
-    {
-        $path = $this->getPathFromQueue();
-        if ($path === null) {
-            throw new FinishedQueueException('File Scanner Queue is Finished');
-        }
-
-        $path = ABSPATH . $path;
         try {
-            return $this->service->scan($path, $depth, $excluded);
-        } catch(InvalidArgumentException $e) {
-            return null;
-        }
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getPathFromQueue()
-    {
-        if ($this->queue->count() > 0) {
-            return $this->queue->pop();
+            $it = new \DirectoryIterator($directory);
+        } catch (\Exception $e) {
+            return [];
         }
 
-        if ($this->newQueueItems) {
-            return array_shift($this->newQueueItems);
+        /**
+         * Allow user to exclude certain file extensions from being exported.
+         */
+        $ignoreFileExtensions = (array)apply_filters('wpstg.export.site.ignore.file_extension', [
+            'log',
+        ]);
+
+        /**
+         * Allow user to exclude files larger than given size from being exported.
+         */
+        $ignoreFileBiggerThan = (int)apply_filters('wpstg.export.site.ignore.max_size_in_bytes', 200 * MB_IN_BYTES);
+
+        /**
+         * Allow user to exclude files with extension larger than given size from being exported.
+         */
+        $ignoreFileExtensionFilesBiggerThan = (array)apply_filters('wpstg.export.site.ignore.file_extension_max_size_in_bytes', [
+            'zip' => 10 * MB_IN_BYTES,
+        ]);
+
+        /*
+         * If "Include Other Files in WP Content" is false, only the files inside
+         * these folders will be added to the export.
+         */
+        $defaultWpContentFolders = [
+            WP_PLUGIN_DIR,
+            $this->directory->getUploadsDirectory(),
+            get_theme_root(),
+            WPMU_PLUGIN_DIR,
+        ];
+
+        $files = [];
+
+        /** @var \SplFileInfo $item */
+        foreach ($it as $item) {
+            $shouldScan = $item->isFile() &&
+                          !$item->isLink() &&
+                          $item->getFilename() != "." &&
+                          $item->getFilename() != "..";
+
+            if ($shouldScan) {
+                if (in_array($item->getExtension(), $ignoreFileExtensions)) {
+                    // Early bail: File has an ignored extension
+                    $this->logger->info(sprintf(
+                        __('%s: Ignored file "%s" because the extension "%s" is ignored.', 'wp-staging'),
+                        /*
+                             * We can't use FileScanerTask::TASK_NAME due to an architectural problem.
+                             * It's not a trully static method. It uses sprintf that relies on the state of the class,
+                             * thus it can only be used inside the context of the task itself.
+                             */
+                        __('File Scanner', 'wp-staging'),
+                        $item->getPathname(),
+                        $item->getExtension()
+                    ));
+                    continue;
+                }
+
+                if ($item->getSize() > $ignoreFileBiggerThan) {
+                    // Early bail: File is larger than max allowed size.
+                    $this->logger->info(sprintf(
+                        __('%s: Ignored file "%s" because it exceeds the maximum file size for exporting (%s).', 'wp-staging'),
+                        __('File Scanner', 'wp-staging'),
+                        $item->getPathname(),
+                        size_format($item->getSize())
+                    ));
+                    continue;
+                }
+
+                if (
+                    array_key_exists($item->getExtension(), $ignoreFileExtensionFilesBiggerThan) &&
+                    $item->getSize() > $ignoreFileExtensionFilesBiggerThan[$item->getExtension()]
+                ) {
+                    // Early bail: File bigger than expected for given extension
+                    $this->logger->info(sprintf(
+                        __('%s: Ignored file "%s" because it exceeds the maximum file size for exporting (%s) for files with the "%s" extension.', 'wp-staging'),
+                        __('File Scanner', 'wp-staging'),
+                        $item->getPathname(),
+                        size_format($item->getSize()),
+                        $item->getExtension()
+                    ));
+                    continue;
+                }
+
+                $path = $this->filesystem->safePath($item->getPathname());
+
+                foreach ($excludedDirectories as $excludedDirectory) {
+                    if (strpos($path, trailingslashit($excludedDirectory)) === 0) {
+                        // Early bail: File is inside an ignored folder
+                        $this->logger->info(sprintf(
+                            __('%s: Ignored file "%s" because it is inside an ignored directory (%s).', 'wp-staging'),
+                            __('File Scanner', 'wp-staging'),
+                            $item->getPathname(),
+                            $excludedDirectory
+                        ));
+                        continue;
+                    }
+                }
+
+                if (!$includeOtherFilesInWpContent) {
+                    foreach ($defaultWpContentFolders as $defaultFolder) {
+                        /*
+                         * Only include files that are inside allowed folders.
+                         */
+                        if (strpos($path, trailingslashit($defaultFolder)) === 0) {
+                            $files[] = $path;
+                        }
+                    }
+                } else {
+                    $files[] = $path;
+                }
+            }
         }
 
-        return null;
-    }
-
-    /**
-     * @param string $item
-     */
-    public function addToNewQueue($item)
-    {
-        $this->newQueueItems[] = $item;
-    }
-
-    /**
-     * @return BufferedCache
-     */
-    public function getCache()
-    {
-        return $this->cache;
-    }
-
-    /**
-     * @return Queue
-     */
-    public function getQueue()
-    {
-        if (!$this->queue) {
-            // TODO Custom Exception
-            throw new RuntimeException('FileScanner Queue is not set');
-        }
-        return $this->queue;
-    }
-
-    public function setNewQueueItems(array $items = null)
-    {
-        $this->newQueueItems = $items;
+        return $files;
     }
 }

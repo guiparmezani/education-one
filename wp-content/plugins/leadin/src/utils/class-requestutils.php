@@ -7,26 +7,36 @@ namespace Leadin\utils;
  */
 class RequestUtils {
 	/**
-	 * Send JSON response with message.
+	 * Send JSON response.
 	 *
-	 * @param Array  $body response to send as JSON.
+	 * @param Mixed  $body response to send as JSON.
 	 * @param Number $code http code to return.
 	 */
-	public static function send( $body, $code ) {
-		wp_die( json_encode( $body ), '', intval( $code ) );
+	private static function send( $body, $code ) {
+		wp_send_json( $body, intval( $code ) );
+	}
+
+	/**
+	 * Send JSON response with 200 code.
+	 *
+	 * @param Mixed $body response to send as JSON.
+	 */
+	public static function send_json( $body = array() ) {
+		self::send( $body, 200 );
 	}
 
 	/**
 	 * Send error response with message
 	 *
 	 * @param String $error Message to be sent on te JSON.
+	 * @param Number $code  Error code to be sent in the error. Default 400.
 	 */
-	public static function send_error( $error ) {
+	public static function send_error_message( $error, $code = 400 ) {
 		self::send(
 			array(
 				'error' => $error,
 			),
-			400
+			intval( $code )
 		);
 	}
 

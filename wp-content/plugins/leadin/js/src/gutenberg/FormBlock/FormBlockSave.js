@@ -3,6 +3,7 @@ import { RawHTML } from '@wordpress/element';
 
 export default function FormSaveBlock({ attributes }) {
   const { portalId, formId } = attributes;
+
   if (portalId && formId) {
     return (
       <RawHTML>

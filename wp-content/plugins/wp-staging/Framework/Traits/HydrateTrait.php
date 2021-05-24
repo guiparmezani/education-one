@@ -25,7 +25,13 @@ trait HydrateTrait
     {
         foreach ($data as $key => $value) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $this->hydrateByMethod('set' . ucfirst($key), $value);
+            try {
+                $this->hydrateByMethod('set' . ucfirst($key), $value);
+            } catch (Exception $e) {
+                if (defined('WPSTG_DEBUG') && WPSTG_DEBUG) {
+                    error_log($e->getMessage());
+                }
+            }
         }
 
         return $this;
@@ -40,7 +46,10 @@ trait HydrateTrait
     private function hydrateByMethod($method, $value)
     {
         if (!method_exists($this, $method)) {
-            return;
+            if (!is_string($value)) {
+                $value = wp_json_encode($value);
+            }
+            throw new Exception(sprintf('Trying to hydrate DTO with value that does not exist. \n %s \n %s \n %s', get_class($this), $method, $value));
         }
 
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -49,7 +58,7 @@ trait HydrateTrait
         $params = $method->getParameters();
 
         if (!isset($params[0]) || count($params) > 1) {
-            throw new EntityException(sprintf(
+            throw new Exception(sprintf(
                 'Class %s setter method %s does not have a first parameter or has more than one parameter',
                 static::class,
                 $method
@@ -77,10 +86,10 @@ trait HydrateTrait
     {
         $className = $class->getName();
         if (!$value instanceof DateTime && $className === 'DateTime') {
-            return (new DateTimeAdapter)->getDateTime($value);
+            return (new DateTimeAdapter())->getDateTime($value);
         }
 
-        $obj = new $className;
+        $obj = new $className();
         if (is_array($value) && method_exists($obj, 'hydrate')) {
             $obj->hydrate($value);
         }

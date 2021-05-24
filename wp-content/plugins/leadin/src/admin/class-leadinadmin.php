@@ -2,18 +2,21 @@
 
 namespace Leadin\admin;
 
-use Leadin\LeadinOptions;
 use Leadin\AssetsManager;
+use Leadin\wp\User;
+use Leadin\admin\Connection;
 use Leadin\admin\AdminFilters;
 use Leadin\admin\MenuConstants;
 use Leadin\admin\Gutenberg;
 use Leadin\admin\NoticeManager;
 use Leadin\admin\PluginActionsManager;
 use Leadin\admin\DeactivationForm;
+use Leadin\auth\OAuth;
 use Leadin\admin\api\RegistrationApi;
-use Leadin\admin\api\SkipConnectApi;
 use Leadin\admin\api\DisconnectApi;
+use Leadin\admin\api\SearchHubSpotFormsApi;
 use Leadin\admin\utils\Background;
+use Leadin\utils\QueryParameters;
 use Leadin\utils\Versions;
 use Leadin\includes\utils as utils;
 
@@ -29,21 +32,24 @@ class LeadinAdmin {
 	public function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'load_languages' ), 14 );
 		add_action( 'admin_init', array( $this, 'redirect_after_activation' ) );
+		add_action( 'admin_init', array( $this, 'authorize' ) );
 		add_action( 'admin_menu', array( $this, 'build_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		register_activation_hook( LEADIN_BASE_PATH, array( $this, 'activate' ) );
+		register_activation_hook( LEADIN_BASE_PATH, array( $this, 'do_activate_action' ) );
 
-		$portal_id = LeadinOptions::get_portal_id();
+		/**
+		 * The following hooks are public APIs.
+		 */
+		add_action( 'leadin_redirect', array( $this, 'set_redirect_transient' ) );
+		add_action( 'leadin_activate', array( $this, 'do_redirect_action' ), 100 );
 
 		new RegistrationApi();
 		new DisconnectApi();
-		new SkipConnectApi();
 		new PluginActionsManager();
 		new DeactivationForm();
 		new NoticeManager();
 		new AdminFilters();
-
-		if ( ! empty( $portal_id ) ) {
+		if ( Connection::is_connected() ) {
 			new Gutenberg();
 		}
 	}
@@ -56,9 +62,23 @@ class LeadinAdmin {
 	}
 
 	/**
+	 * Handler called on plugin activation.
+	 */
+	public function do_activate_action() {
+		\do_action( 'leadin_activate' );
+	}
+
+	/**
+	 * Handler for the leadin_activate action.
+	 */
+	public function do_redirect_action() {
+		\do_action( 'leadin_redirect' );
+	}
+
+	/**
 	 * Set transient after activating the plugin.
 	 */
-	public function activate() {
+	public function set_redirect_transient() {
 		set_transient( self::REDIRECT_TRANSIENT, true, 60 );
 	}
 
@@ -66,16 +86,27 @@ class LeadinAdmin {
 	 * Redirect to the dashboard after activation.
 	 */
 	public function redirect_after_activation() {
-		$portal_id = LeadinOptions::get_portal_id();
-
 		if ( get_transient( self::REDIRECT_TRANSIENT ) ) {
 			delete_transient( self::REDIRECT_TRANSIENT );
 			wp_safe_redirect( admin_url( 'admin.php?page=leadin' ) );
 			exit;
-		} elseif ( ! empty( $portal_id ) && isset( $_GET['page'] ) && 'leadin' === $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$landing_page = MenuConstants::USER_GUIDE;
-			wp_safe_redirect( admin_url( 'admin.php?page=' . $landing_page ) );
-			exit;
+		}
+	}
+
+	/**
+	 * Connect/disconnect the plugin
+	 */
+	public function authorize() {
+		if ( Connection::is_connection_requested() ) {
+			Connection::oauth_connect();
+			$redirect_params = array( 'leadin_just_connected' => 1 );
+			if ( Connection::is_new_portal() ) {
+				$redirect_params['is_new_portal'] = 1;
+			}
+			Routing::redirect( MenuConstants::USER_GUIDE, $redirect_params );
+		} elseif ( Connection::is_disconnection_requested() ) {
+			Connection::disconnect();
+			Routing::redirect( MenuConstants::ROOT );
 		}
 	}
 
@@ -94,26 +125,20 @@ class LeadinAdmin {
 	 * Adds Leadin menu to admin sidebar
 	 */
 	public function build_menu() {
-		$portal_id         = LeadinOptions::get_portal_id();
-		$notification_icon = '';
-
-		if ( ! $portal_id ) {
-			$notification_icon = ' <span class="update-plugins count-1"><span class="plugin-count">!</span></span>';
-		}
-
-		if ( ! empty( $portal_id ) ) {
-			add_menu_page( __( 'HubSpot', 'leadin' ), __( 'HubSpot', 'leadin' ) . $notification_icon, AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::ROOT, array( $this, 'build_app' ), 'dashicons-sprocket', '25.100713' );
-			add_submenu_page( MenuConstants::ROOT, __( 'User Guide', 'leadin' ), __( 'User Guide', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::USER_GUIDE, array( $this, 'build_app' ) );
-			add_submenu_page( MenuConstants::ROOT, __( 'Reporting', 'leadin' ), __( 'Reporting', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::REPORTING, array( $this, 'build_app' ) );
-			add_submenu_page( MenuConstants::ROOT, __( 'Contacts', 'leadin' ), __( 'Contacts', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::CONTACTS, array( $this, 'build_app' ) );
-			add_submenu_page( MenuConstants::ROOT, __( 'Lists', 'leadin' ), __( 'Lists', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::LISTS, array( $this, 'build_app' ) );
-			add_submenu_page( MenuConstants::ROOT, __( 'Forms', 'leadin' ), __( 'Forms', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::FORMS, array( $this, 'build_app' ) );
-			add_submenu_page( MenuConstants::ROOT, __( 'Live Chat', 'leadin' ), __( 'Live Chat', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::CHATFLOWS, array( $this, 'build_app' ) );
-			add_submenu_page( MenuConstants::ROOT, __( 'Email', 'leadin' ), __( 'Email', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::EMAIL, array( $this, 'build_app' ) );
-			add_submenu_page( MenuConstants::ROOT, __( 'Settings', 'leadin' ), __( 'Settings', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::SETTINGS, array( $this, 'build_app' ) );
-			add_submenu_page( MenuConstants::ROOT, __( 'Upgrade', 'leadin' ), __( 'Upgrade', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::PRICING, array( $this, 'build_app' ) );
-			remove_submenu_page( MenuConstants::ROOT, MenuConstants::ROOT );
+		if ( Connection::is_connected() ) {
+				add_menu_page( __( 'HubSpot', 'leadin' ), __( 'HubSpot', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::ROOT, array( $this, 'build_app' ), 'dashicons-sprocket', '25.100713' );
+				add_submenu_page( MenuConstants::ROOT, __( 'User Guide', 'leadin' ), __( 'User Guide', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::USER_GUIDE, array( $this, 'build_app' ) );
+				add_submenu_page( MenuConstants::ROOT, __( 'Reporting', 'leadin' ), __( 'Reporting', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::REPORTING, array( $this, 'build_app' ) );
+				add_submenu_page( MenuConstants::ROOT, __( 'Contacts', 'leadin' ), __( 'Contacts', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::CONTACTS, array( $this, 'build_app' ) );
+				add_submenu_page( MenuConstants::ROOT, __( 'Lists', 'leadin' ), __( 'Lists', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::LISTS, array( $this, 'build_app' ) );
+				add_submenu_page( MenuConstants::ROOT, __( 'Forms', 'leadin' ), __( 'Forms', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::FORMS, array( $this, 'build_app' ) );
+				add_submenu_page( MenuConstants::ROOT, __( 'Live Chat', 'leadin' ), __( 'Live Chat', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::CHATFLOWS, array( $this, 'build_app' ) );
+				add_submenu_page( MenuConstants::ROOT, __( 'Email', 'leadin' ), __( 'Email', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::EMAIL, array( $this, 'build_app' ) );
+				add_submenu_page( MenuConstants::ROOT, __( 'Settings', 'leadin' ), __( 'Settings', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::SETTINGS, array( $this, 'build_app' ) );
+				add_submenu_page( MenuConstants::ROOT, __( 'Upgrade', 'leadin' ), __( 'Upgrade', 'leadin' ), AdminFilters::apply_view_plugin_menu_capability(), MenuConstants::PRICING, array( $this, 'build_app' ) );
+				remove_submenu_page( MenuConstants::ROOT, MenuConstants::ROOT );
 		} else {
+			$notification_icon = ' <span class="update-plugins count-1"><span class="plugin-count">!</span></span>';
 			add_menu_page( __( 'HubSpot', 'leadin' ), __( 'HubSpot', 'leadin' ) . $notification_icon, AdminFilters::apply_connect_plugin_capability(), MenuConstants::ROOT, array( $this, 'build_app' ), 'dashicons-sprocket', '25.100713' );
 		}
 	}

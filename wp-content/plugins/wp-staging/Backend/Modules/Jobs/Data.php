@@ -2,12 +2,10 @@
 
 namespace WPStaging\Backend\Modules\Jobs;
 
-
 use WPStaging\Framework\CloningProcess\Data\DataCloningDto;
 use WPStaging\Framework\CloningProcess\Data\CopyWpConfig;
 use WPStaging\Framework\CloningProcess\Data\MultisiteAddNetworkAdministrators;
 use WPStaging\Framework\CloningProcess\Data\MultisiteUpdateActivePlugins;
-use WPStaging\Framework\CloningProcess\Data\MultisiteUpdateTablePrefix;
 use WPStaging\Framework\CloningProcess\Data\ResetIndexPhp;
 use WPStaging\Framework\CloningProcess\Data\UpdateSiteUrlAndHome;
 use WPStaging\Framework\CloningProcess\Data\UpdateTablePrefix;
@@ -82,7 +80,7 @@ class Data extends CloningProcess
         // Save option, progress
         $this->saveOptions();
 
-        return ( object )$this->response;
+        return (object)$this->response;
     }
 
     /**
@@ -226,10 +224,6 @@ class Data extends CloningProcess
      */
     protected function step3()
     {
-        if ($this->isMultisiteAndPro()) {
-            return (new MultisiteUpdateTablePrefix($this->getCloningDto(3)))->execute();
-        }
-
         return (new UpdateTablePrefix($this->getCloningDto(3)))->execute();
     }
 

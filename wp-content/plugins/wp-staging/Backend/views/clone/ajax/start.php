@@ -1,3 +1,9 @@
+<?php
+/**
+ * @see \WPStaging\Backend\Administrator::ajaxStartClone A place where this view is being called.
+ * @var \WPStaging\Backend\Modules\Jobs\Cloning $cloning
+ */
+?>
 <div class=successfullying-section">
     <h2 id="wpstg-processing-header"><?php echo __("Processing, please wait...", "wp-staging")?></h2>
     <div class="wpstg-progress-bar">
@@ -33,10 +39,10 @@
     <h3>Congratulations
     </h3>
     <?php
-    $subDirectory = str_replace( get_home_path(), '', ABSPATH ); 
+    $subDirectory = str_replace(get_home_path(), '', ABSPATH);
     $helper = new \WPStaging\Core\Utils\Helper();
     $url = $helper->getHomeUrl() . str_replace('/', '', $subDirectory);
-    echo sprintf( __( 'WP Staging successfully created a staging site in a sub-directory of your main site accessable from:<br><strong><a href="%1$s" target="_blank" id="wpstg-clone-url-1">%1$s</a></strong>', 'wp-staging' ), $url );
+    echo sprintf(__('WP Staging successfully created a staging site in a sub-directory of your main site accessable from:<br><strong><a href="%1$s" target="_blank" id="wpstg-clone-url-1">%1$s</a></strong>', 'wp-staging'), $url);
     ?>
     <br>
     <br>
@@ -76,7 +82,7 @@
                 <p>
                     To make it more clear when you work on the staging site WP Staging changed the color of the admin bar:
                     <br><br>
-                    <img src="<?php echo $this->url . "/img/admin_dashboard.png" ?>">
+                    <img src="<?php echo $this->assets->getAssetsUrl("img/admin_dashboard.png") ?>">
                     <br>
                     On the fronpage the site name also changed to <br>
                     <strong class="wpstg-font-italic">

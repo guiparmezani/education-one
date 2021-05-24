@@ -6,6 +6,7 @@ namespace Leadin\admin\api;
  * Common utils for the API creation
  */
 class ApiGenerator {
+
 	/**
 	 * Adds actions needed for a new API to reduce boilerplate
 	 */

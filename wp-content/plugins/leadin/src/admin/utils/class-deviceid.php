@@ -14,7 +14,7 @@ class DeviceId {
 	 */
 	public static function get() {
 		$site_url = Website::get_url();
-		$user_id  = User::get_id();
+		$user_id  = get_current_user_id();
 		return md5( "$site_url:$user_id" );
 	}
 }

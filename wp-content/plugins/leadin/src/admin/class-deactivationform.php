@@ -2,6 +2,7 @@
 
 namespace Leadin\admin;
 
+use Leadin\options\AccountOptions;
 use \Leadin\includes\utils as utils;
 
 /**
@@ -41,7 +42,7 @@ class DeactivationForm {
 							<?php
 							$radio_buttons = array(
 								"I can't sign up or log in",
-								"I don't want to sign up to HubSpot",
+								'The plugin is impacting website performance',
 								"The plugin isn't working",
 								"The plugin isn't useful",
 								'Temporarily disabling or troubleshooting',
@@ -49,7 +50,7 @@ class DeactivationForm {
 
 							$radio_button_translations = array(
 								__( "I can't sign up or log in", 'leadin' ),
-								__( "I don't want to sign up to HubSpot", 'leadin' ),
+								__( 'The plugin is impacting website performance', 'leadin' ),
 								__( "The plugin isn't working", 'leadin' ),
 								__( "The plugin isn't useful", 'leadin' ),
 								__( 'Temporarily disabling or troubleshooting', 'leadin' ),
@@ -79,7 +80,7 @@ class DeactivationForm {
 								<label for="leadinFeedbackOther"><?php echo esc_html( __( 'Other', 'leadin' ) ); ?></label>
 							</div>
 							<textarea name="details" class="leadin-feedback-text-area leadin-feedback-text-control" placeholder="<?php echo esc_html( __( 'Feedback...', 'leadin' ) ); ?>"></textarea>
-							<input type="hidden" name="portal_id" value="<?php echo esc_html( get_option( 'leadin_portalId' ) ); ?>">
+							<input type="hidden" name="portal_id" value="<?php echo esc_html( AccountOptions::get_portal_id() ); ?>">
 
 							<div>
 								<strong>

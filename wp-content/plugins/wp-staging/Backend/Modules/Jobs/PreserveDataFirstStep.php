@@ -4,6 +4,7 @@ namespace WPStaging\Backend\Modules\Jobs;
 
 use WPStaging\Core\WPStaging;
 use WPStaging\Framework\Adapter\SourceDatabase;
+use WPStaging\Framework\Staging\CloneOptions;
 
 /**
  * Preserve staging sites in wpstg_existing_clones_beta in staging database while updating a site
@@ -41,7 +42,7 @@ class PreserveDataFirstStep extends JobExecutable
 
         $this->stagingPrefix = $this->options->prefix;
 
-        if($db->isExternalDatabase()){
+        if ($db->isExternalDatabase()) {
             $this->stagingPrefix = $this->options->databasePrefix;
         }
 
@@ -49,7 +50,7 @@ class PreserveDataFirstStep extends JobExecutable
 
         $this->saveOptions();
 
-        return ( object )$this->response;
+        return (object)$this->response;
     }
 
     /**
@@ -72,42 +73,78 @@ class PreserveDataFirstStep extends JobExecutable
     {
         // Delete wpstg_tmp_data and reset it
         $delete = $this->productionDb->query(
-            $this->productionDb->prepare("DELETE FROM " . $this->productionDb->prefix . "options WHERE `option_name` = %s", "wpstg_tmp_data"
-            )
+            $this->productionDb->prepare("DELETE FROM " . $this->productionDb->prefix . "options WHERE `option_name` = %s", "wpstg_tmp_data")
         );
 
-        if(!$this->tableExists($this->stagingPrefix . "options")){
+        if (!$this->tableExists($this->stagingPrefix . "options")) {
             return true;
         }
 
         // Get wpstg_existing_clones_beta from staging database
-        $result = $this->stagingDb->get_var(
+        $stagingSites = $this->stagingDb->get_var(
             $this->stagingDb->prepare(
-                "SELECT `option_value` FROM " . $this->stagingPrefix . "options WHERE `option_name` = %s", "wpstg_existing_clones_beta"
+                "SELECT `option_value` FROM " . $this->stagingPrefix . "options WHERE `option_name` = %s",
+                "wpstg_existing_clones_beta"
+            )
+        );
+
+        // Get wpstg_settings from staging database
+        $settings = $this->stagingDb->get_var(
+            $this->stagingDb->prepare(
+                "SELECT `option_value` FROM " . $this->stagingPrefix . "options WHERE `option_name` = %s",
+                "wpstg_settings"
+            )
+        );
+
+        // Get wpstg_clone_options from staging database
+        $cloneOptions = $this->stagingDb->get_var(
+            $this->stagingDb->prepare(
+                "SELECT `option_value` FROM " . $this->stagingPrefix . "options WHERE `option_name` = %s",
+                CloneOptions::WPSTG_CLONE_SETTINGS_KEY
             )
         );
 
         // Nothing to do
-        if (!$result){
+        if (!$stagingSites && !$settings && !$cloneOptions) {
             return true;
         }
 
-        // Insert wpstg_existing_clones_beta into wpstg_tmp_data in production database
+        $tmpData = serialize((object) [
+            'stagingSites' => $stagingSites,
+            'settings' => $settings,
+            'cloneOptions' => $cloneOptions,
+        ]);
+
+        // Insert staging site preserved data into wpstg_tmp_data in production database
         $insert = $this->productionDb->query(
             $this->productionDb->prepare(
-                "INSERT INTO `" . $this->productionDb->prefix . "options` ( `option_id`, `option_name`, `option_value`, `autoload` ) VALUES ( NULL , %s, %s, %s )", "wpstg_tmp_data", $result, "no"
+                "INSERT INTO `" . $this->productionDb->prefix . "options` ( `option_id`, `option_name`, `option_value`, `autoload` ) VALUES ( NULL , %s, %s, %s )",
+                "wpstg_tmp_data",
+                $tmpData,
+                "no"
             )
         );
 
         if ($delete === false) {
             $this->log("Preserve Data: Failed to delete wpstg_tmp_data");
         }
-        if ($result === false) {
+
+        if ($stagingSites === false) {
             $this->log("Preserve Data: Failed to get wpstg_existing_clones_beta");
         }
+
+        if ($settings === false) {
+            $this->log("Preserve Data: Failed to get wpstg_settings");
+        }
+
+        if ($cloneOptions === false) {
+            $this->log("Preserve Data: Failed to get wpstg_clone_options");
+        }
+
         if ($insert === false) {
             $this->log("Preserve Data: Failed to insert wpstg_existing_clones_beta to wpstg_tmp_data");
         }
+
         return true;
     }
 
@@ -120,6 +157,4 @@ class PreserveDataFirstStep extends JobExecutable
     {
         return !($table != $this->stagingDb->get_var("SHOW TABLES LIKE '{$table}'"));
     }
-
-
 }

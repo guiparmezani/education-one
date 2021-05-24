@@ -5,6 +5,7 @@ import {
   leadinPageReload,
   leadinPageRedirect,
   setLeadinUnAuthedNavigation,
+  setLeadinCookiesDisabledNavigation,
 } from '../navigation';
 import * as leadinConfig from '../constants/leadinConfig';
 import {
@@ -17,7 +18,8 @@ import {
   leadinConnectPortal,
   leadinDisconnectPortal,
   skipSignup,
-} from '../api/wordpressApi';
+} from '../api/wordpressAjaxClient';
+import { makeInterframeProxyRequest } from '../api/wordpressApiClient';
 
 const methods = {
   leadinClearQueryParam,
@@ -29,6 +31,8 @@ const methods = {
   getLeadinConfig: () => leadinConfig,
   skipSignup,
   setLeadinUnAuthedNavigation,
+  setLeadinCookiesDisabledNavigation,
+  makeInterframeProxyRequest,
 };
 
 const UNAUTHORIZED = 'unauthorized';
@@ -63,19 +67,6 @@ export function initInterframe(iframe) {
     }
   };
 
-  const handleUnauthorizedConnection = event => {
-    if (event.data === UNAUTHORIZED) {
-      const currentPage = getQueryParam('page');
-      window.removeEventListener('message', handleUnauthorizedConnection);
-      if (currentPage === 'leadin_settings') {
-        leadinPageRedirect(leadinConfig.routes.leadin_settings['']);
-      } else {
-        leadinClearQueryParam();
-        leadinPageReload();
-      }
-    }
-  };
-
   const handleNavigation = event => {
     if (event.origin !== hubspotBaseUrl) return;
     try {
@@ -94,13 +85,12 @@ export function initInterframe(iframe) {
   };
 
   const currentPage = getQueryParam('page');
-  // TODO: Commented for WP058
-  // const triedConnectingPortal = getQueryParam('leadin_connect');
-  if (currentPage !== 'leadin_settings' && currentPage !== 'leadin') {
+  if (
+    currentPage !== 'leadin_settings' &&
+    currentPage !== 'leadin' &&
+    currentPage !== 'leadin_user_guide'
+  ) {
     window.addEventListener('message', redirectToLogin);
-    // TODO: Commented for WP058
-    // } else if (triedConnectingPortal) {
-    //   window.addEventListener('message', handleUnauthorizedConnection);
   }
 
   window.addEventListener('message', handleNavigation);

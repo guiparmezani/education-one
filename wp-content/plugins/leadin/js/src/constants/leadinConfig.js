@@ -1,6 +1,7 @@
 const {
   adminUrl,
   ajaxUrl,
+  restUrl,
   backgroundIframeUrl,
   deviceId,
   didDisconnect,
@@ -11,7 +12,9 @@ const {
   leadinPluginVersion,
   loginUrl,
   pluginPath,
-  nonce,
+  ajaxNonce,
+  restNonce,
+  redirectNonce,
   plugins,
   phpVersion,
   portalId,
@@ -21,9 +24,9 @@ const {
   routes,
   theme,
   wpVersion,
-  signupUrl,
   portalDomain,
   leadinQueryParamsKeys,
+  oauth,
 } = window.leadinConfig;
 
 const i18n = window.leadinI18n;
@@ -31,6 +34,7 @@ const i18n = window.leadinI18n;
 export {
   adminUrl,
   ajaxUrl,
+  restUrl,
   backgroundIframeUrl,
   deviceId,
   didDisconnect,
@@ -42,7 +46,9 @@ export {
   leadinPluginVersion,
   loginUrl,
   pluginPath,
-  nonce,
+  ajaxNonce,
+  restNonce,
+  redirectNonce,
   plugins,
   phpVersion,
   portalId,
@@ -52,7 +58,7 @@ export {
   routes,
   theme,
   wpVersion,
-  signupUrl,
   portalDomain,
   leadinQueryParamsKeys,
+  oauth,
 };

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace WPStaging\Framework\CloningProcess\Database;
-
 
 use WPStaging\Backend\Modules\Jobs\Exceptions\FatalException;
 use WPStaging\Framework\CloningProcess\CloningDto;
@@ -35,7 +33,7 @@ class DatabaseCloningService
     {
         $rows = $offset + $limit;
         $limitation = '';
-        if (( int )$limit > 0) {
+        if ((int)$limit > 0) {
             $limitation = " LIMIT {$limit} OFFSET {$offset}";
         }
         if ($this->dto->isExternal()) {
@@ -53,8 +51,10 @@ class DatabaseCloningService
             foreach ($rows as $row) {
                 $escaped_values = $this->mysqlEscapeMimic(array_values($row));
                 $values = implode("', '", $escaped_values);
-                if ($stagingDb->query("INSERT INTO `{$new}` VALUES ('{$values}')") === false) {
+                $query = "INSERT INTO `{$new}` VALUES ('{$values}')";
+                if ($stagingDb->query($query) === false) {
                     $this->log("Can not insert data into table {$new}");
+                    $this->debugLog("Failed Query: "  . $query . " Error: " . $stagingDb->last_error);
                 }
             }
             // Commit transaction
@@ -133,7 +133,7 @@ class DatabaseCloningService
             $this->log("Creating table {$new}");
             $stagingDb->query("CREATE TABLE {$new} LIKE {$old}");
         }
-        $rowsInTable = ( int )$productionDb->get_var("SELECT COUNT(1) FROM `{$productionDb->dbname}`.`{$old}`");
+        $rowsInTable = (int)$productionDb->get_var("SELECT COUNT(1) FROM `{$productionDb->dbname}`.`{$old}`");
         $this->log("Table {$old} contains {$rowsInTable} rows ");
         return $rowsInTable;
     }
@@ -164,6 +164,17 @@ class DatabaseCloningService
     {
         $prependString = $this->dto->isExternal() ? "DB External Copy: " : "DB Copy: ";
         $this->dto->getJob()->log($prependString . $message, $type);
+    }
+
+
+    /**
+     * @param string $message
+     * @param string $type
+     */
+    protected function debugLog($message, $type = Logger::TYPE_INFO)
+    {
+        $prependString = $this->dto->isExternal() ? "DB External Copy: " : "DB Copy: ";
+        $this->dto->getJob()->debugLog($prependString . $message, $type);
     }
 
     /**
@@ -223,5 +234,4 @@ class DatabaseCloningService
         }
         return [];
     }
-
 }

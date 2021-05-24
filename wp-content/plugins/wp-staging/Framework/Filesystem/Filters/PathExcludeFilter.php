@@ -2,33 +2,64 @@
 
 namespace WPStaging\Framework\Filesystem\Filters;
 
-class PathExcludeFilter extends \FilterIterator
-{
-    protected $exclude = [];
+use FilterIterator;
+use Iterator;
+use WPStaging\Framework\Filesystem\Filters\PathFilterHelper;
 
-    public function __construct(\Iterator $iterator, $exclude = [])
+class PathExcludeFilter extends FilterIterator
+{
+    /**
+     * @var PathFilterHelper
+     */
+    protected $excludeFilter;
+
+    /**
+     * @var PathFilterHelper
+     */
+    protected $includeFilter;
+
+    public function __construct(Iterator $iterator, $exclude = [], $wpRootPath = ABSPATH)
     {
         parent::__construct($iterator);
-        $this->exclude = $exclude;
+        $this->excludeFilter = new PathFilterHelper();
+        $this->excludeFilter->setWpRootPath($wpRootPath);
+        $this->excludeFilter->categorizeRules($exclude);
+        $this->includeFilter = new PathFilterHelper(true);
+        $this->includeFilter->setWpRootPath($wpRootPath);
+        $this->includeFilter->categorizeRules($exclude);
+    }
+
+    /**
+     * Set the WP Root Path
+     * @param string $wpRootPath
+     */
+    public function setWpRootPath($wpRootPath)
+    {
+        $this->excludeFilter->setWpRootPath($wpRootPath);
+        $this->includeFilter->setWpRootPath($wpRootPath);
+    }
+
+    /**
+     * Get the WP Root Path
+     * @return string
+     */
+    public function getWpRootPath()
+    {
+        return $this->excludeFilter->getWpRootPath();
     }
 
     public function accept()
     {
-        $path = $this->getInnerIterator()->getPathname();
-
-        //  new line character on linux
-        if (strpos($path, "\n") !== false) {
-            return false;
-        }
-        // new line character on Windows
-        if (strpos($path, "\r") !== false) {
-            return false;
+        // Get the current SplFileInfo object
+        $fileInfo = $this->getInnerIterator()->current();
+        if ($this->includeFilter->isMatched($fileInfo)) {
+            return true;
         }
 
-        if (in_array(wpstg_replace_windows_directory_separator($path), $this->exclude)) {
-            return false;
+        if ($fileInfo->isDir() && $this->includeFilter->hasRules()) {
+            return true;
         }
 
-        return true;
+        return !$this->excludeFilter->isMatched($fileInfo);
     }
 }

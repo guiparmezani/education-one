@@ -2,9 +2,12 @@
 
 namespace WPStaging\Backend\Modules\Jobs;
 
-use WPStaging\Core\Utils\Logger;
 use WPStaging\Core\WPStaging;
 use WPStaging\Core\Utils\Helper;
+use WPStaging\Framework\Adapter\Database as DatabaseAdapter;
+use WPStaging\Framework\Filesystem\Scanning\ScanConst;
+use WPStaging\Framework\Database\TableService;
+use WPStaging\Framework\Utils\SlashMode;
 use WPStaging\Framework\Utils\WpDefaultDirectories;
 
 /**
@@ -13,12 +16,21 @@ use WPStaging\Framework\Utils\WpDefaultDirectories;
  */
 class Updating extends Job
 {
+    /**
+     * @var string
+     */
+    const NORMAL_UPDATE = 'updating';
+
+    /**
+     * @var string
+     */
+    const RESET_UPDATE = 'resetting';
 
     /**
      * External Database Used
      * @var bool
      */
-    public $isExternal;
+    public $isExternalDb;
 
     /**
      * @var mixed|null
@@ -26,11 +38,39 @@ class Updating extends Job
     private $db;
 
     /**
+     * @var string
+     */
+    private $mainJob;
+
+    /**
+     * @var WpDefaultDirectories
+     */
+    private $dirUtils;
+
+    /**
      * Initialize is called in \Job
      */
     public function initialize()
     {
         $this->db = WPStaging::getInstance()->get("wpdb");
+        $this->mainJob = self::NORMAL_UPDATE;
+        $this->dirUtils = new WpDefaultDirectories();
+    }
+
+    /**
+     * @param $mainJob
+     */
+    public function setMainJob($mainJob)
+    {
+        $this->mainJob = $mainJob;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMainJob()
+    {
+        return $this->mainJob;
     }
 
     /**
@@ -48,14 +88,14 @@ class Updating extends Job
         $this->cache->delete("files_to_copy");
 
         // Generate Options
-        // Clone
-        //$this->options->clone                 = $_POST["cloneID"];
         $this->options->clone = preg_replace("#\W+#", '-', strtolower($_POST["cloneID"]));
         $this->options->cloneDirectoryName = preg_replace("#\W+#", '-', strtolower($this->options->clone));
         $this->options->cloneNumber = 1;
         $this->options->includedDirectories = [];
         $this->options->excludedDirectories = [];
         $this->options->extraDirectories = [];
+        $this->options->excludeGlobRules = [];
+        $this->options->excludeSizeRules = [];
         $this->options->excludedFiles = [
             '.htaccess',
             '.DS_Store',
@@ -66,18 +106,18 @@ class Updating extends Job
             '.gitignore',
             '*.log',
             'object-cache.php',
-            'web.config' // Important: Windows IIS configuration file. Do not copy this to the staging site is staging site is placed into subfolder
-
+            'web.config', // Important: Windows IIS configuration file. Do not copy this to the staging site is staging site is placed into subfolder
+            '.wp-staging-cloneable', // File which make staging site to be cloneable
         ];
 
         $this->options->excludedFilesFullPath = [
-            'wp-content' . DIRECTORY_SEPARATOR . 'db.php',
-            'wp-content' . DIRECTORY_SEPARATOR . 'object-cache.php',
-            'wp-content' . DIRECTORY_SEPARATOR . 'advanced-cache.php'
+            $this->dirUtils->getRelativeWpContentPath(SlashMode::TRAILING_SLASH) . 'db.php',
+            $this->dirUtils->getRelativeWpContentPath(SlashMode::TRAILING_SLASH) . 'object-cache.php',
+            $this->dirUtils->getRelativeWpContentPath(SlashMode::TRAILING_SLASH) . 'advanced-cache.php'
         ];
 
         // Define mainJob to differentiate between cloning, updating and pushing
-        $this->options->mainJob = 'updating';
+        $this->options->mainJob = $this->mainJob;
 
         // Job
         $this->options->job = new \stdClass();
@@ -91,77 +131,50 @@ class Updating extends Job
             $this->options->databaseServer = $this->options->existingClones[$this->options->clone]['databaseServer'];
             $this->options->databasePrefix = $this->options->existingClones[$this->options->clone]['databasePrefix'];
             $this->options->destinationHostname = $this->options->existingClones[$this->options->clone]['url'];
-            $this->options->uploadsSymlinked = isset($this->options->existingClones[strtolower($this->options->current)]['uploadsSymlinked']) ? $this->options->existingClones[strtolower($this->options->current)]['uploadsSymlinked'] : false;
-            $this->options->prefix = $this->getStagingPrefix();
+            $this->options->uploadsSymlinked = isset($this->options->existingClones[strtolower($this->options->clone)]['uploadsSymlinked']) ? $this->options->existingClones[strtolower($this->options->clone)]['uploadsSymlinked'] : false;
+            $this->options->prefix = $this->options->existingClones[$this->options->clone]['prefix'];
+            $this->options->emailsAllowed = $this->options->existingClones[$this->options->clone]['emailsAllowed'];
+            //$this->options->prefix = $this->getStagingPrefix();
             $helper = new Helper();
             $this->options->homeHostname = $helper->getHomeUrlWithoutScheme();
         } else {
-            wp_die('Fatal Error: Can not update clone because there is no clone data.');
+            $job = 'update';
+            if ($this->mainJob === self::RESET_UPDATE) {
+                $job = 'reset';
+            }
+
+            wp_die("Fatal Error: Can not {$job} clone because there is no clone data.");
         }
 
-        $this->isExternal = !(empty($this->options->databaseUser) && empty($this->options->databasePassword));
+        $this->isExternalDb = !(empty($this->options->databaseUser) && empty($this->options->databasePassword));
 
-        // Included Tables
-        if (isset($_POST["includedTables"]) && is_array($_POST["includedTables"])) {
-            $this->options->tables = $_POST["includedTables"];
-        } else {
-            $this->options->tables = [];
-        }
-
-/*        $uploadsSymlinked = isset($_POST['uploadsSymlinked']) && $_POST['uploadsSymlinked'] === 'true';
-        if ($uploadsSymlinked !== $this->options->uploadsSymlinked) {
-            $this->returnException('Symlink Option cannot be changed at the moment. Updating Stopped!');
-        }*/
+        /**
+         * @see /WPStaging/Framework/CloningProcess/ExcludedPlugins.php to exclude plugins
+         * Only add other directories here
+         */
+        $excludedDirectories = [
+            $this->dirUtils->getRelativeWpContentPath(SlashMode::BOTH_SLASHES) . 'cache',
+        ];
 
         // Add upload folder to list of excluded directories for push if symlink option is enabled
         if ($this->options->uploadsSymlinked) {
-            $wpUploadsFolder = (new WpDefaultDirectories())->getUploadPath();
-            $excludedDirectories[] = rtrim($wpUploadsFolder, '/\\');
+            $excludedDirectories[] = $this->dirUtils->getRelativeUploadPath(SlashMode::LEADING_SLASH);
         }
 
-        // Excluded Directories
-        if (isset($_POST["excludedDirectories"]) && is_array($_POST["excludedDirectories"])) {
-            $this->options->excludedDirectories = wpstg_urldecode($_POST["excludedDirectories"]);
+        $this->options->excludedDirectories = $excludedDirectories;
+
+        $this->setTablesForUpdateJob();
+        $this->setDirectoriesForUpdateJob();
+
+        // Make sure it is always enabled for free version
+        $this->options->emailsAllowed = true;
+        if (defined('WPSTGPRO_VERSION')) {
+            $this->options->emailsAllowed = isset($_POST['emailsAllowed']) && $_POST['emailsAllowed'] !== "false";
         }
 
-        // Excluded Directories TOTAL
-        // Do not copy these folders and plugins
-        $excludedDirectories = [
-            \WPStaging\Core\WPStaging::getWPpath() . 'wp-content' . DIRECTORY_SEPARATOR . 'cache',
-            \WPStaging\Core\WPStaging::getWPpath() . 'wp-content' . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR . 'wps-hide-login',
-            \WPStaging\Core\WPStaging::getWPpath() . 'wp-content' . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR . 'wp-super-cache',
-            \WPStaging\Core\WPStaging::getWPpath() . 'wp-content' . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR . 'peters-login-redirect',
-        ];
-
-        $this->options->excludedDirectories = array_merge($excludedDirectories, $this->options->excludedDirectories);
-
-        // Included Directories
-        if (isset($_POST["includedDirectories"]) && is_array($_POST["includedDirectories"])) {
-            $this->options->includedDirectories = wpstg_urldecode($_POST["includedDirectories"]);
-        }
-
-        // Extra Directories
-        if (isset($_POST["extraDirectories"]) && !empty($_POST["extraDirectories"])) {
-            $this->options->extraDirectories = wpstg_urldecode($_POST["extraDirectories"]);
-        }
-
-        $this->options->cloneDir = '';
-        if (isset($_POST["cloneDir"]) && !empty($_POST["cloneDir"])) {
-            $this->options->cloneDir = wpstg_urldecode(trailingslashit($_POST["cloneDir"]));
-        }
-
+        $this->options->cloneDir = $this->options->existingClones[$this->options->clone]['path'];
         $this->options->destinationDir = $this->getDestinationDir();
-
         $this->options->cloneHostname = $this->options->destinationHostname;
-
-        $this->options->emailsDisabled = isset( $_POST['emailsDisabled'] ) && $_POST['emailsDisabled'] !== "false";
-
-        // Directories to Copy
-        $this->options->directoriesToCopy = array_merge(
-            $this->options->includedDirectories, $this->options->extraDirectories
-        );
-
-        array_unshift($this->options->directoriesToCopy, ABSPATH);
 
         // Process lock state
         $this->options->isRunning = true;
@@ -176,47 +189,102 @@ class Updating extends Job
     private function getDestinationDir()
     {
         if (empty($this->options->cloneDir)) {
-            return trailingslashit(\WPStaging\Core\WPStaging::getWPpath() . $this->options->cloneDirectoryName);
+            return trailingslashit(WPStaging::getWPpath() . $this->options->cloneDirectoryName);
         }
         return trailingslashit($this->options->cloneDir);
     }
 
-    /**
-     * Check and return prefix of the staging site
-     */
-    public function getStagingPrefix()
+    private function setDirectoriesForUpdateJob()
     {
-        // prefix not defined! Happens if staging site has ben generated with older version of wpstg
-        // Try to get staging prefix from wp-config.php of staging site
-        $this->options->prefix = $this->options->existingClones[$this->options->clone]['prefix'];
-        if (empty($this->options->prefix)) {
-            // Throw error if wp-config.php is not readable 
-            $path = ABSPATH . $this->options->cloneDirectoryName . "/wp-config.php";
-            if (($content = @file_get_contents($path)) === false) {
-                $this->log("Can not open {$path}. Can't read contents", Logger::TYPE_ERROR);
-                $this->returnException("Fatal Error: Can not read {$path} to get correct table prefix. Stopping for security reasons. Deleting this staging site and creating a new one could fix this issue. Otherwise contact us support@wp-staging.com");
-                wp_die("Fatal Error: Can not read {$path} to get correct table prefix. Stopping for security reasons. Deleting this staging site and creating a new one could fix this issue. Otherwise contact us support@wp-staging.com");
-            } else {
-                // Get prefix from wp-config.php
-                preg_match("/table_prefix\s*=\s*'(\w*)';/", $content, $matches);
+        // Exclude Glob Rules
+        $this->options->excludeGlobRules = [];
+        if (isset($_POST["excludeGlobRules"]) && !empty($_POST["excludeGlobRules"])) {
+            $this->options->excludeGlobRules = wpstg_urldecode(explode(',', $_POST["excludeGlobRules"]));
+        }
 
-                if (!empty($matches[1])) {
-                    $this->options->prefix = $matches[1];
-                } else {
-                    $this->returnException("Fatal Error: Can not detect prefix from {$path}. Stopping for security reasons. Deleting this staging site and creating a new one could fix this issue. Otherwise contact us support@wp-staging.com");
-                    wp_die("Fatal Error: Can not detect prefix from {$path}. Stopping for security reasons. Deleting this staging site and creating a new one could fix this issue. Otherwise contact us support@wp-staging.com");
-                }
+        // Exclude File Size Rules
+        $this->options->excludeSizeRules = [];
+        if (isset($_POST["excludeSizeRules"]) && !empty($_POST["excludeSizeRules"])) {
+            $this->options->excludeSizeRules = wpstg_urldecode(explode(',', $_POST["excludeSizeRules"]));
+        }
+
+        // Excluded Directories
+        $excludedDirectoriesRequest = isset($_POST["excludedDirectories"]) ? $_POST["excludedDirectories"] : '';
+        $excludedDirectoriesRequest = $this->dirUtils->getExcludedDirectories($excludedDirectoriesRequest);
+        $this->options->excludedDirectories = array_merge($this->options->excludedDirectories, $excludedDirectoriesRequest);
+        // Extra Directories
+        if (isset($_POST["extraDirectories"])) {
+            $this->options->extraDirectories = explode(ScanConst::DIRECTORIES_SEPARATOR, wpstg_urldecode($_POST["extraDirectories"]));
+        }
+
+        // delete uploads folder before copying if uploads is not symlinked
+        $this->options->deleteUploadsFolder = !$this->options->uploadsSymlinked && isset($_POST['cleanUploadsDir']) && $_POST['cleanUploadsDir'] === 'true';
+        // should not backup uploads during update process
+        $this->options->backupUploadsFolder = false;
+        // clean plugins and themes dir before updating
+        $this->options->deletePluginsAndThemes = isset($_POST['cleanPluginsThemes']) && $_POST['cleanPluginsThemes'] === 'true';
+        // set default statuses for backup of uploads dir and cleaning of uploads, themes and plugins dirs
+        $this->options->statusBackupUploadsDir = 'skipped';
+        $this->options->statusContentCleaner = 'pending';
+    }
+
+    private function setTablesForUpdateJob()
+    {
+        // Included Tables
+        if (isset($_POST["includedTables"]) && is_array($_POST["includedTables"])) {
+            $this->options->tables = $_POST["includedTables"];
+        } else {
+            $this->options->tables = [];
+        }
+    }
+
+    /**
+     * @param bool $preserveExcludes
+     */
+    private function setDirectoriesForResetJob($preserveExcludes = false)
+    {
+        $wpDirectories = new WpDefaultDirectories();
+        $coreDirectories = $wpDirectories->getWpCoreDirectories();
+
+        if ($preserveExcludes) {
+            $this->options->includedDirectories = $coreDirectories;
+            return;
+        }
+
+        $existingClone = $this->options->existingClones[$this->options->clone];
+        $this->options->includedDirectories = [];
+        foreach ($coreDirectories as $coreDir) {
+            if (in_array($coreDir, $existingClone['includedDirectories'])) {
+                $this->options->includedDirectories[] = $coreDir;
             }
         }
 
-        // Die() if staging prefix is the same as the live prefix
-        if ($this->isExternal === false && $this->db->prefix === $this->options->prefix) {
-            $this->log("Fatal Error: Can not update staging site. Prefix. '{$this->options->prefix}' is used for the live site. Stopping for security reasons. Deleting this staging site and creating a new one could fix this issue. Otherwise contact us support@wp-staging.com");
-            wp_die("Fatal Error: Can not update staging site. Prefix. '{$this->options->prefix}' is used for the live site. Stopping for security reasons. Deleting this staging site and creating a new one could fix this issue. Otherwise contact us support@wp-staging.com");
+        $this->options->excludedDirectories = $existingClone['excludedDirectories'];
+        $this->options->excludeSizeRules = $existingClone['excludeSizeRules'];
+        // should preserve extra directories?
+        // $this->options->extraDirectories = $existingClone['extraDirectories'];
+    }
+
+    /**
+     * @param bool $preserveExcludes
+     */
+    private function setTablesForResetJob($preserveExcludes = false)
+    {
+        $tableService = new TableService(new DatabaseAdapter());
+        $tables = $tableService->findTableStatusStartsWith();
+        $tables = $tableService->getTablesName($tables->toArray());
+        if ($preserveExcludes) {
+            $this->options->tables = $tables;
+            return;
         }
 
-        // Else
-        return $this->options->prefix;
+        $selectedTables = $this->options->existingClones[$this->options->clone]["includedTables"];
+        $this->options->tables = [];
+        foreach ($tables as $table) {
+            if (in_array($table, $selectedTables)) {
+                $this->options->tables[] = $table;
+            }
+        }
     }
 
     /**
@@ -226,5 +294,4 @@ class Updating extends Job
     public function start()
     {
     }
-
 }

@@ -53,7 +53,7 @@ if (!class_exists('rsssl_multisite')) {
 
             //If WP version is 5.1 or higher, use wp_insert_site hook for multisite SSL activation in new blogs
             if(version_compare(get_bloginfo('version'),'5.1', '>=') ) {
-                add_action('wp_insert_site', array($this, 'maybe_activate_ssl_in_new_blog'), 20, 1);
+                add_action('wp_initialize_site', array($this, 'maybe_activate_ssl_in_new_blog'), 20, 1);
             } else {
                 add_action('wpmu_new_blog', array($this, 'maybe_activate_ssl_in_new_blog_deprecated'), 10, 6);
             }
@@ -103,7 +103,6 @@ if (!class_exists('rsssl_multisite')) {
             $unset_array = array(
                 'mixed_content_fixer_detected',
                 'hsts_enabled',
-                'secure_cookies_set',
                 'mixed_content_scan',
                 'elementor',
                 'divi',
@@ -133,7 +132,7 @@ if (!class_exists('rsssl_multisite')) {
 		        ),
 	        );
 
-            //we don't need an no ssl warning on multisite
+            //we don't need a no ssl warning on multisite
             unset( $notices['ssl_detected']['output']['no-ssl-detected'] );
 
 	        $notices['multisite_server_variable_warning'] = array(
@@ -162,6 +161,7 @@ if (!class_exists('rsssl_multisite')) {
 			        ),
 		        ),
 	        );
+
             return $notices;
         }
 
@@ -1009,9 +1009,12 @@ if (!class_exists('rsssl_multisite')) {
 	                $content = __("Conversion of websites completed.", "really-simple-ssl") . " ";
 	                if ($activation_active) {
 		                $content .= __("Really Simple SSL has converted all your websites to SSL.", "really-simple-ssl");
+		                $this->end_ssl_activation();
 	                } else {
 		                $content .= __("Really Simple SSL has converted all your websites to non SSL.", "really-simple-ssl");
+		                $this->end_ssl_deactivation();
 	                }
+
                 }
 
                 echo RSSSL()->really_simple_ssl->notice_html($class, $title, $content);

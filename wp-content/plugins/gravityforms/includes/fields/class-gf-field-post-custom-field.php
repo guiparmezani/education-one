@@ -12,6 +12,30 @@ class GF_Field_Post_Custom_Field extends GF_Field {
 		return esc_attr__( 'Custom Field', 'gravityforms' );
 	}
 
+	/**
+	 * Returns the field's form editor description.
+	 *
+	 * @since 2.5
+	 *
+	 * @return string
+	 */
+	public function get_form_editor_field_description() {
+		return esc_attr__( 'Allows users to submit data that is used as a custom field value for a post.', 'gravityforms' );
+	}
+
+	/**
+	 * Returns the field's form editor icon.
+	 *
+	 * This could be an icon url or a gform-icon class.
+	 *
+	 * @since 2.5
+	 *
+	 * @return string
+	 */
+	public function get_form_editor_field_icon() {
+		return 'gform-icon--post-custom-field';
+	}
+
 	function get_form_editor_field_settings() {
 		return array(
 			'post_custom_field_type_setting',
@@ -52,13 +76,13 @@ class GF_Field_Post_Custom_Field extends GF_Field {
 		$disabled_text = $is_form_editor ? 'disabled="disabled"' : '';
 
 		$tabindex              = $this->get_tabindex();
-		$logic_event           = $this->get_conditional_logic_event( 'keyup' );
 		$placeholder_attribute = $this->get_field_placeholder_attribute();
 		$required_attribute    = $this->isRequired ? 'aria-required="true"' : '';
 		$invalid_attribute     = $this->failed_validation ? 'aria-invalid="true"' : 'aria-invalid="false"';
+		$aria_describedby      = $this->get_aria_describedby();
 
 		return "<div class='ginput_container ginput_container_post_custom_field'>
-					<input name='input_{$id}' id='{$field_id}' type='text' value='{$value}' class='{$class}' {$tabindex} {$logic_event} {$placeholder_attribute} {$disabled_text} {$required_attribute} {$invalid_attribute} />
+					<input name='input_{$id}' id='{$field_id}' type='text' value='{$value}' class='{$class}' {$tabindex} {$placeholder_attribute} {$disabled_text} {$required_attribute} {$invalid_attribute} {$aria_describedby} />
 				</div>";
 	}
 

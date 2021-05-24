@@ -9,6 +9,9 @@
 
 namespace WPStaging\Core\Utils;
 
+use WPStaging\Core\WPStaging;
+use WPStaging\Framework\Filesystem\Filesystem;
+use WPStaging\Framework\Interfaces\ShutdownableInterface;
 use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use WPStaging\Vendor\Psr\Log\LogLevel;
 
@@ -16,7 +19,7 @@ use WPStaging\Vendor\Psr\Log\LogLevel;
  * Class Logger
  * @package WPStaging\Core\Utils
  */
-class Logger implements LoggerInterface
+class Logger implements LoggerInterface, ShutdownableInterface
 {
     const TYPE_ERROR    = "ERROR";
 
@@ -65,38 +68,27 @@ class Logger implements LoggerInterface
     public function __construct($logDir = null, $logExtension = null)
     {
         // Set log directory
-        if (!empty($logDir) && is_dir($logDir))
-        {
+        if (!empty($logDir) && is_dir($logDir)) {
             $this->logDir = rtrim($logDir, "/\\") . DIRECTORY_SEPARATOR;
         }
         // Set default
-        else
-        {
-
-            $this->logDir = \WPStaging\Core\WPStaging::getContentDir() . "logs" . DIRECTORY_SEPARATOR;
-
+        else {
+            $this->logDir = WPStaging::getContentDir() . "logs" . DIRECTORY_SEPARATOR;
         }
 
         // Set log extension
-        if (!empty($logExtension))
-        {
+        if (!empty($logExtension)) {
             $this->logExtension = $logExtension;
         }
 
-        // If cache directory doesn't exists, create it
-        if (!is_dir($this->logDir) && !@mkdir($this->logDir, 0755, true))
-        {
-            /**
-             * There's no need to throw this exception, which causes a fatal,
-             * as a warning is already displayed on:
-             *
-             * @see \WPStaging\Backend\Notices\Notices::messages
-             */
-            // throw new \Exception("Failed to create log directory!");
-        }
+        /**
+         * If log directory doesn't exists, create it.
+         * @see \WPStaging\Backend\Notices\Notices::messages Notice that shows if log directory couldn't be created.
+         */
+        (new Filesystem())->mkdir($this->logDir);
     }
 
-    public function __destruct()
+    public function onWpShutdown()
     {
         $this->commit();
     }
@@ -114,8 +106,8 @@ class Logger implements LoggerInterface
     }
 
     /**
-     * @param Strings $message
-     * @param Strings $type
+     * @param string $message
+     * @param string $type
      */
     public function add($message, $type = self::TYPE_ERROR)
     {
@@ -135,7 +127,7 @@ class Logger implements LoggerInterface
     }
 
     /**
-     * @param Strings $fileName
+     * @param string $fileName
      */
     public function setFileName($fileName)
     {
@@ -147,21 +139,18 @@ class Logger implements LoggerInterface
      */
     public function commit()
     {
-        if (empty($this->messages))
-        {
+        if (empty($this->messages)) {
             return true;
         }
 
         $messageString = '';
-        foreach ($this->messages as $message)
-        {
+        foreach ($this->messages as $message) {
             if (is_array($message)) {
                 $messageString .= "[{$message["type"]}]-[{$message["date"]}] {$message["message"]}" . PHP_EOL;
             }
         }
 
-        if (strlen($messageString) < 1)
-        {
+        if (strlen($messageString) < 1) {
             return true;
         }
 
@@ -187,8 +176,7 @@ class Logger implements LoggerInterface
     public function getLogFile($fileName = null)
     {
         // Default
-        if ($fileName === null)
-        {
+        if ($fileName === null) {
             $fileName = ($this->fileName !== null) ? $this->fileName : date("Y_m_d");
         }
 
@@ -207,8 +195,7 @@ class Logger implements LoggerInterface
     {
         $logFile = $this->logDir . $logFileName . '.' . $this->logExtension;
 
-        if (@unlink($logFile) === false)
-        {
+        if (@unlink($logFile) === false) {
             throw new \Exception("Couldn't delete cache: {$logFileName}. Full Path: {$logFile}");
         }
 
@@ -238,11 +225,11 @@ class Logger implements LoggerInterface
     public function getLastLogMsg()
     {
         // return all messages
-        if (count ($this->messages) > 1){
+        if (count($this->messages) > 1) {
             return $this->messages;
-        }else{
+        } else {
             // Return last message
-            return $this->messages[]=array_pop($this->messages);
+            return $this->messages[] = array_pop($this->messages);
         }
     }
 

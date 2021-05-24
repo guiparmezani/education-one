@@ -3,7 +3,7 @@
 namespace WPStaging\Framework\Staging;
 
 use WPStaging\Frontend\LoginNotice;
-use WPStaging\Backend\Notices\DisabledCacheNotice;
+use WPStaging\Backend\Notices\DisabledItemsNotice;
 use WPStaging\Framework\SiteInfo;
 
 /**
@@ -20,14 +20,19 @@ class FirstRun
      */
     const FIRST_RUN_KEY = 'wpstg_execute';
 
+    /**
+     * The option_name that is stored in the database to check whether mails are disabled or not
+     */
+    const MAILS_DISABLED_KEY = 'wpstg_emails_disabled';
+
 
     public function init()
     {
-        if ( ! (new SiteInfo)->isStaging()) {
+        if (!(new SiteInfo())->isStaging()) {
             return;
         }
 
-        if ( ! get_option(self::FIRST_RUN_KEY)) {
+        if (!get_option(self::FIRST_RUN_KEY)) {
             return;
         }
 
@@ -45,8 +50,8 @@ class FirstRun
         // Show one time login notice on staging site.
         (new LoginNotice())->setTransient();
 
-        // Enable the disabled cache notice to be shown on the staging site admin.
-        (new DisabledCacheNotice())->enable();
+        // Enable the notice which show what WP Staging Disabled on staging site admin.
+        (new DisabledItemsNotice())->enable();
 
         // Allow users to attach custom actions by using this hook
         do_action('wpstg.clone_first_run');
@@ -62,5 +67,4 @@ class FirstRun
     {
         delete_option(static::FIRST_RUN_KEY);
     }
-
 }

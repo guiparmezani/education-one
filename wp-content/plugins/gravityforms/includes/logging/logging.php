@@ -166,6 +166,8 @@ class GFLogging extends GFAddOn {
 	 * Register needed hooks and included needed libraries.
 	 *
 	 * @since  2.2
+	 * @since  2.4.18 Removed caps integrations to prevent them being added to the Add-Ons group.
+	 *
 	 * @access public
 	 */
 	public function init() {
@@ -173,6 +175,11 @@ class GFLogging extends GFAddOn {
 		parent::init();
 
 		$this->include_logger();
+
+		remove_action( 'members_register_cap_groups', array( $this, 'members_register_cap_group' ), 11 );
+		remove_action( 'members_register_caps', array( $this, 'members_register_caps' ), 11 );
+		remove_filter( 'ure_capabilities_groups_tree', array( $this, 'filter_ure_capabilities_groups_tree' ), 11 );
+		remove_filter( 'ure_custom_capability_groups', array( $this, 'filter_ure_custom_capability_groups' ), 10 );
 
 	}
 
@@ -184,19 +191,49 @@ class GFLogging extends GFAddOn {
 	 */
 	public function plugin_settings_page() {
 
-		// If the delete_log parameter is set, delete the log file and display a message.
+
+		// If the delete_log parameter is set, delete the log file and redirect.
 		$plugin_slug = rgget( 'delete_log' );
 		if ( $plugin_slug ) {
+
 			$supported_plugins = $this->get_supported_plugins();
+
 			if ( isset( $supported_plugins[ $plugin_slug ] ) ) {
-				if ( wp_verify_nonce( rgget( $this->_nonce_action ), $this->_nonce_action ) && $this->delete_log_file( rgget( 'delete_log' ) ) ) {
-					GFCommon::add_message( esc_html__( 'Log file was successfully deleted.', 'gravityforms' ) );
+				if ( wp_verify_nonce( rgget( $this->_nonce_action ), $this->_nonce_action ) && $this->delete_log_file( $plugin_slug ) ) {
+
+					// Prepare redirect URL.
+					$redirect_url = remove_query_arg( array( 'delete_log', 'gform_delete_log' ) );
+					$redirect_url = add_query_arg( array( 'deleted' => '1' ), $redirect_url );
+					$redirect_url = esc_url_raw( $redirect_url );
+
+					?>
+					<script type="text/javascript">
+						document.location.href = <?php echo json_encode( $redirect_url ); ?>;
+					</script>
+					<?php
+					die();
+
 				} else {
+
+					// Display error message.
 					GFCommon::add_error_message( esc_html__( 'Log file could not be deleted.', 'gravityforms' ) );
 				}
 			} else {
 				GFCommon::add_error_message( esc_html__( 'Invalid log file.', 'gravityforms' ) );
 			}
+		}
+
+		// If a log file was deleted, display message.
+		if ( '1' === rgget( 'deleted' ) ) {
+			GFCommon::add_message( esc_html__( 'Log file was successfully deleted.', 'gravityforms' ) );
+		}
+
+		/**
+		 * Force a refresh of plugin settings fields.
+		 * This is so all Add-Ons are listed, as the initial settings renderer is loaded before the Add-Ons.
+		 */
+		if ( self::get_settings_renderer() ) {
+			self::get_settings_renderer()->set_fields( $this->plugin_settings_fields() );
 		}
 
 		parent::plugin_settings_page();
@@ -213,16 +250,21 @@ class GFLogging extends GFAddOn {
 	 */
 	public function plugin_settings_fields() {
 
+		// Initialize the logger.
+		if ( ! class_exists( 'KLogger' ) ) {
+			self::include_logger();
+		}
+
 		// Get supported plugin fields.
 		$plugin_fields = $this->supported_plugins_fields();
 
 		// Add save button to the plugin fields array.
-		$plugin_fields[] = array(
-			'type'     => 'save',
-			'messages' => array(
-				'success' => esc_html__( 'Plugin logging settings have been updated.', 'gravityforms' ),
-			),
-		);
+//		$plugin_fields[] = array(
+//			'type'     => 'save',
+//			'messages' => array(
+//				'success' => esc_html__( 'Plugin logging settings have been updated.', 'gravityforms' ),
+//			),
+//		);
 
 		return array(
 			array(
@@ -280,6 +322,19 @@ class GFLogging extends GFAddOn {
 	public function plugin_settings_link( $links, $file ) {
 
 		return $links;
+
+	}
+
+	/**
+	 * Return the plugin's icon for the plugin/form settings menu.
+	 *
+	 * @since 2.5
+	 *
+	 * @return string
+	 */
+	public function get_menu_icon() {
+
+		return 'gform-icon--search';
 
 	}
 
@@ -369,16 +424,7 @@ class GFLogging extends GFAddOn {
 		$supported_plugins = $this->get_supported_plugins();
 
 		// Setup logging options.
-		$logging_options = array(
-			array(
-				'label' => esc_html__( 'and log all messages', 'gravityforms' ),
-				'value' => KLogger::DEBUG,
-			),
-			array(
-				'label' => esc_html__( 'and log only error messages', 'gravityforms' ),
-				'value' => KLogger::ERROR,
-			),
-		);
+		$logging_options = self::get_logging_choices();
 
 		$plugin_fields = array();
 		$nonce         = wp_create_nonce( $this->_nonce_action );
@@ -390,31 +436,56 @@ class GFLogging extends GFAddOn {
 
 			if ( $this->log_file_exists( $plugin_slug ) ) {
 				$delete_url = add_query_arg( array( 'delete_log' => $plugin_slug, $this->_nonce_action => $nonce ), admin_url( 'admin.php?page=gf_settings&subview=gravityformslogging' ) );
-
 				$after_select  = '<br />';
 				$after_select .= '<span style="font-size:85%"><a href="' . esc_attr( $this->get_log_file_url( $plugin_slug ) ) . '" target="_blank">' . esc_html__( 'view log', 'gravityforms' ) . '</a>';
 				$after_select .= '&nbsp;&nbsp;<a href="' . $delete_url . '">' . esc_html__( 'delete log', 'gravityforms' ) . '</a>';
 				$after_select .= '&nbsp;&nbsp;(' . $this->get_log_file_size( $plugin_slug ) . ')</span>';
 			}
 
-			$plugin_fields[] = array(
-				'name'         => $plugin_slug,
-				'label'        => $plugin_name . $after_select,
-				'type'         => 'checkbox_and_select',
-				'checkbox'     => array(
-					'label' => esc_html__( 'Enable logging', 'gravityforms' ),
-					'name'  => $plugin_slug . '[enable]',
-				),
-				'select' => array(
-					'name'    => $plugin_slug . '[log_level]',
-					'choices' => $logging_options,
-				),
-			);
+			// Prepare field.
+			if ( count( $logging_options ) < 2 ) {
 
+				$plugin_fields[] = array(
+					'name'    => $plugin_slug,
+					'label'   => $plugin_name . $after_select,
+					'type'    => 'checkbox',
+					'choices' => array(
+						array(
+							'label' => esc_html__( 'Enable logging and log all messages', 'gravityforms' ),
+							'name'  => $plugin_slug . '[enable]',
+						),
+					),
+				);
+
+				$plugin_fields[] = array(
+					'name'          => $plugin_slug . '[log_level]',
+					'type'          => 'hidden',
+					'default_value' => KLogger::DEBUG,
+				);
+
+			} else {
+
+				$plugin_fields[] = array(
+					'name'         => $plugin_slug,
+					'label'        => $plugin_name . $after_select,
+					'type'         => 'checkbox_and_select',
+					'checkbox'     => array(
+						'label' => esc_html__( 'Enable logging', 'gravityforms' ),
+						'name'  => $plugin_slug . '[enable]',
+					),
+					'select' => array(
+						'name'    => $plugin_slug . '[log_level]',
+						'choices' => $logging_options,
+					),
+				);
+
+			}
+
+			$random = function_exists( 'random_bytes' ) ? random_bytes( 12 ) : wp_generate_password( 24, true, true );
 			$plugin_fields[] = array(
 				'name'          => $plugin_slug . '[file_name]',
 				'type'          => 'hidden',
-				'default_value' => sha1( $plugin_slug . time() ),
+				'default_value' => sha1( $plugin_slug . $random ),
 			);
 
 		}
@@ -424,13 +495,52 @@ class GFLogging extends GFAddOn {
 	}
 
 	/**
+	 * Get available logging levels as choices.
+	 *
+	 * @since 2.5
+	 *
+	 * @return array
+	 */
+	public function get_logging_choices() {
+
+		// Initialize options.
+		$options = array(
+			array(
+				'label' => esc_html__( 'and log all messages', 'gravityforms' ),
+				'value' => KLogger::DEBUG,
+			)
+		);
+
+		// Get plugin settings.
+		$settings = $this->get_plugin_settings();
+
+		// Get selected log levels.
+		$log_levels = array_values( wp_list_pluck( $settings, 'log_level' ) );
+
+		// Determine if error log should be displayed.
+		// @todo Rename filter.
+		$display_error_level = apply_filters( 'gform_logging_display_error_log_level', in_array( KLogger::ERROR, $log_levels ) );
+
+		// Add error level option.
+		if ( $display_error_level ) {
+			$options[] = array(
+				'label' => esc_html__( 'and log only error messages', 'gravityforms' ),
+				'value' => KLogger::ERROR,
+			);
+		}
+
+		return $options;
+
+	}
+
+	/**
 	 * Log message.
 	 *
 	 * @access public
 	 *
-	 * @param string   $plugin Plugin name.
-	 * @param string   $message (default: null) Message to log.
-	 * @param constant $message_type (default: KLogger::DEBUG) Message type.
+	 * @param string $plugin       Plugin name.
+	 * @param string $message      (default: null) Message to log.
+	 * @param int    $message_type (default: KLogger::DEBUG) Message type.
 	 *
 	 * NOTE: This function is static for backwards compatibility reasons. Some legacy add-ons still reference this function statically
 	 */
@@ -455,7 +565,23 @@ class GFLogging extends GFAddOn {
 
 		// Log message.
 		$log = $instance->get_logger( $plugin, $plugin_setting['log_level'] );
-		$log->Log( $message, $message_type );
+
+		/**
+		* Filters the logging message.
+		*
+		* @since 2.4.15
+		*
+		* @param string $message        The current logging message.
+		* @param string $message_type   The current logging message type.
+		* @param array  $plugin_setting The logging setting for plugin.
+		* @param object $log            The KLogger instance.
+		* @param object $GFLogging      The Gravity Forms Logging object.
+		*/
+		$message = apply_filters( 'gform_logging_message', $message, $message_type, $plugin_setting, $log, $instance );
+
+		if ( $message ) {
+			$log->Log( $message, $message_type );
+		}
 
 	}
 
@@ -491,13 +617,13 @@ class GFLogging extends GFAddOn {
 		$dir = $this->get_log_dir();
 
 		if ( is_dir( $dir ) ) {
-			$files = glob( "{$dir}{,.}*", GLOB_BRACE ); // Get all file names.
+			$files = GFCommon::glob( '*', $dir ); // Get all file names.
 			foreach ( $files as $file ) {
 				if ( is_file( $file ) ) {
 					unlink( $file ); // Delete file.
 				}
 			}
-			rmdir( $dir );
+			@rmdir( $dir );
 		}
 
 	}
@@ -544,14 +670,18 @@ class GFLogging extends GFAddOn {
 	 */
 	public function get_log_file_name( $plugin_name ) {
 
+		$plugin_setting = $this->get_plugin_setting( $plugin_name );
+
+		if ( rgempty( 'file_name', $plugin_setting ) ) {
+			return '';
+		}
+
 		$log_dir = $this->get_log_dir();
 
 		if ( ! file_exists( $log_dir ) ) {
 			wp_mkdir_p( $log_dir );
-			touch( $log_dir . 'index.html' );
+			@touch( $log_dir . 'index.html' );
 		}
-
-		$plugin_setting = $this->get_plugin_setting( $plugin_name );
 
 		return $log_dir . $plugin_name . '_' . $plugin_setting['file_name'] . '.txt';
 
@@ -678,6 +808,15 @@ class GFLogging extends GFAddOn {
 	}
 
 	/**
+	 * Flushes the cached KLogger objects.
+	 *
+	 * @since 2.4.15
+	 */
+	public function flush_loggers() {
+		$this->loggers = array();
+	}
+
+	/**
 	 * Disable all logging.
 	 *
 	 * @since  2.2
@@ -716,14 +855,14 @@ class GFLogging extends GFAddOn {
 		}
 
 		// Get files which match the base name.
-		$similar_files = glob( $folder . $file_base . '*.*' );
+		$similar_files = GFCommon::glob( $file_base . '*.*', $folder );
 		$file_count    = count( $similar_files );
 
 		// Check quantity of files and delete older ones if too many.
 		if ( false !== $similar_files && $file_count > $this->max_file_count ) {
 
 			// Sort by date so oldest are first.
-			usort( $similar_files, create_function( '$a,$b', 'return filemtime($a) - filemtime($b);' ) );
+			usort( $similar_files, array( $this, 'filemtime_diff' ) );
 
 			$delete_count = $file_count - $this->max_file_count;
 
@@ -735,6 +874,18 @@ class GFLogging extends GFAddOn {
 
 		}
 
+	}
+
+	/**
+	 * Calculate the difference between file modified times.
+	 *
+	 * @param string $a The path to the first file.
+	 * @param string $b The path to the second file.
+	 *
+	 * @return int The difference between the two files.
+	 */
+	private function filemtime_diff( $a, $b ) {
+		return filemtime( $a ) - filemtime( $b );
 	}
 
 	/**
@@ -768,10 +919,11 @@ class GFLogging extends GFAddOn {
 
 		$settings = array();
 		foreach ( $supported_plugins as $plugin_slug => $plugin_name ) {
+			$random = function_exists( 'random_bytes' ) ? random_bytes( 12 ) : wp_generate_password( 24, true, true );
 			$settings[ $plugin_slug ] = array(
 				'log_level' => '1',
 				'enable'    => '1',
-				'file_name' => sha1( $plugin_slug . time() ),
+				'file_name' => sha1( $plugin_slug . $random ),
 			);
 		}
 		$this->update_plugin_settings( $settings );
@@ -818,13 +970,15 @@ class GFLogging extends GFAddOn {
 
 		if ( is_multisite() ) {
 
-			// Get network sites.
-			$sites = wp_get_sites();
+			// Get network sites. get_sites() is available with WP 4.6+.
+			$sites = function_exists( 'get_sites' ) ? get_sites() : wp_get_sites();
 
 			foreach ( $sites as $site ) {
 
+				$blog_id = $site instanceof WP_Site ? $site->blog_id : $site['blog_id'];
+
 				// Get old settings.
-				$old_settings = get_blog_option( $site['blog_id'], 'gf_logging_settings', array() );
+				$old_settings = get_blog_option( $blog_id, 'gf_logging_settings', array() );
 
 				// If old settings don't exist, exit.
 				if ( ! $old_settings ) {
@@ -835,17 +989,18 @@ class GFLogging extends GFAddOn {
 				$new_settings = array();
 
 				foreach ( $old_settings as $plugin_slug => $log_level ) {
+					$random = function_exists( 'random_bytes' ) ? random_bytes( 12 ) : wp_generate_password( 24, true, true );
 					$new_settings[ $plugin_slug ] = array(
 						'log_level' => $log_level,
-						'file_name' => sha1( $plugin_slug . time() ),
+						'file_name' => sha1( $plugin_slug . $random ),
 					);
 				}
 
 				// Save new settings.
-				update_blog_option( $site['blog_id'], 'gravityformsaddon_' . $this->_slug . '_settings', $new_settings );
+				update_blog_option( $blog_id, 'gravityformsaddon_' . $this->_slug . '_settings', $new_settings );
 
 				// Delete old settings.
-				delete_blog_option( $site['blog_id'], 'gf_logging_settings' );
+				delete_blog_option( $blog_id, 'gf_logging_settings' );
 
 			}
 
@@ -863,9 +1018,10 @@ class GFLogging extends GFAddOn {
 			$new_settings = array();
 
 			foreach ( $old_settings as $plugin_slug => $log_level ) {
+				$random = function_exists( 'random_bytes' ) ? random_bytes( 12 ) : wp_generate_password( 24, true, true );
 				$new_settings[ $plugin_slug ] = array(
 					'log_level' => $log_level,
-					'file_name' => sha1( $plugin_slug . time() ),
+					'file_name' => sha1( $plugin_slug . $random ),
 				);
 			}
 
@@ -904,10 +1060,15 @@ class GFLogging extends GFAddOn {
 	 */
 	public function get_supported_plugins() {
 
+		// Get core plugins.
+		$core_plugins = GFForms::set_logging_supported( array() );
+		asort( $core_plugins );
+
+		// Get third party plugins.
 		$supported_plugins = apply_filters( 'gform_logging_supported', array() );
 		asort( $supported_plugins );
 
-		return $supported_plugins;
+		return array_merge( $core_plugins, $supported_plugins );
 
 	}
 
@@ -926,6 +1087,7 @@ class GFLogging extends GFAddOn {
 	public function load_text_domain() {
 		GFCommon::load_gf_text_domain();
 	}
+
 }
 
 /**

@@ -3,19 +3,21 @@
 namespace WPStaging\Backend\Modules\Jobs;
 
 use SplFileObject;
-use WPStaging\Framework\Filesystem\FileService;
+use WPStaging\Backend\Modules\Jobs\Cleaners\WpContentCleaner;
 use WPStaging\Core\Utils\Logger;
+use WPStaging\Core\WPStaging;
+use WPStaging\Framework\Filesystem\Filesystem;
+use WPStaging\Framework\Filesystem\Permissions;
 use WPStaging\Framework\Filesystem\WpUploadsFolderSymlinker;
+use WPStaging\Framework\Utils\Strings;
 use WPStaging\Framework\Utils\WpDefaultDirectories;
 
 /**
  * Class Files
  *
  * @todo Can we unify these?
- *       \WPStaging\Backend\Modules\Jobs\Files (Free single site files)
- *       \WPStaging\Backend\Modules\Jobs\Multisite\Files (Free multisite files)
- *       \WPStaging\Backend\Pro\Modules\Jobs\Files (Pro single site files)
- *       \WPStaging\Backend\Pro\Modules\Jobs\Multisite\Files (Pro multisite files)
+ *       \WPStaging\Backend\Modules\Jobs\Files (Cloning copying files)
+ *       \WPStaging\Backend\Pro\Modules\Jobs\Files (Pro push copying files)
  *
  * @package WPStaging\Backend\Modules\Jobs
  */
@@ -38,10 +40,18 @@ class Files extends JobExecutable
     private $destination;
 
     /**
+     * @var Permissions
+     */
+    private $permissions;
+
+    /**
      * Initialization
      */
     public function initialize()
     {
+
+        $this->permissions = new Permissions();
+
         $this->destination = $this->options->destinationDir;
 
         $filePath = $this->cache->getCacheDir() . "files_to_copy." . $this->cache->getCacheExtension();
@@ -50,14 +60,18 @@ class Files extends JobExecutable
             $this->file = new SplFileObject($filePath, 'r');
         }
 
+        $logStep = 0;
+        if ($this->options->mainJob === 'resetting' || $this->options->mainJob === 'updating') {
+            $logStep = 1;
+        }
+
         // Informational logs
-        if ($this->options->currentStep == 0) {
+        if ($this->options->currentStep === $logStep) {
             $this->log("Copying files...");
         }
 
         $this->settings->batchSize = $this->settings->batchSize * 1000000;
         $this->maxFilesPerRun = $this->settings->fileLimit;
-        //$this->maxFilesPerRun = ($this->settings->cpuLoad === 'low') ? 50 : 1;
     }
 
     /**
@@ -67,6 +81,11 @@ class Files extends JobExecutable
     protected function calculateTotalSteps()
     {
         $this->options->totalSteps = ceil($this->options->totalFiles / $this->maxFilesPerRun);
+        // Add an extra step for cleaning content in themes, plugins and uploads dir
+        // or for deleting whole dir if resetting
+        if ($this->options->mainJob === 'resetting' || $this->options->mainJob === 'updating') {
+            $this->options->totalSteps++;
+        }
     }
 
     /**
@@ -84,6 +103,18 @@ class Files extends JobExecutable
             return false;
         }
 
+        // Clean Staging Directory if job is resetting
+        if (!$this->cleanStagingDirectory()) {
+            $this->prepareResponse(false, false);
+            return false;
+        }
+
+        // Cleaning wp-content directories: uploads, themes and plugins if selected during update
+        if (!$this->cleanWpContent()) {
+            $this->prepareResponse(false, false);
+            return false;
+        }
+
         // Get files and copy'em
         if (!$this->getFilesAndCopy()) {
             $this->prepareResponse(false, false);
@@ -98,11 +129,112 @@ class Files extends JobExecutable
     }
 
     /**
+     * Clean staging site directory if the mainJob is resetting
+     *
+     * @return bool
+     */
+    private function cleanStagingDirectory()
+    {
+        if ($this->options->mainJob !== 'resetting') {
+            return true;
+        }
+
+        if ($this->options->currentStep !== 0) {
+            return true;
+        }
+
+        if (rtrim($this->destination, '/') === rtrim(get_home_path(), '/')) {
+            $this->returnException('Can not delete directory: ' . $this->destination . '. This seems to be the root directory. Exclude this directory from deleting and try again.');
+            throw new \Exception('Can not delete directory: ' . $this->destination . ' This seems to be the root directory. Exclude this directory from deleting and try again.');
+        }
+
+        // Finished or path does not exist
+        if (empty($this->destination) || !is_dir($this->destination)) {
+            if (defined('WPSTG_DEBUG') && WPSTG_DEBUG) {
+                error_log('Destination is not a directory: ' . $this->destination);
+            }
+            $this->log(sprintf(__('Fail! Destination is not a directory! %s', 'wp-staging'), $this->destination));
+            return true;
+        }
+
+        if (!isset($this->options->filesResettingStatus)) {
+            $this->options->filesResettingStatus = 'pending';
+            $this->saveOptions();
+        }
+
+        if ($this->options->filesResettingStatus === 'finished') {
+            return true;
+        }
+
+        if ($this->options->filesResettingStatus === 'pending') {
+            $this->log(sprintf(__('Files: Resetting staging site: %s.', 'wp-staging'), $this->destination));
+            $this->options->filesResettingStatus = 'processing';
+            $this->saveOptions();
+        }
+
+        $fs = (new Filesystem())
+            ->setShouldStop([$this, 'isOverThreshold'])
+            ->setRecursive(true);
+        try {
+            if (!$fs->delete($this->destination)) {
+                return false;
+            }
+        } catch (\RuntimeException $ex) {
+        }
+
+        $this->options->filesResettingStatus = 'finished';
+        $this->saveOptions();
+
+        $this->prepareResponse();
+        return true;
+    }
+
+
+    /**
+     * Clean WP Content According to option selected
+     *
+     * @return bool
+     */
+    private function cleanWpContent()
+    {
+        if ($this->options->mainJob !== 'updating') {
+            return true;
+        }
+
+        if ($this->options->currentStep !== 0) {
+            return true;
+        }
+
+        // @todo inject using DI if possible
+        $contentCleaner = new WpContentCleaner($this);
+
+        $result = $contentCleaner->tryCleanWpContent($this->destination);
+        foreach ($contentCleaner->getLogs() as $log) {
+            if ($log['type'] === Logger::TYPE_ERROR) {
+                $this->log($log['msg'], $log['type']);
+                $this->returnException($log['msg']);
+            } else {
+                $this->debugLog($log['msg'], $log['type']);
+            }
+        }
+
+        if (!$result) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Get files and copy
      * @return bool
      */
     private function getFilesAndCopy()
     {
+        if ($this->options->currentStep === 0 && ($this->options->mainJob === 'resetting' || $this->options->mainJob === 'updating')) {
+            return true;
+        }
+
         // Over limits threshold
         if ($this->isOverThreshold()) {
             // Prepare response and save current progress
@@ -112,7 +244,6 @@ class Files extends JobExecutable
         }
 
         // Go to last copied line and than to next one
-        //if ($this->options->copiedFiles != 0) {
         if (isset($this->options->copiedFiles) && $this->options->copiedFiles != 0) {
             $this->file->seek($this->options->copiedFiles - 1);
         }
@@ -151,18 +282,23 @@ class Files extends JobExecutable
      */
     private function symlinkUploadFolder()
     {
+        // Don't symlink if the site is updated because the folder or symlink already exists
+        if ($this->options->mainJob === 'updating') {
+            return true;
+        }
+
         if (!$this->options->uploadsSymlinked) {
-            $this->log("Skipped symlinking Wp Uploads Folder");
+            $this->log(__("Skipped symlinking Wp Uploads Folder", 'wp-staging'));
             return true;
         }
 
         $symlinker = new WpUploadsFolderSymlinker($this->options->destinationDir);
         if ($symlinker->trySymlink()) {
-            $this->log("Uploads Folder symlinked with the production site");
+            $this->log(__("Uploads Folder symlinked with the production site", 'wp-staging'));
             return true;
         }
 
-        $this->returnException('Unable to symlink uploads folder. Maybe a file, folder or a link exists in the symlink path.');
+        $this->returnException($symlinker->getError());
         return false;
     }
 
@@ -184,7 +320,7 @@ class Files extends JobExecutable
      */
     private function copyFile($file)
     {
-        $file = trim(\WPStaging\Core\WPStaging::getWPpath() . $file);
+        $file = trim(WPStaging::getWPpath() . $file);
 
         $file = wpstg_replace_windows_directory_separator($file);
 
@@ -247,7 +383,7 @@ class Files extends JobExecutable
         }
 
         // Set file permissions
-        @chmod($destination, wpstg_get_permissions_for_file());
+        @chmod($destination, $this->permissions->getFilesOctal());
 
         $this->setDirPermissions($destination);
 
@@ -289,14 +425,14 @@ class Files extends JobExecutable
 
     /**
      * Set directory permissions
-     * @param type $file
+     * @param string $file
      * @return boolean
      */
     private function setDirPermissions($file)
     {
         $dir = dirname($file);
         if (is_dir($dir)) {
-            @chmod($dir, wpstg_get_permissions_for_directory());
+            @chmod($dir, $this->permissions->getDirectoryOctal());
         }
         return false;
     }
@@ -310,12 +446,12 @@ class Files extends JobExecutable
     private function getDestination($file)
     {
         $file = wpstg_replace_windows_directory_separator($file);
-        $rootPath = wpstg_replace_windows_directory_separator(\WPStaging\Core\WPStaging::getWPpath());
+        $rootPath = wpstg_replace_windows_directory_separator(WPStaging::getWPpath());
         $relativePath = str_replace($rootPath, null, $file);
         $destinationPath = $this->destination . $relativePath;
         $destinationDirectory = dirname($destinationPath);
 
-        if (!is_dir($destinationDirectory) && !mkdir($destinationDirectory, wpstg_get_permissions_for_directory(), true) && !is_dir($destinationDirectory)) {
+        if (!is_dir($destinationDirectory) && !(new Filesystem())->mkdir($destinationDirectory) && !is_dir($destinationDirectory)) {
             $this->log("Files: Can not create directory {$destinationDirectory}. Possible write permission error!", Logger::TYPE_ERROR);
             return false;
         }
@@ -332,8 +468,8 @@ class Files extends JobExecutable
      */
     private function copyBig($src, $dst, $buffersize)
     {
-        $src = fopen($src, 'r');
-        $dest = fopen($dst, 'w');
+        $src = fopen($src, 'rb');
+        $dest = fopen($dst, 'wb');
 
         if (!$src || !$dest) {
             return false;
@@ -380,14 +516,16 @@ class Files extends JobExecutable
             );
         }
 
-        if ((new FileService)->isFilenameExcluded($file, $excludedFiles)) {
+        if ((new Filesystem())->isFilenameExcluded($file, $excludedFiles)) {
             return true;
         }
 
         // Do not copy wp-config.php if the clone gets updated. This is for security purposes,
         // because if the updating process fails, the staging site would not be accessable any longer
-        if (isset($this->options->mainJob) && $this->options->mainJob == "updating"
-            && stripos(strrev($file), strrev("wp-config.php")) === 0) {
+        if (
+            isset($this->options->mainJob) && $this->options->mainJob === "updating"
+            && stripos(strrev($file), strrev("wp-config.php")) === 0
+        ) {
             return true;
         }
 
@@ -482,6 +620,12 @@ class Files extends JobExecutable
         $directory = $this->sanitizeDirectorySeparator($directory);
 
         foreach ($this->options->extraDirectories as $extraDirectory) {
+            $extraDirectory = trim($extraDirectory);
+
+            if (empty($extraDirectory)) {
+                continue;
+            }
+
             if (strpos($directory, $this->sanitizeDirectorySeparator($extraDirectory)) === 0) {
                 return true;
             }
@@ -489,5 +633,4 @@ class Files extends JobExecutable
 
         return false;
     }
-
 }

@@ -9,13 +9,13 @@
  * Do not use any of these methods in WP STAGING code base as this mu-plugin can be missing!
  *
  * Author: René Hermenau
- * Version: 1.4
+ * Version: 1.4.1
  * Author URI: https://wp-staging.com
  */
 
 // Version number of this mu-plugin. Important for automatic updates
 if (!defined('WPSTG_OPTIMIZER_VERSION')) {
-    define('WPSTG_OPTIMIZER_VERSION', 1.4);
+    define('WPSTG_OPTIMIZER_VERSION', '1.4.1');
 }
 
 /** @return string */
@@ -25,7 +25,7 @@ function wpstgGetPluginsDir()
     $pluginsDir = '';
     if (defined('WP_PLUGIN_DIR')) {
         $pluginsDir = trailingslashit(WP_PLUGIN_DIR);
-    } else if (defined('WP_CONTENT_DIR')) {
+    } elseif (defined('WP_CONTENT_DIR')) {
         $pluginsDir = trailingslashit(WP_CONTENT_DIR) . 'plugins/';
     }
     return $pluginsDir;
@@ -40,7 +40,7 @@ function wpstgGetPluginsDir()
 function wpstgIsEnabledOptimizer()
 {
 
-    $status = ( object )get_option('wpstg_settings');
+    $status = (object)get_option('wpstg_settings');
 
     if ($status && isset($status->optimizer) && $status->optimizer == 1) {
         return true;
@@ -86,12 +86,11 @@ function wpstgExcludePlugins($plugins)
         return $plugins;
     }
 
-    if (!wpstgIsCompatibilityModeRequest()) {
+    if (!wpstgIsOptimizerRequest()) {
         return $plugins;
     }
 
     foreach ($plugins as $key => $plugin) {
-
         // Default filter. Must be at the beginning or wp staging plugin will be filtered and killed
         if (strpos($plugin, 'wp-staging') !== false || wpstgIsExcludedPlugin($plugin)) {
             continue;
@@ -118,12 +117,11 @@ function wpstgExcludeSitePlugins($plugins)
         return $plugins;
     }
 
-    if (!wpstgIsCompatibilityModeRequest()) {
+    if (!wpstgIsOptimizerRequest()) {
         return $plugins;
     }
 
     foreach ($plugins as $key => $plugin) {
-
         // Default filter. Must be at the beginning or wp staging plugin will be filtered and killed
         if (strpos($plugin, 'wp-staging') !== false || wpstgIsExcludedPlugin($plugin)) {
             continue;
@@ -148,7 +146,7 @@ function wpstgDisableTheme($dir)
 {
     $enableTheme = apply_filters('wpstg_optimizer_enable_theme', false);
 
-    if (wpstgIsCompatibilityModeRequest() && $enableTheme === false) {
+    if (wpstgIsOptimizerRequest() && $enableTheme === false) {
         $wpstgRootPro = wpstgGetPluginsDir() . 'wp-staging-pro';
         $wpstgRoot = wpstgGetPluginsDir() . 'wp-staging';
 
@@ -163,7 +161,6 @@ function wpstgDisableTheme($dir)
         } else {
             return '';
         }
-        return $themeDir;
     }
 
     return $dir;
@@ -173,28 +170,28 @@ add_filter('stylesheet_directory', 'wpstgDisableTheme');
 add_filter('template_directory', 'wpstgDisableTheme');
 
 /**
- * Should the current request be processed by Compatibility Mode?
+ * Should the current request be processed by optimizer?
  *
  * @return bool
  */
-function wpstgIsCompatibilityModeRequest()
+function wpstgIsOptimizerRequest()
 {
 
-    // Optimizer not enabled
     if (!wpstgIsEnabledOptimizer()) {
         return false;
     }
 
-    if (!defined('DOING_AJAX') ||
-        !DOING_AJAX ||
-        !isset($_POST['action']) ||
-        strpos($_POST['action'], 'wpstg') === false
+    if (
+        defined('DOING_AJAX') &&
+        DOING_AJAX &&
+        isset($_POST['action']) &&
+        strpos($_POST['action'], 'wpstg_send_report') === false &&
+        strpos($_POST['action'], 'wpstg') === 0
     ) {
-
-        return false;
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 /**
@@ -254,9 +251,39 @@ function wpstgIsStaging()
 }
 
 /**
- * Disable all outgoing e-mails on Staging site
+ * Get the value of the given option in clone settings,
+ * If no option given return all clone settings
+ *
+ * @param string $option
+ * @return mixed
  */
-if (((bool)get_option("wpstg_emails_disabled") === true) && wpstgIsStaging()) {
+function wpstgGetCloneSettings($option = null)
+{
+    $settings = get_option('wpstg_clone_settings', null);
+
+    // Return settings if no options given
+    if ($option === null) {
+        return $settings;
+    }
+
+    // Early Bail: if settings is null or if settings isn't object
+    if ($settings === null || !is_object($settings)) {
+        return null;
+    }
+
+    // Early bail if given option not exists
+    if (!property_exists($settings, $option)) {
+        return null;
+    }
+
+    return $settings->{$option};
+}
+
+/**
+ * Disable all outgoing e-mails on Staging site
+ * Will check against both the old and new logic of storing emails disabled option
+ */
+if (wpstgIsStaging() && (((bool)get_option("wpstg_emails_disabled") === true) || ((bool)wpstgGetCloneSettings('wpstg_emails_disabled')))) {
     if (!function_exists('wp_mail')) {
         function wp_mail($to, $subject, $message, $headers = '', $attachments = [])
         {
@@ -293,4 +320,3 @@ LOG_ENTRY;
         }
     }
 }
-

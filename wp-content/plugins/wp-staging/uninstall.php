@@ -2,8 +2,6 @@
 
 namespace WPStaging\Backend;
 
-use WPStaging\Framework\Staging\FirstRun;
-
 /**
  * Uninstall WP-Staging
  *
@@ -43,6 +41,11 @@ class uninstall
             delete_option("wpstg_settings");
             delete_option("wpstg_rmpermalinks_executed");
             delete_option("wpstg_activation_redirect");
+            delete_option("wpstg_disabled_items_notice");
+            delete_option("wpstg_clone_settings");
+            // Old notice used for display cache on staging site.
+            delete_option("wpstg_disabled_cache_notice");
+            // Old option, now moved inside wpstg_clone_settings
             delete_option("wpstg_emails_disabled");
 
 
@@ -63,7 +66,8 @@ class uninstall
             delete_option("wpstg_rating");
             delete_option("wpstg_beta");
 
-            delete_option(FirstRun::FIRST_RUN_KEY);
+            /* @see \WPStaging\Framework\Staging\FirstRun::FIRST_RUN_KEY */
+            delete_option('wpstg_execute');
 
             // Delete events
             wp_clear_scheduled_hook('wpstg_weekly_event');

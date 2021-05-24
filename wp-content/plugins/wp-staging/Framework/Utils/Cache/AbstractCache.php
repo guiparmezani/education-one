@@ -6,8 +6,8 @@
 
 namespace WPStaging\Framework\Utils\Cache;
 
-
-use WPStaging\Vendor\Symfony\Component\Filesystem\Exception\IOException;
+use WPStaging\Framework\Filesystem\Filesystem;
+use WPStaging\Framework\Exceptions\IOException;
 use WPStaging\Framework\Adapter\Directory;
 
 abstract class AbstractCache
@@ -90,6 +90,9 @@ abstract class AbstractCache
     public function setPath($path)
     {
         $this->path = $path;
+
+        (new Filesystem())->mkdir($path, true);
+
         $this->initializeFilePath();
     }
 
@@ -116,6 +119,16 @@ abstract class AbstractCache
     public function getFilePath()
     {
         return $this->filePath;
+    }
+
+    /**
+     * @param $fileName
+     *
+     * @return bool
+     */
+    public function cacheExists($fileName)
+    {
+        return is_file(trailingslashit($this->getPath()) . $fileName . '.' . static::EXTENSION);
     }
 
     /**

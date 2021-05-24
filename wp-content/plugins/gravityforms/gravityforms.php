@@ -1,16 +1,19 @@
 <?php
 /*
 Plugin Name: Gravity Forms
-Plugin URI: http://www.gravityforms.com
+Plugin URI: https://gravityforms.com
 Description: Easily create web forms and manage form entries within the WordPress admin.
-Version: 2.2.5
-Author: rocketgenius
-Author URI: http://www.rocketgenius.com
+Version: 2.5.2
+Requires at least: 4.0
+Requires PHP: 5.6
+Author: Gravity Forms
+Author URI: https://gravityforms.com
+License: GPL-2.0+
 Text Domain: gravityforms
 Domain Path: /languages
 
 ------------------------------------------------------------------------
-Copyright 2009-2017 Rocketgenius, Inc.
+Copyright 2009-2021 Rocketgenius, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -64,9 +67,6 @@ if ( ! defined( 'RG_CURRENT_PAGE' ) ) {
 	 *
 	 * @since   Unknown
 	 *
-	 * @used-by GFForms::init()
-	 * @used-by GFCommon::ensure_wp_version()
-	 *
 	 * @var string RG_CURRENT_PAGE The current page.
 	 */
 	define( 'RG_CURRENT_PAGE', basename( $_SERVER['PHP_SELF'] ) );
@@ -77,10 +77,6 @@ if ( ! defined( 'IS_ADMIN' ) ) {
 	 * Checks if an admin page is being viewed.
 	 *
 	 * @since   Unknown
-	 *
-	 * @used-by GFForms::init()
-	 * @used-by GFFormsModel::get_default_value()
-	 * @used-by GFFormsModel::get_label()
 	 *
 	 * @var boolean IS_ADMIN True if admin page. False otherwise.
 	 */
@@ -95,8 +91,6 @@ if ( ! defined( 'IS_ADMIN' ) ) {
  * @since      Unknown
  * @deprecated 2.1.3.6
  *
- * @uses GFForms::get()
- *
  * @var string|boolean RG_CURRENT_VIEW The view if available.  False otherwise.
  */
 define( 'RG_CURRENT_VIEW', GFForms::get( 'view' ) );
@@ -106,22 +100,14 @@ define( 'RG_CURRENT_VIEW', GFForms::get( 'view' ) );
  *
  * @since   Unknown
  *
- * @used-by GFCommon::ensure_wp_version()
- * @used-by GF_SUPPORTED_WP_VERSION
- * @used-by GFSettings::gravityforms_settings_page()
- *
  * @var string GF_MIN_WP_VERSION Minimum version number.
  */
-define( 'GF_MIN_WP_VERSION', '3.7' );
+define( 'GF_MIN_WP_VERSION', '4.0' );
 
 /**
  * Checks if the current WordPress version is supported.
  *
  * @since   Unknown
- *
- * @used-by GFForms::init()
- * @used-by GFCommon::ensure_wp_version()
- * @uses    GF_MIN_WP_VERSION
  *
  * @var boolean GF_SUPPORTED_VERSION True if supported.  False otherwise.
  */
@@ -132,7 +118,7 @@ define( 'GF_SUPPORTED_WP_VERSION', version_compare( get_bloginfo( 'version' ), G
  *
  * @var string GF_MIN_WP_VERSION_SUPPORT_TERMS The version number
  */
-define( 'GF_MIN_WP_VERSION_SUPPORT_TERMS', '4.7' );
+define( 'GF_MIN_WP_VERSION_SUPPORT_TERMS', '5.6' );
 
 
 if ( ! defined( 'GRAVITY_MANAGER_URL' ) ) {
@@ -141,16 +127,7 @@ if ( ! defined( 'GRAVITY_MANAGER_URL' ) ) {
 	 *
 	 * @var string GRAVITY_MANAGER_URL The full URL to the Gravity Manager.
 	 */
-	define( 'GRAVITY_MANAGER_URL', 'https://www.gravityhelp.com/wp-content/plugins/gravitymanager' );
-}
-
-if ( ! defined( 'GRAVITY_MANAGER_PROXY_URL' ) ) {
-	/**
-	 * Defines the Gravity Manager proxy URL.
-	 *
-	 * @var string GRAVITY_MANAGER_PROXY_URL The full URL to the Gravity Manager proxy.
-	 */
-	define( 'GRAVITY_MANAGER_PROXY_URL', 'http://proxy.gravityplugins.com' );
+	define( 'GRAVITY_MANAGER_URL', 'https://gravityapi.com/wp-content/plugins/gravitymanager' );
 }
 
 require_once( plugin_dir_path( __FILE__ ) . 'currency.php' );
@@ -161,6 +138,11 @@ require_once( plugin_dir_path( __FILE__ ) . 'includes/api.php' );
 require_once( plugin_dir_path( __FILE__ ) . 'includes/webapi/webapi.php' );
 require_once( plugin_dir_path( __FILE__ ) . 'includes/fields/class-gf-fields.php' );
 require_once( plugin_dir_path( __FILE__ ) . 'includes/class-gf-download.php' );
+require_once( plugin_dir_path( __FILE__ ) . 'includes/query/class-gf-query.php' );
+require_once( plugin_dir_path( __FILE__ ) . 'includes/assets/class-gf-asset.php' );
+require_once( plugin_dir_path( __FILE__ ) . 'includes/assets/class-gf-script-asset.php' );
+require_once( plugin_dir_path( __FILE__ ) . 'includes/assets/class-gf-style-asset.php' );
+require_once( plugin_dir_path( __FILE__ ) . '/includes/trait-redirects-on-save.php' );
 
 // Load Logging if Logging Add-On is not active.
 if ( ! GFCommon::is_logging_plugin_active() ) {
@@ -171,13 +153,25 @@ if ( ! GFCommon::is_logging_plugin_active() ) {
 GFCommon::$version = GFForms::$version;
 
 add_action( 'init', array( 'GFForms', 'init' ) );
+add_action( 'init', array( 'GFForms', 'screen_options_filters' ) );
+add_action( 'admin_init', array( 'GFForms', 'add_entry_list_filter' ) );
+add_action( 'admin_init', array( 'GFForms', 'initialize_admin_settings' ) );
+add_action( 'gform_preview_init', array( 'GFForms', 'init_preview' ) );
 add_action( 'wp', array( 'GFForms', 'maybe_process_form' ), 9 );
 add_action( 'admin_init', array( 'GFForms', 'maybe_process_form' ), 9 );
 add_action( 'wp', array( 'GFForms', 'process_exterior_pages' ) );
+add_action( 'admin_init', array( 'GFForms', 'process_exterior_pages' ) );
+add_action( 'admin_head', array( 'GFCommon', 'find_admin_notices' ) );
+add_action( 'admin_head', array( 'GFCommon', 'admin_notices_style' ) );
+add_action( 'upgrader_process_complete', array( 'GFForms', 'install_addon_translations' ), 10, 2 );
+add_action( 'update_option_WPLANG', array( 'GFForms', 'update_translations' ), 10, 2 );
+add_action( 'wp_ajax_update_auto_update_setting', array( 'GFForms', 'update_auto_update_setting' ) );
 add_filter( 'upgrader_pre_install', array( 'GFForms', 'validate_upgrade' ), 10, 2 );
 add_filter( 'tiny_mce_before_init', array( 'GFForms', 'modify_tiny_mce_4' ), 20 );
-add_filter( 'user_has_cap', array( 'RGForms', 'user_has_cap' ), 10, 3 );
-
+add_filter( 'user_has_cap', array( 'RGForms', 'user_has_cap' ), 10, 4 );
+add_filter( 'query', array( 'GFForms', 'filter_query' ) );
+add_filter( 'plugin_auto_update_setting_html', array( 'GFForms', 'auto_update_message' ), 10, 3 );
+add_filter( 'plugin_auto_update_debug_string', array( 'GFForms', 'auto_update_debug_message' ), 10, 4 );
 
 //Hooks for no-conflict functionality
 if ( is_admin() && ( GFForms::is_gravity_page() || GFForms::is_gravity_ajax_action() ) ) {
@@ -192,7 +186,10 @@ if ( is_admin() && ( GFForms::is_gravity_page() || GFForms::is_gravity_ajax_acti
 
 add_action( 'plugins_loaded', array( 'GFForms', 'loaded' ) );
 
+register_activation_hook( __FILE__, array( 'GFForms', 'activation_hook' ) );
 register_deactivation_hook( __FILE__, array( 'GFForms', 'deactivation_hook' ) );
+
+gf_upgrade();
 
 /**
  * Class GFForms
@@ -205,11 +202,17 @@ class GFForms {
 	 * Defines this version of Gravity Forms.
 	 *
 	 * @since  Unknown
-	 * @access public
 	 *
 	 * @var string $version The version number.
 	 */
-	public static $version = '2.2.5';
+	public static $version = '2.5.2';
+
+	/**
+	 * Handles background upgrade tasks.
+	 *
+	 * @var GF_Background_Upgrader
+	 */
+	public static $background_upgrader = null;
 
 	/**
 	 * Runs after Gravity Forms is loaded.
@@ -225,6 +228,10 @@ class GFForms {
 	 */
 	public static function loaded() {
 
+		// Load in Settings Framework.
+		require_once( GFCommon::get_base_path() . '/settings.php' );
+		require_once( GFCommon::get_base_path() . '/includes/settings/class-settings.php' );
+
 		/**
 		 * Fires when Gravity Forms has loaded.
 		 *
@@ -236,18 +243,25 @@ class GFForms {
 		if ( class_exists( 'GFAddOn' ) ) {
 			GFAddOn::init_addons();
 		}
+
+		if ( defined( 'OSDXP_DASHBOARD_VER' ) ) {
+			// Integration with osDXP.
+			require_once  plugin_dir_path( __FILE__ ) . 'includes/class-gf-osdxp.php';
+		}
 	}
 
 	/**
 	 * Determines if the 3rd party Members plugin is active.
 	 *
+	 * @since  2.4.13 Removed Members v1 support.
 	 * @since  Unknown
-	 * @access public
+	 *
+	 * @param null $deprecated No longer used. Previously the minimum version number of Members plugin to check for.
 	 *
 	 * @return boolean True if the Members plugin is active. False otherwise.
 	 */
-	public static function has_members_plugin() {
-		return function_exists( 'members_get_capabilities' );
+	public static function has_members_plugin( $deprecated = null ) {
+		return function_exists( 'members_register_cap_group' ) && function_exists( 'members_register_cap' );
 	}
 
 	/**
@@ -275,21 +289,49 @@ class GFForms {
 		add_action( 'admin_head', array( 'GFCommon', 'maybe_output_gf_vars' ) );
 		add_action( 'admin_head', array( 'GFForms', 'load_admin_bar_styles' ) );
 		add_action( 'wp_head', array( 'GFForms', 'load_admin_bar_styles' ) );
+		add_action( 'dynamic_sidebar_before', array( 'GFCommon', 'check_for_gf_widgets' ), 10 );
+		add_action( 'gform_enqueue_scripts', array( 'GFCommon', 'localize_gf_legacy_multi' ), 9999 );
+
+		if ( self::get_page() === 'form_editor' ) {
+			add_action( 'admin_head', array( 'GFForms', 'preload_webfonts' ), 0, 0 );
+		}
+
+		if ( self::get_page() === 'form_editor' ) {
+			add_action( 'admin_head', array( 'GFForms', 'preload_webfonts' ), 0, 0 );
+		}
 
 		self::register_scripts();
 
+		GFCommon::localize_gform_i18n();
+
+		self::init_background_upgrader();
+
 		// Run background feed processing.
 		require_once( plugin_dir_path( __FILE__ ) . 'includes/addon/class-gf-feed-processor.php' );
+
 		gf_feed_processor();
 
-		//Maybe set up Gravity Forms: only on admin requests for single site installation and always for multisite
-		if ( ( IS_ADMIN && false === ( defined( 'DOING_AJAX' ) && true === DOING_AJAX ) ) || is_multisite() ) {
+		// Maybe set up Gravity Forms
+		if ( ( false === ( defined( 'DOING_AJAX' ) && true === DOING_AJAX ) ) ) {
 
 			gf_upgrade()->maybe_upgrade();
 
 		}
 
-		//Plugin update actions
+		// Load Editor Blocks if WordPress is 5.0+.
+		if ( function_exists( 'register_block_type' ) ) {
+
+			// Load block framework.
+			if ( ! class_exists( 'GF_Blocks' ) ) {
+				require_once plugin_dir_path( __FILE__ ) . 'includes/blocks/class-gf-blocks.php';
+			}
+
+			// Load included Blocks.
+			GFCommon::glob_require_once( '/includes/blocks/class-gf-block-*.php' );
+
+		}
+
+		// Plugin update actions
 		add_filter( 'transient_update_plugins', array( 'GFForms', 'check_update' ) );
 		add_filter( 'site_transient_update_plugins', array( 'GFForms', 'check_update' ) );
 		add_filter( 'auto_update_plugin', array( 'GFForms', 'maybe_auto_update' ), 10, 2 );
@@ -298,16 +340,15 @@ class GFForms {
 
 			global $current_user;
 
-			//Site registration hooks
-			//add_action( 'add_option_rg_gforms_key', 	array( 'GFSettings', 'action_add_option_rg_gforms_key' ), 	10, 2 );
-			//add_action( 'update_option_rg_gforms_key', 	array( 'GFSettings', 'action_update_option_rg_gforms_key' ),10, 2 );
-			//add_action( 'delete_option_rg_gforms_key', 	array( 'GFSettings', 'action_delete_option_rg_gforms_key' ),10, 2 );
-
-
 			//Members plugin integration. Adding Gravity Forms roles to the checkbox list
 			if ( self::has_members_plugin() ) {
-				add_filter( 'members_get_capabilities', array( 'GFForms', 'members_get_capabilities' ) );
+				add_action( 'members_register_cap_groups', array( 'GFForms', 'members_register_cap_group' ) );
+				add_action( 'members_register_caps', array( 'GFForms', 'members_register_caps' ) );
 			}
+
+            // User Role Editor integration.
+            add_filter( 'ure_capabilities_groups_tree', array( 'GFForms', 'filter_ure_capabilities_groups_tree' ) );
+            add_filter( 'ure_custom_capability_groups', array( 'GFForms', 'filter_ure_custom_capability_groups' ), 10, 2 );
 
 			if ( is_multisite() ) {
 				add_filter( 'wpmu_drop_tables', array( 'GFFormsModel', 'mu_drop_tables' ) );
@@ -320,6 +361,10 @@ class GFForms {
 				add_action( 'admin_footer', array( 'GFForms', 'deprecate_add_on_methods' ) );
 			}
 
+			// Use TranslationsPress to load translations.
+			require_once( plugin_dir_path( __FILE__ ) . 'includes/class-translationspress-updater.php' );
+			new Gravity_Forms\Gravity_Forms\TranslationsPress_Updater( 'gravityforms' );
+
 			//Loading Gravity Forms if user has access to any functionality
 			if ( GFCommon::current_user_can_any( GFCommon::all_caps() ) ) {
 				require_once( GFCommon::get_base_path() . '/export.php' );
@@ -331,6 +376,9 @@ class GFForms {
 				//creates the "Forms" left menu
 				add_action( 'admin_menu', array( 'GFForms', 'create_menu' ) );
 
+				// Add site-wide admin notices
+				add_action( 'admin_notices', array( 'GFForms', 'action_admin_notices' ) );
+
 				if ( GF_SUPPORTED_WP_VERSION ) {
 
 					add_action( 'admin_footer', array( 'GFForms', 'check_upload_folder' ) );
@@ -339,6 +387,8 @@ class GFForms {
 					// Support modifying the admin page title for settings
 					add_filter( 'admin_title', array( __class__, 'modify_admin_title' ), 10, 2 );
 
+					// Display admin notice if logging is enabled.
+					add_action( 'admin_notices', array( 'GFForms', 'maybe_display_logging_notice' ) );
 
 					require_once( GFCommon::get_base_path() . '/includes/locking/locking.php' );
 
@@ -412,35 +462,32 @@ class GFForms {
 						// Dismiss message
 						add_action( 'wp_ajax_gf_dismiss_message', array( 'GFForms', 'ajax_dismiss_message' ) );
 
+						// Check background tasks for the system report
+						add_action( 'wp_ajax_gf_check_background_tasks', array( 'GFForms', 'check_background_tasks' ) );
+
+						// Check status of upgrade
+						add_action( 'wp_ajax_gf_force_upgrade', array( 'GFForms', 'ajax_force_upgrade' ) );
+
+						// Disable logging.
+						add_action( 'wp_ajax_gf_disable_logging', array( 'GFForms', 'ajax_disable_logging' ) );
+
+						// Get change log.
+						add_action( 'wp_ajax_gf_get_changelog', array( 'GFForms', 'ajax_display_changelog' ) );
+
 					}
 
 					add_filter( 'plugins_api', array( 'GFForms', 'get_addon_info' ), 100, 3 );
-					add_action( 'after_plugin_row_gravityforms/gravityforms.php', array( 'GFForms', 'plugin_row' ) );
+					add_action( 'after_plugin_row', array( 'GFForms', 'plugin_row' ), 10, 2 );
+					add_action( 'in_plugin_update_message-gravityforms/gravityforms.php', array( 'GFForms', 'in_plugin_update_message' ), 10, 2 );
 					add_action( 'install_plugins_pre_plugin-information', array( 'GFForms', 'display_changelog' ), 9 );
 					add_filter( 'plugin_action_links', array( 'GFForms', 'plugin_settings_link' ), 10, 2 );
 				}
 			}
 			add_action( 'admin_init', array( 'GFForms', 'ajax_parse_request' ), 10 );
 
-			$gf_page = self::get_page();
-			if ( $gf_page == 'entry_list' && ! isset( $_GET['filter'] ) ) {
-				require_once( GFCommon::get_base_path() . '/entry_list.php' );
-				$default_filter = GFEntryList::get_default_filter();
-				if ( $default_filter !== 'all' ) {
-					$url = add_query_arg( array( 'filter' => $default_filter ) );
-					$url = esc_url_raw( $url );
-					wp_safe_redirect( $url );
-				}
-			}
+			add_filter(	'wp_privacy_personal_data_exporters', array( 'GFForms', 'register_data_exporter' ),	10 );
+			add_filter(	'wp_privacy_personal_data_erasers', array( 'GFForms', 'register_data_eraser' ),	10 );
 
-			if ( $gf_page == 'entry_list' ) {
-				add_filter( 'set-screen-option', array( 'GFForms', 'set_screen_options' ), 10, 3 );
-				add_filter( 'screen_settings', array( 'GFForms', 'show_screen_options' ), 10, 2 );
-			}
-
-			if ( $gf_page == 'form_list' ) {
-				add_filter( 'set-screen-option', array( 'GFForms', 'set_screen_options' ), 10, 3 );
-			}
 		} else {
 			add_action( 'wp_enqueue_scripts', array( 'GFForms', 'enqueue_scripts' ), 11 );
 			add_action( 'wp', array( 'GFForms', 'ajax_parse_request' ), 10 );
@@ -468,6 +515,144 @@ class GFForms {
 			// Adding the modal
 			add_action( 'admin_print_footer_scripts', array( 'GFForms', 'add_mce_popup' ) );
 		}
+
+		// Add a special classname to the body element when admin.css is loaded
+		add_filter( 'admin_body_class', array( 'GFForms', 'add_admin_body_class' ), 99, 1 );
+	}
+
+	/**
+	 * Initialize any settings needed for the Preview functionality.
+	 *
+	 * @since  2.5
+	 * @access public
+	 *
+	 * @return void
+	 */
+	public static function init_preview() {
+		$min      = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
+		$base_url = GFCommon::get_base_url();
+
+		wp_register_style( 'gf-preview', "$base_url/css/preview$min.css" );
+		wp_register_style( 'gf-preview-rtl', "$base_url/css/rtl$min.css" );
+
+		add_filter( 'gform_preview_styles', function( $styles ) {
+			$styles[] = 'gf-preview-reset';
+			$styles[] = 'gf-preview';
+
+			if ( is_rtl() ) {
+				$styles[] = 'gf-rtl';
+			}
+
+			return $styles;
+		}, 10, 1 );
+	}
+
+	/**
+	 * Show and save screen options on GF list pages.
+	 *
+	 * @since  2.5
+	 * @access public
+	 *
+	 * @return void
+	 */
+	public static function screen_options_filters() {
+		$gf_page = self::get_page();
+		if ( $gf_page == 'entry_list' ) {
+			add_filter( 'screen_settings', array( 'GFForms', 'show_screen_options' ), 10, 2 );
+			// For WP 5.4.1 and older.
+			add_filter( 'set-screen-option', array( 'GFForms', 'set_screen_options' ), 10, 3 );
+			// For WP 5.4.2+.
+			add_filter( 'set_screen_option_gform_entries_screen_options', array( 'GFForms', 'set_screen_options', ), 10, 3 );
+		}
+
+		if ( $gf_page == 'form_list' ) {
+			// For WP 5.4.1 and older.
+			add_filter( 'set-screen-option', array( 'GFForms', 'set_screen_options' ), 10, 3 );
+			// For WP 5.4.2+.
+			add_filter( 'set_screen_option_gform_forms_per_page', array( 'GFForms', 'set_screen_options' ), 10, 3 );
+		}
+	}
+
+	/**
+	 * Add the appropriate filter if necessary on the entry list page.
+	 *
+	 * @since  2.5
+	 * @access public
+	 *
+	 * @return void
+	 */
+	public static function add_entry_list_filter() {
+		$gf_page = self::get_page();
+		if ( $gf_page == 'entry_list' && ! isset( $_GET['filter'] ) ) {
+			require_once( GFCommon::get_base_path() . '/entry_list.php' );
+			$default_filter = GFEntryList::get_default_filter();
+			if ( $default_filter !== 'all' ) {
+				$url = add_query_arg( array( 'filter' => $default_filter ) );
+				$url = esc_url_raw( $url );
+				wp_safe_redirect( $url );
+			}
+		}
+	}
+
+	/**
+	 * Initialize all of the admin settings based on the current admin page.
+	 *
+	 * @since  2.5
+	 * @access public
+	 *
+	 * @return void
+	 */
+	public static function initialize_admin_settings() {
+		$gf_page = self::get_page();
+		require_once GFCommon::get_base_path() . '/tooltips.php';
+
+		// Initialize Plugin Settings.
+		if ( $gf_page === 'settings' && ( ! rgget( 'subview' ) || rgget( 'subview' ) === 'settings' ) ) {
+			if ( ! class_exists( 'GFSettings' ) ) {
+				require_once( GFCommon::get_base_path() . '/settings.php' );
+			}
+			GFSettings::initialize_plugin_settings();
+		}
+
+		// Initialize reCAPTCHA Settings.
+		if ( $gf_page === 'settings' && rgget( 'subview' ) === 'recaptcha' ) {
+			if ( ! class_exists( 'GFSettings' ) ) {
+				require_once( GFCommon::get_base_path() . '/settings.php' );
+			}
+			GFSettings::initialize_recaptcha_settings();
+		}
+
+		// Initialize Form Settings.
+		if ( $gf_page === 'form_settings' ) {
+			if ( ! class_exists( 'GFFormSettings' ) ) {
+				require_once( GFCommon::get_base_path() . '/form_settings.php' );
+			}
+			GFFormSettings::initialize_settings_renderer();
+		}
+
+		// Initialize Personal Data settings.
+		if ( $gf_page === 'personal_data' ) {
+			if ( ! class_exists( 'GF_Personal_Data' ) ) {
+				require_once( GFCommon::get_base_path() . '/includes/class-personal-data.php' );
+			}
+			GF_Personal_Data::initialize_settings_renderer();
+		}
+
+		// Initialize Confirmation settings.
+		if ( $gf_page === 'confirmation' && isset( $_GET['cid'] ) ) {
+			if ( ! class_exists( 'GF_Confirmation' ) ) {
+				require_once( GFCommon::get_base_path() . '/includes/class-confirmation.php' );
+			}
+			GF_Confirmation::initialize_settings_renderer();
+		}
+
+		// Initialize Notification settings.
+		if ( $gf_page === 'notification_edit' ) {
+			if ( ! class_exists( 'GFNotification' ) ) {
+				require_once( GFCommon::get_base_path() . '/notification.php' );
+			}
+			GFNotification::initialize_settings_renderer();
+		}
 	}
 
 	/**
@@ -480,7 +665,7 @@ class GFForms {
 	 */
 	public static function load_first() {
 		$plugin_path    = basename( dirname( __FILE__ ) ) . '/gravityforms.php';
-		$active_plugins = get_option( 'active_plugins' );
+		$active_plugins = array_values( maybe_unserialize( self::get_wp_option( 'active_plugins' ) ) );
 		$key            = array_search( $plugin_path, $active_plugins );
 		if ( $key > 0 ) {
 			array_splice( $active_plugins, $key, 1 );
@@ -505,6 +690,18 @@ class GFForms {
 	}
 
 	/**
+	 * Performs Gravity Forms activation tasks.
+	 *
+	 * @since  2.3
+	 * @access public
+	 */
+	public static function activation_hook() {
+		self::install_translations();
+		self::init_background_upgrader();
+		gf_upgrade()->maybe_upgrade();
+	}
+
+	/**
 	 * Add Gravity Forms to the plugins that support logging.
 	 *
 	 * @since  Unknown
@@ -515,7 +712,8 @@ class GFForms {
 	 * @return array $plugins Supported plugins.
 	 */
 	public static function set_logging_supported( $plugins ) {
-		$plugins['gravityforms'] = 'Gravity Forms Core';
+		$plugins['gravityformsapi'] = 'Gravity Forms API';
+		$plugins['gravityforms']    = 'Gravity Forms Core';
 
 		return $plugins;
 	}
@@ -551,19 +749,16 @@ class GFForms {
 	 * @return void
 	 */
 	public static function maybe_process_form() {
-
-		$form_id = isset( $_POST['gform_submit'] ) ? absint( $_POST['gform_submit'] ) : 0;
-		if ( $form_id ) {
-			$form_info     = RGFormsModel::get_form( $form_id );
-			$is_valid_form = $form_info && $form_info->is_active;
-
-			if ( $is_valid_form ) {
-				require_once( GFCommon::get_base_path() . '/form_display.php' );
-				GFFormDisplay::process_form( $form_id );
-			}
-		} elseif ( isset( $_POST['gform_send_resume_link'] ) ) {
+		if ( isset( $_POST['gform_send_resume_link'] ) ) {
 			require_once( GFCommon::get_base_path() . '/form_display.php' );
 			GFFormDisplay::process_send_resume_link();
+		} elseif ( isset( $_POST['gform_submit'] ) ) {
+			require_once( GFCommon::get_base_path() . '/form_display.php' );
+			$form_id = GFFormDisplay::is_submit_form_id_valid();
+
+			if ( $form_id ) {
+				GFFormDisplay::process_form( $form_id );
+			}
 		}
 	}
 
@@ -665,19 +860,10 @@ class GFForms {
 	 * Self-heals suspicious files.
 	 *
 	 * @since  Unknown
-	 * @access private
-	 *
-	 * @uses   GFForms::heal_wp_upload_dir()
-	 * @uses   GFFormsModel::get_upload_root()
-	 * @uses   GFForms::rename_suspicious_files_recursive()
-	 *
-	 * @return void
 	 */
 	private static function do_self_healing() {
 
 		GFCommon::log_debug( __METHOD__ . '(): Start self healing' );
-
-		self::heal_wp_upload_dir();
 
 		$gf_upload_root = GFFormsModel::get_upload_root();
 
@@ -708,7 +894,7 @@ class GFForms {
 		}
 
 		// Ignores all errors
-		set_error_handler( create_function( '', 'return 0;' ), E_ALL );
+		set_error_handler( '__return_false', E_ALL );
 
 		while ( false !== ( $file = readdir( $dir_handle ) ) ) {
 			if ( is_dir( $dir . DIRECTORY_SEPARATOR . $file ) && $file != '.' && $file != '..' ) {
@@ -733,12 +919,13 @@ class GFForms {
 	/**
 	 * Renames suspicious content within the wp_upload directory.
 	 *
-	 * @since   Unknown
-	 * @access  private
+	 * @deprecated  2.4.11
 	 *
-	 * @used-by GFForms::do_self_healing()
+	 * @since       Unknown
 	 */
 	private static function heal_wp_upload_dir() {
+	    _deprecated_function( 'heal_wp_upload_dir', '2.4.11' );
+
 		$wp_upload_dir = wp_upload_dir();
 
 		$wp_upload_path = $wp_upload_dir['basedir'];
@@ -748,9 +935,9 @@ class GFForms {
 		}
 
 		// ignores all errors
-		set_error_handler( create_function( '', 'return 0;' ), E_ALL );
+		set_error_handler( '__return_false', E_ALL );
 
-		foreach ( glob( $wp_upload_path . DIRECTORY_SEPARATOR . '*_input_*.{php,php5}', GLOB_BRACE ) as $filename ) {
+		foreach ( glob( $wp_upload_path . DIRECTORY_SEPARATOR . '*_input_*.php' ) as $filename ) {
 			$mini_hash = substr( wp_hash( $filename ), 0, 6 );
 			$newName   = sprintf( '%s.%s.bak', $filename, $mini_hash );
 			rename( $filename, $newName );
@@ -779,7 +966,7 @@ class GFForms {
 		global $wp_styles;
 		$wp_required_styles = array( 'admin-bar', 'colors', 'ie', 'wp-admin', 'editor-style' );
 		$gf_required_styles = array(
-			'common'                     => array( 'gform_tooltip', 'gform_font_awesome', 'gform_admin' ),
+			'common'                     => array( 'gform_tooltip', 'gform_font_awesome', 'gform_admin', 'gform_settings' ),
 			'gf_edit_forms'              => array(
 				'thickbox',
 				'editor-buttons',
@@ -787,9 +974,11 @@ class GFForms {
 				'media-views',
 				'buttons',
 				'wp-pointer',
-				'gform_chosen'
+				'gform_chosen',
+				'gform_editor',
+				'gform_admin_theme'
 			),
-			'gf_edit_forms_notification' => array(
+			'gf_edit_forms_settings' => array(
 				'thickbox',
 				'editor-buttons',
 				'wp-jquery-ui-dialog',
@@ -801,6 +990,7 @@ class GFForms {
 			'gf_settings'                => array(),
 			'gf_export'                  => array(),
 			'gf_help'                    => array(),
+			'gf_system_status'			 => array( 'thickbox' ),
 		);
 
 		self::no_conflict_mode( $wp_styles, $wp_required_styles, $gf_required_styles, 'styles' );
@@ -829,13 +1019,11 @@ class GFForms {
 			'gf_edit_forms'              => array(
 				'backbone',
 				'editor',
-				'gform_floatmenu',
 				'gform_forms',
 				'gform_form_admin',
 				'gform_form_editor',
 				'gform_gravityforms',
 				'gform_json',
-				'gform_menu',
 				'gform_placeholder',
 				'jquery-ui-autocomplete',
 				'jquery-ui-core',
@@ -844,6 +1032,7 @@ class GFForms {
 				'jquery-ui-draggable',
 				'jquery-ui-droppable',
 				'jquery-ui-tabs',
+				'jquery-ui-accordion',
 				'json2',
 				'media-editor',
 				'media-models',
@@ -861,9 +1050,10 @@ class GFForms {
 				'wpdialogs-popup',
 				'wplink',
 				'wp-pointer',
-				'gform_chosen'
+				'gform_chosen',
+				'gform_selectwoo',
 			),
-			'gf_edit_forms_notification' => array(
+			'gf_edit_forms_settings' => array(
 				'editor',
 				'word-count',
 				'quicktags',
@@ -884,17 +1074,28 @@ class GFForms {
 				'wp-plupload',
 				'gform_placeholder',
 				'gform_json',
-				'jquery-ui-autocomplete'
+				'gform_gravityforms',
+				'gform_forms',
+				'gform_form_admin',
+				'jquery-ui-datepicker',
+				'gform_masked_input',
+				'sack',
+				'jquery-ui-autocomplete',
+				'wp-tinymce',
+				'wp-tinymce-root',
+				'wp-tinymce-lists',
+				'gform_selectwoo',
 			),
 			'gf_new_form'                => array(
 				'thickbox',
 				'jquery-ui-core',
 				'jquery-ui-sortable',
 				'jquery-ui-tabs',
+				'jquery-ui-accordion',
 				'rg_currency',
 				'gform_gravityforms',
 				'gform_json',
-				'gform_form_admin'
+				'gform_form_admin',
 			),
 			'gf_entries'                 => array(
 				'thickbox',
@@ -904,12 +1105,16 @@ class GFForms {
 				'gform_field_filter',
 				'plupload-all',
 				'postbox',
-				'gform_chosen'
+				'gform_chosen',
+				'gform_selectwoo',
 			),
 			'gf_settings'                => array(),
 			'gf_export'                  => array( 'gform_form_admin', 'jquery-ui-datepicker', 'gform_field_filter' ),
 			'gf_help'                    => array(),
-			'gf_system_status'           => array( 'gform_system_report_clipboard' )
+			'gf_system_status'           => array(
+				'gform_system_report_clipboard',
+				'thickbox',
+				'gform_placeholder'),
 		);
 
 		self::no_conflict_mode( $wp_scripts, $wp_required_scripts, $gf_required_scripts, 'scripts' );
@@ -1083,30 +1288,120 @@ class GFForms {
 	}
 
 	/**
+	 * Download and install translations from TranslationsPress.
+	 *
+	 * @since 2.5
+	 *
+	 * @param string $new_language The new site language, only set if user is updating their language settings.
+	 */
+	public static function install_translations( $new_language = '' ) {
+
+		$slug = 'gravityforms';
+
+		if ( ! class_exists( 'Gravity_Forms\Gravity_Forms\TranslationsPress_Updater' ) ) {
+			require_once( plugin_dir_path( __FILE__ ) . '/includes/class-translationspress-updater.php' );
+		}
+
+		$t15s_updater = new Gravity_Forms\Gravity_Forms\TranslationsPress_Updater( $slug, $new_language );
+		$t15s_updater::download_package( $slug, $new_language );
+	}
+
+	/**
+	 * Download and install translations from TranslationsPress when a user updates their language setting.
+	 *
+	 * @since 2.5
+	 *
+	 * @param string $old_language The language before the user changed their language setting.
+	 * @param string $new_language The new language after the user changed their language setting.
+	 */
+	public static function update_translations( $old_language, $new_language ) {
+		self::install_translations( $new_language );
+
+		// Get active add-ons.
+		$gf_addons = GFAddOn::get_registered_addons();
+
+		// Install translation for each add-on.
+		foreach ( $gf_addons as $gf_addon ) {
+			$addon               = call_user_func( array( $gf_addon, 'get_instance' ) );
+			$slug                = $addon->get_slug();
+			$t15s_addons_updater = new Gravity_Forms\Gravity_Forms\TranslationsPress_Updater( $slug, $new_language );
+			$t15s_addons_updater::download_package( $slug );
+		}
+
+	}
+
+	/**
+	 * Download translations when an add-on is installed.
+	 *
+	 * @since  2.5
+	 * @access public
+	 *
+	 * @param object $upgrader_object WP_Upgrader Instance.
+	 * @param array  $hook_extra Item update data.
+	 */
+	public static function install_addon_translations( $upgrader_object, $hook_extra ) {
+		if ( 'install' == $hook_extra['action'] && 'plugin' == $hook_extra['type'] ) {
+			// This runs when any plugin is downloaded, but before the plugin is active, so call the API to check if the plugin that was just downloaded is an official add-on.
+
+			if ( ! GFCache::get( 'addons_list' ) ) {
+				// To avoid calling the API every time a plugin is installed, store the list of add-ons as a transient.
+				$addons_api  = GFCommon::post_to_manager( 'api.php', 'op=get_plugins', array() );
+				if ( is_array( $addons_api ) ) {
+					GFCache::set( 'addons_list', maybe_unserialize( $addons_api['body'] ), true, WEEK_IN_SECONDS );
+				}
+			}
+
+			$addons_list = ( GFCache::get( 'addons_list' ) );
+
+			if ( $addons_list ) {
+				$addons_slugs = wp_list_pluck( $addons_list, 'name' );
+				$slug         = isset( $upgrader_object->result['destination_name'] ) ? $upgrader_object->result['destination_name'] : array();
+				if ( in_array( $slug, $addons_slugs ) ) {
+					GFCommon::log_debug( 'Call TranslationsPress, download translation for ' . $slug );
+					if ( ! class_exists( 'Gravity_Forms\Gravity_Forms\TranslationsPress_Updater' ) ) {
+						require_once( plugin_dir_path( __FILE__ ) . '/includes/class-translationspress-updater.php' );
+					}
+					$t15s_addons_updater = new Gravity_Forms\Gravity_Forms\TranslationsPress_Updater( $slug, '' );
+					$t15s_addons_updater::download_package( $slug );
+				}
+			}
+		}
+	}
+
+
+	// # PERMISSIONS ---------------------------------------------------------------------------------------------------
+
+	/**
 	 * Determines if a user has a particular capability.
 	 *
 	 * @since  Unknown
 	 * @access public
 	 *
-	 * @param array $all_caps All capabilities.
-	 * @param array $cap      Required capability.  Stored in the [0] key.
-	 * @param array $args     Not used.
+	 * @param array   $all_caps All capabilities.
+	 * @param array   $cap      Required capability.  Stored in the [0] key.
+	 * @param array   $args     Not used.
+	 * @param WP_User $user     The relevant user.
 	 *
 	 * @return array $all_caps All capabilities.
 	 */
-	public static function user_has_cap( $all_caps, $cap, $args ) {
+	public static function user_has_cap( $all_caps, $cap, $args, $user = null ) {
 		$gf_caps    = GFCommon::all_caps();
 		$capability = rgar( $cap, 0 );
 		if ( $capability != 'gform_full_access' ) {
 			return $all_caps;
 		}
 
+		// Default to current user when $user parameter is not passed.
+		if ( false === $user instanceof WP_User ) {
+			$user = wp_get_current_user();
+		}
+
 		if ( ! self::has_members_plugin() ) {
 			//give full access to administrators if the members plugin is not installed
-			if ( current_user_can( 'administrator' ) || is_super_admin() ) {
+			if ( user_can( $user, 'administrator' ) || ( is_multisite() && is_super_admin( $user->ID ) ) ) {
 				$all_caps['gform_full_access'] = true;
 			}
-		} else if ( current_user_can( 'administrator' ) || is_super_admin() ) {
+		} elseif ( user_can( $user, 'administrator' ) || ( is_multisite() && is_super_admin( $user->ID ) ) ) {
 
 			//checking if user has any GF permission.
 			$has_gf_cap = false;
@@ -1126,17 +1421,108 @@ class GFForms {
 	}
 
 	/**
-	 * Provides the Members plugin with Gravity Forms lists of capabilities.
+	 * Register the Gravity Forms capabilities group with the Members plugin.
 	 *
-	 * @since  Unknown
+	 * @since  2.4
 	 * @access public
-	 *
-	 * @param array $caps All capabilities.
-	 *
-	 * @return array $caps The capabilities list.
 	 */
-	public static function members_get_capabilities( $caps ) {
-		return array_merge( $caps, GFCommon::all_caps() );
+	public static function members_register_cap_group() {
+
+		members_register_cap_group(
+			'gravityforms',
+			array(
+				'label' => esc_html__( 'Gravity Forms', 'gravityforms' ),
+				'icon'  => 'dashicons-gravityforms',
+				'caps'  => array(),
+			)
+		);
+
+	}
+
+	/**
+	 * Register the capabilities and their human readable labels with the Members plugin.
+	 *
+	 * @since  2.4
+	 * @access public
+	 */
+	public static function members_register_caps() {
+
+		$caps = array(
+			'gravityforms_create_form'      => esc_html__( 'Create Forms', 'gravityforms' ),
+			'gravityforms_delete_forms'     => esc_html__( 'Delete Forms', 'gravityforms' ),
+			'gravityforms_edit_forms'       => esc_html__( 'Edit Forms', 'gravityforms' ),
+			'gravityforms_preview_forms'    => esc_html__( 'Preview Forms', 'gravityforms' ),
+			'gravityforms_view_entries'     => esc_html__( 'View Entries', 'gravityforms' ),
+			'gravityforms_edit_entries'     => esc_html__( 'Edit Entries', 'gravityforms' ),
+			'gravityforms_delete_entries'   => esc_html__( 'Delete Entries', 'gravityforms' ),
+			'gravityforms_view_entry_notes' => esc_html__( 'View Entry Notes', 'gravityforms' ),
+			'gravityforms_edit_entry_notes' => esc_html__( 'Edit Entry Notes', 'gravityforms' ),
+			'gravityforms_export_entries'   => esc_html__( 'Import/Export', 'gravityforms' ),
+			'gravityforms_view_settings'    => esc_html__( 'View Plugin Settings', 'gravityforms' ),
+			'gravityforms_edit_settings'    => esc_html__( 'Edit Plugin Settings', 'gravityforms' ),
+			'gravityforms_view_updates'     => esc_html__( 'Manage Updates', 'gravityforms' ),
+			'gravityforms_view_addons'      => esc_html__( 'Manage Add-Ons', 'gravityforms' ),
+			'gravityforms_system_status'    => esc_html__( 'View System Status', 'gravityforms' ),
+			'gravityforms_uninstall'        => esc_html__( 'Uninstall Gravity Forms', 'gravityforms' ),
+			'gravityforms_logging'          => esc_html__( 'Logging Settings', 'gravityforms' ),
+			'gravityforms_api_settings'     => esc_html__( 'REST API Settings', 'gravityforms' ),
+		);
+
+		foreach ( $caps as $cap => $label ) {
+			members_register_cap(
+				$cap,
+				array(
+					'label' => $label,
+					'group' => 'gravityforms',
+				)
+			);
+		}
+
+	}
+
+	/**
+	 * Register Gravity Forms capabilities group with User Role Editor plugin.
+	 *
+	 * @since  2.4
+	 *
+	 * @param array $groups Existing capabilities groups.
+	 *
+	 * @return array
+	 */
+	public static function filter_ure_capabilities_groups_tree( $groups = array() ) {
+
+		$groups['gravityforms'] = array(
+			'caption' => esc_html__( 'Gravity Forms', 'gravityforms' ),
+			'parent'  => 'custom',
+			'level'   => 2,
+		);
+
+		return $groups;
+
+	}
+
+	/**
+	 * Register Gravity Forms capabilities with Gravity Forms group in User Role Editor plugin.
+	 *
+	 * @since  2.4
+	 *
+	 * @param array  $groups Current capability groups.
+	 * @param string $cap_id Capability identifier.
+	 *
+	 * @return array
+	 */
+	public static function filter_ure_custom_capability_groups( $groups = array(), $cap_id = '' ) {
+
+		// Get Gravity Forms capabilities.
+		$caps = GFCommon::all_caps();
+
+		// If capability belongs to Gravity Forms, register it to group.
+		if ( in_array( $cap_id, $caps, true ) ) {
+			$groups[] = 'gravityforms';
+		}
+
+		return $groups;
+
 	}
 
 	/**
@@ -1151,7 +1537,7 @@ class GFForms {
 		// Check if upload folder is writable
 		$folder = RGFormsModel::get_upload_root();
 		if ( empty( $folder ) ) {
-			echo "<div class='error'>Upload folder is not writable. Export and file upload features will not be functional.</div>";
+			echo "<div class='error'>" . esc_html__( 'Upload folder is not writable. Export and file upload features will not be functional.', 'gravityforms' ) . '</div>';
 		}
 	}
 
@@ -1189,7 +1575,8 @@ class GFForms {
 			'gf_save_confirmation',
 			'gf_process_export',
 			'gf_download_export',
-			'gf_dismiss_message'
+			'gf_dismiss_message',
+			'gf_force_upgrade',
 		);
 
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && in_array( $current_action, $gf_ajax_actions ) ) {
@@ -1200,9 +1587,10 @@ class GFForms {
 		return false;
 	}
 
-	// Returns true if the current page is one of Gravity Forms pages. Returns false if not
 	/**
 	 * Determines if the current page is part of Gravity Forms.
+	 *
+	 * Returns true if the current page is one of Gravity Forms page or first-party add-on page. False otherwise.
 	 *
 	 * @since  Unknown
 	 * @access public
@@ -1212,10 +1600,11 @@ class GFForms {
 	public static function is_gravity_page() {
 
 		// Gravity Forms pages
-		$current_page = trim( strtolower( self::get( 'page' ) ) );
-		$gf_pages     = array( 'gf_edit_forms', 'gf_new_form', 'gf_entries', 'gf_settings', 'gf_export', 'gf_help', 'gf_addons', 'gf_system_status' );
+		$current_page   = trim( strtolower( self::get( 'page' ) ) );
+		$gf_pages       = array( 'gf_edit_forms', 'gf_new_form', 'gf_entries', 'gf_settings', 'gf_export', 'gf_help', 'gf_addons', 'gf_system_status' );
+		$gf_addon_pages = array( 'gravityformscoupons' );
 
-		return in_array( $current_page, $gf_pages );
+		return in_array( $current_page, array_merge( $gf_pages, $gf_addon_pages ) );
 	}
 
 	/**
@@ -1234,6 +1623,7 @@ class GFForms {
 	 * @return void
 	 */
 	public static function create_menu() {
+		require_once( dirname(__FILE__ ) . '/entry_list.php' );
 
 		$has_full_access = current_user_can( 'gform_full_access' );
 		$min_cap         = GFCommon::current_user_can_which( GFCommon::all_caps() );
@@ -1249,7 +1639,7 @@ class GFForms {
 		// Add a top-level left nav.
 		$update_icon = GFCommon::has_update() && current_user_can( 'install_plugins' ) ? "<span title='" . esc_attr( __( 'Update Available', 'gravityforms' ) ) . "' class='update-plugins count-1'><span class='update-count'>&#49;</span></span>" : '';
 
-		$admin_icon = self::get_admin_icon_b64( GFForms::is_gravity_page() ? '#fff' : false );
+		$admin_icon = self::get_admin_icon_b64( GFForms::is_gravity_page() ? '#fff' : '#a0a5aa' );
 
 		$forms_hook_suffix = add_menu_page( __( 'Forms', 'gravityforms' ), __( 'Forms', 'gravityforms' ) . $update_icon, $has_full_access ? 'gform_full_access' : $min_cap, $parent_menu['name'], $parent_menu['callback'], $admin_icon, apply_filters( 'gform_menu_position', '16.9' ) );
 
@@ -1272,6 +1662,7 @@ class GFForms {
 		) );
 
 		add_action( 'load-' . $entries_hook_suffix, array( 'GFForms', 'load_screen_options' ) );
+		add_action( 'load-' . $entries_hook_suffix, array( 'GFEntryList', 'redirect_on_restore' ) );
 
 		if ( is_array( $addon_menus ) ) {
 			foreach ( $addon_menus as $addon_menu ) {
@@ -1284,7 +1675,7 @@ class GFForms {
 			'settings_page'
 		) );
 
-		add_submenu_page( $parent_menu['name'], __( 'Import/Export', 'gravityforms' ), __( 'Import/Export', 'gravityforms' ), $has_full_access ? 'gform_full_access' : 'gravityforms_export_entries', 'gf_export', array(
+		add_submenu_page( $parent_menu['name'], __( 'Import/Export', 'gravityforms' ), __( 'Import/Export', 'gravityforms' ), $has_full_access ? 'gform_full_access' : ( current_user_can( 'gravityforms_export_entries' ) ? 'gravityforms_export_entries' : 'gravityforms_edit_forms' ), 'gf_export', array(
 			'GFForms',
 			'export_page'
 		) );
@@ -1311,8 +1702,8 @@ class GFForms {
 	/**
 	 * Gets the admin icon for the Forms menu item
 	 *
-	 * @since  Unknown
-	 * @access public
+	 * @since Unknown
+	 * @since 2.5     Updated the logo icon.
 	 *
 	 * @param bool|string $color The hex color if changing the color of the icon.  Defaults to false.
 	 *
@@ -1326,7 +1717,7 @@ class GFForms {
 			$svg_xml = '<?xml version="1.0" encoding="utf-8"?>' . self::get_admin_icon_svg( $color );
 			$icon    = sprintf( 'data:image/svg+xml;base64,%s', base64_encode( sprintf( $svg_xml, $color ) ) );
 		} else {
-			$svg_b64 = 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSItMTUgNzcgNTgxIDY0MCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAtMTUgNzcgNTgxIDY0MCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PGcgaWQ9IkxheWVyXzIiPjxwYXRoIGZpbGw9IiM5OTk5OTkiIGQ9Ik00ODkuNSwyMjdMNDg5LjUsMjI3TDMxNS45LDEyNi44Yy0yMi4xLTEyLjgtNTguNC0xMi44LTgwLjUsMEw2MS44LDIyN2MtMjIuMSwxMi44LTQwLjMsNDQuMi00MC4zLDY5Ljd2MjAwLjVjMCwyNS42LDE4LjEsNTYuOSw0MC4zLDY5LjdsMTczLjYsMTAwLjJjMjIuMSwxMi44LDU4LjQsMTIuOCw4MC41LDBMNDg5LjUsNTY3YzIyLjItMTIuOCw0MC4zLTQ0LjIsNDAuMy02OS43VjI5Ni44QzUyOS44LDI3MS4yLDUxMS43LDIzOS44LDQ4OS41LDIyN3ogTTQwMSwzMDAuNHY1OS4zSDI0MXYtNTkuM0g0MDF6IE0xNjMuMyw0OTAuOWMtMTYuNCwwLTI5LjYtMTMuMy0yOS42LTI5LjZjMC0xNi40LDEzLjMtMjkuNiwyOS42LTI5LjZzMjkuNiwxMy4zLDI5LjYsMjkuNkMxOTIuOSw0NzcuNiwxNzkuNiw0OTAuOSwxNjMuMyw0OTAuOXogTTE2My4zLDM1OS43Yy0xNi40LDAtMjkuNi0xMy4zLTI5LjYtMjkuNnMxMy4zLTI5LjYsMjkuNi0yOS42czI5LjYsMTMuMywyOS42LDI5LjZTMTc5LjYsMzU5LjcsMTYzLjMsMzU5Ljd6IE0yNDEsNDkwLjl2LTU5LjNoMTYwdjU5LjNIMjQxeiIvPjwvZz48L3N2Zz4=';
+			$svg_b64 = 'PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjEiIHZpZXdCb3g9IjAgMCAyMSAyMSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPG1hc2sgaWQ9Im1hc2swIiBtYXNrLXR5cGU9ImFscGhhIiBtYXNrVW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4PSIyIiB5PSIxIiB3aWR0aD0iMTciIGhlaWdodD0iMjAiPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTExLjU5MDYgMi4wMzcwM0wxNy4xNzkzIDUuNDQ4MjRDMTcuODk0IDUuODg0IDE4LjQ3NjcgNi45NTI5OCAxOC40NzY3IDcuODI0NTFWMTQuNjUwM0MxOC40NzY3IDE1LjUxODUgMTcuODk0IDE2LjU4NzQgMTcuMTc5MyAxNy4wMjMyTDExLjU5MDYgMjAuNDMxQzEwLjg3OTIgMjAuODY2OCA5LjcxMDU1IDIwLjg2NjggOC45OTkwOSAyMC40MzFMMy40MTA0MSAxNy4wMTk4QzIuNjk1NzMgMTYuNTg0IDIuMTEzMDQgMTUuNTE4NSAyLjExMzA0IDE0LjY0NjlWNy44MjExQzIuMTEzMDQgNi45NTI5OCAyLjY5ODk1IDUuODg0IDMuNDEwNDEgNS40NDgyNEw4Ljk5OTA5IDIuMDM3MDNDOS43MTA1NSAxLjYwMTI2IDEwLjg3OTIgMS42MDEyNiAxMS41OTA2IDIuMDM3MDNaTTE1Ljc0OTQgOS4zNzUwM0g4LjgxMDQ5QzguMzgyOTkgOS4zNzUwMyA4LjA2MjM3IDkuNTAxNjQgNy44MDkwNCA5Ljc3MDY4QzcuMjU0ODggMTAuMzYwMiA2Ljk2MTk2IDExLjUwMzYgNi45MTg0MiAxMi4xNDA2SDEzLjc1MDVWMTAuNDI3NUgxNS43MDE5VjE0LjA5MTJINC44NDAzMUM0Ljg0MDMxIDE0LjA5MTIgNC44Nzk4OSAxMC4wMzk3IDYuMzkxOTcgOC40MzMzOUM3LjAxNzM4IDcuNzY0NzUgNy44NDA3IDcuNDI0NDkgOC44MzAyOCA3LjQyNDQ5SDE1Ljc0OTRWOS4zNzUwM1oiIGZpbGw9IndoaXRlIi8+CjwvbWFzaz4KPGcgbWFzaz0idXJsKCNtYXNrMCkiPgo8cmVjdCB4PSIwLjI5NDkyMiIgeT0iMC43NTc4MTIiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0id2hpdGUiLz4KPC9nPgo8L3N2Zz4K';
 
 			$icon = 'data:image/svg+xml;base64,' . $svg_b64;
 		}
@@ -1337,15 +1728,15 @@ class GFForms {
 	/**
 	 * Returns the admin icon in SVG format.
 	 *
-	 * @since  Unknown
-	 * @access public
+	 * @since Unknown
+	 * @since 2.5     Updated the logo icon.
 	 *
 	 * @param string $color The hex color if changing the color of the icon.  Defaults to #999999.
 	 *
 	 * @return string
 	 */
 	public static function get_admin_icon_svg( $color = '#999999' ) {
-		$svg = '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="-15 77 581 640" enable-background="new -15 77 581 640" xml:space="preserve"><g id="Layer_2"><path fill="%s" d="M489.5,227L489.5,227L315.9,126.8c-22.1-12.8-58.4-12.8-80.5,0L61.8,227c-22.1,12.8-40.3,44.2-40.3,69.7v200.5c0,25.6,18.1,56.9,40.3,69.7l173.6,100.2c22.1,12.8,58.4,12.8,80.5,0L489.5,567c22.2-12.8,40.3-44.2,40.3-69.7V296.8C529.8,271.2,511.7,239.8,489.5,227z M401,300.4v59.3H241v-59.3H401z M163.3,490.9c-16.4,0-29.6-13.3-29.6-29.6c0-16.4,13.3-29.6,29.6-29.6s29.6,13.3,29.6,29.6C192.9,477.6,179.6,490.9,163.3,490.9z M163.3,359.7c-16.4,0-29.6-13.3-29.6-29.6s13.3-29.6,29.6-29.6s29.6,13.3,29.6,29.6S179.6,359.7,163.3,359.7z M241,490.9v-59.3h160v59.3H241z"/></g></svg>';
+		$svg = '<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="2" y="1" width="17" height="20"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.5906 2.03703L17.1793 5.44824C17.894 5.884 18.4767 6.95298 18.4767 7.82451V14.6503C18.4767 15.5185 17.894 16.5874 17.1793 17.0232L11.5906 20.431C10.8792 20.8668 9.71055 20.8668 8.99909 20.431L3.41041 17.0198C2.69573 16.584 2.11304 15.5185 2.11304 14.6469V7.8211C2.11304 6.95298 2.69895 5.884 3.41041 5.44824L8.99909 2.03703C9.71055 1.60126 10.8792 1.60126 11.5906 2.03703ZM15.7494 9.37503H8.81049C8.38299 9.37503 8.06237 9.50164 7.80904 9.77068C7.25488 10.3602 6.96196 11.5036 6.91842 12.1406H13.7505V10.4275H15.7019V14.0912H4.84031C4.84031 14.0912 4.87989 10.0397 6.39197 8.43339C7.01738 7.76475 7.8407 7.42449 8.83028 7.42449H15.7494V9.37503Z" fill="white"/></mask><g mask="url(#mask0)"><rect x="0.294922" y="0.757812" width="20" height="20" fill="%s"/></g></svg>';
 
 		return sprintf( $svg, $color );
 	}
@@ -1443,6 +1834,16 @@ class GFForms {
 	 */
 	public static function parse_shortcode( $attributes, $content = null ) {
 
+		/**
+		 * @var string $title
+		 * @var string $description
+		 * @var int    $id
+		 * @var string $name
+		 * @var string $field_values
+		 * @var string $ajax
+		 * @var int    $tabindex
+		 * @var string $action
+		 */
 		extract(
 			shortcode_atts(
 				array(
@@ -1452,7 +1853,7 @@ class GFForms {
 					'name'         => '',
 					'field_values' => '',
 					'ajax'         => false,
-					'tabindex'     => 1,
+					'tabindex'     => 0,
 					'action'       => 'form',
 				), $attributes, 'gravityforms'
 			)
@@ -1476,7 +1877,7 @@ class GFForms {
 				$title        = strtolower( $title ) == 'false' ? false : true;
 				$description  = strtolower( $description ) == 'false' ? false : true;
 				$field_values = htmlspecialchars_decode( $field_values );
-				$field_values = str_replace( '&#038;', '&', $field_values );
+				$field_values = str_replace( array( '&#038;', '&#091;', '&#093;' ), array( '&', '[', ']' ), $field_values );
 
 				$ajax = strtolower( $ajax ) == 'true' ? true : false;
 
@@ -1550,7 +1951,7 @@ class GFForms {
 	//----------- AJAX --------------------------------
 
 	/**
-	 * Parses AJAX requests.
+	 * Triggers parsing of AJAX requests and outputs the response.
 	 *
 	 * @since  Unknown
 	 * @access public
@@ -1558,21 +1959,40 @@ class GFForms {
 	 * @param null $wp Not used.
 	 */
 	public static function ajax_parse_request( $wp ) {
-
 		if ( isset( $_POST['gform_ajax'] ) ) {
-			parse_str( $_POST['gform_ajax'] );
-			$tabindex = isset( $tabindex ) ? absint( $tabindex ) : 1;
-			require_once( GFCommon::get_base_path() . '/form_display.php' );
+			die( self::get_ajax_form_response() );
+		}
+	}
 
-			$form_id             = absint( $form_id );
-			$display_title       = (bool) $title;
-			$display_description = (bool) $description;
+	/**
+	 * Parses the ajax submission and returns the response.
+	 *
+	 * @since 2.4.18
+	 *
+	 * @return mixed|string|void|WP_Error
+	 */
+	public static function get_ajax_form_response() {
+		parse_str( rgpost( 'gform_ajax' ), $args );
 
-			parse_str( $_POST['gform_field_values'], $field_values );
+		$form_id = isset( $args['form_id'] ) ? absint( $args['form_id'] ) : 0;
+
+		require_once( GFCommon::get_base_path() . '/form_display.php' );
+
+		if ( GFFormDisplay::is_submit_form_id_valid( $form_id ) ) {
+			$display_title       = ! isset( $args['title'] ) || ! empty( $args['title'] ) ? true : false;
+			$display_description = ! isset( $args['description'] ) || ! empty( $args['description'] ) ? true : false;
+			$tabindex            = isset( $args['tabindex'] ) ? absint( $args['tabindex'] ) : 0;
+
+			parse_str( rgpost( 'gform_field_values' ), $field_values );
 
 			$result = GFFormDisplay::get_form( $form_id, $display_title, $display_description, false, $field_values, true, $tabindex );
-			die( $result );
+		} else {
+			// The form ID in the footer inputs has been tampered with; handling it like a honeypot failure and returning the default confirmation instead.
+			$default_confirmation = GFFormsModel::get_default_confirmation();
+			$result               = GFFormDisplay::get_ajax_postback_html( $default_confirmation['message'] );
 		}
+
+		return $result;
 	}
 
 	//------------------------------------------------------
@@ -1634,7 +2054,7 @@ class GFForms {
                  padding-left: 0.4em;
                 }
              </style>
-              <a href="#" class="button gform_media_link" id="add_gform" title="' . esc_attr__( 'Add Gravity Form', 'gravityforms' ) . '"><div class="gform_media_icon svg" style="background-image: url(\'' . self::get_admin_icon_b64() . '\')"><br /></div><div style="padding-left: 20px;">' . esc_html__( 'Add Form', 'gravityforms' ) . '</div></a>';
+              <a href="#" class="button gform_media_link" id="add_gform" aria-label="' . esc_attr__( 'Add Gravity Form', 'gravityforms' ) . '"><div class="gform_media_icon svg" style="background-image: url(\'' . self::get_admin_icon_b64( '#0071a1' ) . '\')"><br /></div><div style="padding-left: 20px;">' . esc_html__( 'Add Form', 'gravityforms' ) . '</div></a>';
 	}
 
 	/**
@@ -1711,22 +2131,182 @@ class GFForms {
 	 * Displays if the key is invalid or an update is available.
 	 *
 	 * @since  Unknown
+	 * @since  2.4.15  Update to improve multisite updates.
 	 * @access public
 	 *
 	 * @param string $plugin_name The plugin filename.  Immediately overwritten.
+	 * @param array  $plugin_data An array of plugin data.
 	 */
-	public static function plugin_row( $plugin_name ) {
-		$key          = GFCommon::get_key();
-		$version_info = GFCommon::get_version_info();
+	public static function plugin_row( $plugin_name, $plugin_data ) {
 
-		if ( ! rgar( $version_info, 'is_valid_key' ) ) {
+		self::maybe_display_update_notification( $plugin_name, $plugin_data );
 
-			$plugin_name = 'gravityforms/gravityforms.php';
+		$add_ons = gf_upgrade()->get_min_addon_requirements();
 
-			$new_version = version_compare( GFCommon::$version, $version_info['version'], '<' ) ? esc_html__( 'There is a new version of Gravity Forms available.', 'gravityforms' ) . ' <a class="thickbox" title="Gravity Forms" href="plugin-install.php?tab=plugin-information&plugin=gravityforms&TB_iframe=true&width=640&height=808">' . sprintf( esc_html__( 'View version %s Details', 'gravityforms' ), $version_info['version'] ) . '</a>. ' : '';
-
-			echo '</tr><tr class="plugin-update-tr"><td colspan="3" class="plugin-update"><div class="update-message">' . $new_version . sprintf( esc_html__( '%sRegister%s your copy of Gravity Forms to receive access to automatic upgrades and support. Need a license key? %sPurchase one now%s.', 'gravityforms' ), '<a href="' . admin_url() . 'admin.php?page=gf_settings">', '</a>', '<a href="http://www.gravityforms.com">', '</a>' ) . '</div></td>';
+		if ( isset( $add_ons[ $plugin_name ] ) ) {
+			$plugin_path = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $plugin_name;
+			if ( ! file_exists( $plugin_path ) ) {
+				return;
+			}
+			$plugin_data     = get_plugin_data( $plugin_path, false, false );
+			$current_version = $plugin_data['Version'];
+			$add_on          = $add_ons[ $plugin_name ];
+			$min_version     = $add_on['min_version'];
+			if ( version_compare( $current_version, $min_version, '<' ) ) {
+				$name = $add_on['name'];
+				/* translators: 1: The name of the add-on, 2: version number. */
+				$message = esc_html__( 'This version of the %1$s is not compatible with the version of Gravity Forms that is installed. Upgrade this add-on to version %2$s or greater to avoid compatibility issues and potential loss of data.', 'gravityforms' );
+				echo '</tr><tr class="plugin-update-tr"><td colspan="3" style="border-left: 4px solid #dc3232;"><div class="update-message">' . sprintf( $message, $name, $min_version ) . '</div></td>';
+			}
 		}
+	}
+
+	/**
+	 * Display Gravity Forms and add-ons update notifications if needed.
+	 *
+	 * @since 2.4.15
+	 *
+	 * @param string $plugin_name The plugin filename.  Immediately overwritten.
+	 * @param array  $plugin_data An array of plugin data.
+	 * @param string $slug        The add-on slug.
+	 * @param string $version     The add-on version.
+	 */
+	public static function maybe_display_update_notification( $plugin_name, $plugin_data, $slug = '', $version = '' ) {
+		if ( empty( $slug ) && $plugin_name !== 'gravityforms/gravityforms.php' ) {
+			return;
+		}
+
+		if ( empty( $slug ) ) {
+			$version_info = GFCommon::get_version_info();
+			$slug         = 'gravityforms';
+			$version      = GFCommon::$version;
+		} else {
+			$version_info = rgars( GFCommon::get_version_info(), 'offerings/' . $slug );
+		}
+
+		$valid_key = rgar( GFCommon::get_version_info(), 'is_valid_key' );
+
+		$message       = '';
+		// Display the message only for a multisite network. A single site install doesn't need it (WP handles it).
+		if ( ( is_multisite() && ! is_network_admin() ) && version_compare( $version, rgar( $version_info, 'version' ), '<' ) ) {
+			$changelog_url = wp_nonce_url( self_admin_url( 'admin-ajax.php?action=gf_get_changelog&plugin=' . $slug . '&TB_iframe=true&width=640&height=808' ) );
+
+			if ( ! current_user_can( 'update_plugins' ) || ! $valid_key ) {
+				$message .= sprintf(
+					/* translators: 1: plugin name, 2: open <a> tag, 3: version number, 4: close </a> tag */
+					esc_html__( 'There is a new version of %1$s available. %2$sView version %3$s details%4$s. ', 'gravityforms' ),
+					$plugin_data['Name'],
+					sprintf(
+						/* translators: 1: plugin name, 2: version number, 3: changelog URL */
+						__( '<a class="thickbox open-plugin-details-modal" aria-label="View %1$s version %2$s details" href="%3$s">', 'gravityforms' ),
+						$plugin_data['Name'],
+						$version_info['version'],
+						$changelog_url
+					),
+					$version_info['version'],
+					'</a>'
+				);
+			} else {
+				$upgrade_url = wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&amp;plugin=' . urlencode( $plugin_name ) ), 'upgrade-plugin_' . $plugin_name );
+
+				$message .= sprintf(
+					/* translators: 1: plugin name, 2: open <a> tag, 3: version number, 4: close </a> tag, 5: open <a> tag 6. close </a> tag */
+					esc_html__( 'There is a new version of %1$s available. %2$sView version %3$s details%4$s or %5$supdate now%6$s. ', 'gravityforms' ),
+					$plugin_data['Name'],
+					sprintf(
+						/* translators: 1: plugin name, 2: version number, 3: changelog URL */
+						__( '<a class="thickbox open-plugin-details-modal" aria-label="View %1$s version %2$s details" href="%3$s">', 'gravityforms' ),
+						$plugin_data['Name'],
+						$version_info['version'],
+						$changelog_url
+					),
+					$version_info['version'],
+					'</a>',
+					sprintf(
+						/* translators: 1: upgrade URL, 2: plugin name */
+						__( '<a href="%1$s" class="update-link" aria-label="Update %2$s now">', 'gravityforms' ),
+						$upgrade_url,
+						$plugin_data['Name']
+					),
+					'</a>'
+				);
+			}
+		}
+
+		if ( ! $valid_key ) {
+			$message .= sprintf( esc_html__( '%sRegister%s your copy of Gravity Forms to receive access to automatic upgrades and support. Need a license key? %sPurchase one now%s.', 'gravityforms' ), '<a href="' . admin_url() . 'admin.php?page=gf_settings">', '</a>', '<a href="https://www.gravityforms.com">', '</a>' );
+		}
+
+		if ( ! empty( $message ) ) {
+			if ( is_network_admin() ) {
+				$active_class = is_plugin_active_for_network( $plugin_name ) ? ' active' : '';
+			} else {
+				$active_class = is_plugin_active( $plugin_name ) ? ' active' : '';
+			}
+
+			// Get the columns for this table so we can calculate the colspan attribute.
+			$screen  = get_current_screen();
+			$columns = get_column_headers( $screen );
+
+			// If something went wrong with retrieving the columns, default to 3 for colspan.
+			$colspan = ! is_countable( $columns ) ? 3 : count( $columns );
+
+			echo '<tr class="plugin-update-tr' . $active_class . '" id="' . $slug . '-update" data-slug="' . $slug . '" data-plugin="' . $plugin_name . '">';
+			echo '<td colspan="' . $colspan . '" class="plugin-update colspanchange">';
+			echo '<div class="update-message notice inline notice-warning notice-alt">';
+			echo '<p>';
+			echo $message;
+			echo '</p></div></td></tr>';
+
+			// Apply the class "update" to the plugin row to get rid of the ugly border.
+			echo "
+				<script type='text/javascript'> 
+					jQuery('#$slug-update').prev('tr').addClass('update'); 
+				</script>
+				";
+		}
+	}
+
+	/**
+	 * Hooks into in_plugin_update_message-gravityforms/gravityforms.php and displays an update message specifically for Gravity Forms 2.3.
+	 *
+	 * @param $args
+	 * @param $response
+	 */
+	public static function in_plugin_update_message( $args, $response ) {
+		if ( empty( $args['update'] ) ) {
+			return;
+		}
+
+		if ( version_compare( $args['new_version'], '2.3', '>=' ) && version_compare( GFForms::$version, '2.3', '<' ) ) {
+
+			$message = esc_html__( 'IMPORTANT: As this is a major update, we strongly recommend creating a backup of your site before updating.', 'gravityforms' );
+
+			require_once( GFCommon::get_base_path() . '/includes/system-status/class-gf-update.php' );
+
+			$updates = GF_Update::available_updates();
+
+			$addons_requiring_updates = array();
+
+			foreach ( $updates as $update ) {
+				if ( $update['slug'] == 'gravityforms' ) {
+					continue;
+				}
+				$update_available = version_compare( $update['installed_version'], $update['latest_version'], '<' );
+				if ( $update_available ) {
+					$addons_requiring_updates[] = $update['name'] . ' ' . $update['installed_version'];
+				}
+			}
+
+			if ( count( $addons_requiring_updates ) > 0 ) {
+				/* translators: %s: version number */
+				$message .= '<br />' . sprintf( esc_html__( "The versions of the following add-ons you're running haven't been tested with Gravity Forms %s. Please update them or confirm compatibility before updating Gravity Forms, or you may experience issues:", 'gravityforms' ), $args['new_version'] );
+				$message .= ' ' . join( ', ', $addons_requiring_updates );
+			}
+
+			echo sprintf( '<br /><br /><span style="display:inline-block;background-color: #d54e21; padding: 10px; color: #f9f9f9;">%s</span><br /><br />', $message );
+		}
+
 	}
 
 	/**
@@ -1744,6 +2324,17 @@ class GFForms {
 		echo $page_text;
 
 		exit;
+	}
+
+	/**
+	 * Get changelog with admin-ajax.php in GFForms::maybe_display_update_notification().
+	 *
+	 * @since 2.4.15
+	 */
+	public static function ajax_display_changelog() {
+		check_admin_referer();
+
+		GFForms::display_changelog();
 	}
 
 	/**
@@ -1768,7 +2359,7 @@ class GFForms {
 		$raw_response = GFCommon::post_to_manager( 'changelog.php', GFCommon::get_remote_request_params(), $options );
 
 		if ( is_wp_error( $raw_response ) || 200 != $raw_response['response']['code'] ) {
-			$page_text = sprintf( esc_html__( 'Oops!! Something went wrong. %sPlease try again or %scontact us%s.', 'gravityforms' ), '<br/>', "<a href='http://www.gravityforms.com'>", '</a>' );
+			$page_text = sprintf( esc_html__( 'Oops!! Something went wrong. %sPlease try again or %scontact us%s.', 'gravityforms' ), '<br/>', "<a href='https://www.gravityforms.com/support/'>", '</a>' );
 		} else {
 			$page_text = $raw_response['body'];
 			if ( substr( $page_text, 0, 10 ) != '<!--GFM-->' ) {
@@ -1796,7 +2387,7 @@ class GFForms {
 		 *
 		 * @param string $dashboard_title The dashboard widget title.
 		 */
-		$dashboard_title = apply_filters( 'gform_dashboard_title', __( 'Forms', 'gravityforms' ) );
+		$dashboard_title = apply_filters( 'gform_dashboard_title', __( 'Gravity Forms', 'gravityforms' ) );
 		wp_add_dashboard_widget( 'rg_forms_dashboard', $dashboard_title, array( 'GFForms', 'dashboard' ) );
 	}
 
@@ -1830,18 +2421,19 @@ class GFForms {
 						continue;
 					}
 
-					$date_display = GFCommon::format_date( $form['last_lead_date'] );
-					if ( ! empty( $form['total_leads'] ) ) {
+					$date_display = GFCommon::format_date( $form['last_entry_date'] );
+					if ( ! empty( $form['total_entries'] ) ) {
+
 						?>
 						<tr class='author-self status-inherit' valign="top">
 							<td class="gf_dashboard_form_title column-title" style="padding:8px 18px;">
-								<a <?php echo $form['unread_count'] > 0 ? "class='form_title_unread' style='font-weight:bold;'" : '' ?> href="admin.php?page=gf_entries&view=entries&id=<?php echo absint( $form['id'] ) ?>" title="<?php echo esc_attr( $form['title'] ) ?> : <?php esc_attr_e( 'View All Entries', 'gravityforms' ) ?>"><?php echo esc_html( $form['title'] ) ?></a>
+								<a <?php echo $form['unread_count'] > 0 ? "class='form_title_unread' style='font-weight:bold;'" : '' ?> href="admin.php?page=gf_entries&view=entries&id=<?php echo absint( $form['id'] ) ?>"><?php echo esc_html( $form['title'] ) ?></a>
 							</td>
 							<td class="gf_dashboard_entries_unread column-date" style="padding:8px 18px; text-align:center;">
-								<a <?php echo $form['unread_count'] > 0 ? "class='form_entries_unread' style='font-weight:bold;'" : '' ?> href="admin.php?page=gf_entries&view=entries&filter=unread&id=<?php echo absint( $form['id'] ) ?>" title="<?php printf( esc_attr__( 'Last Entry: %s', 'gravityforms' ), $date_display ); ?>"><?php echo absint( $form['unread_count'] ) ?></a>
+								<a <?php echo $form['unread_count'] > 0 ? "class='form_entries_unread' style='font-weight:bold;'" : '' ?> href="admin.php?page=gf_entries&view=entries&filter=unread&id=<?php echo absint( $form['id'] ) ?>" aria-label="<?php printf( esc_attr__( 'Last Entry: %s', 'gravityforms' ), $date_display ); ?>"><?php echo absint( $form['unread_count'] ) ?></a>
 							</td>
 							<td class="gf_dashboard_entries_total column-date" style="padding:8px 18px; text-align:center;">
-								<a href="admin.php?page=gf_entries&view=entries&id=<?php echo absint( $form['id'] ) ?>" title="<?php esc_attr_e( 'View All Entries', 'gravityforms' ) ?>"><?php echo absint( $form['total_leads'] ) ?></a>
+								<a href="admin.php?page=gf_entries&view=entries&id=<?php echo absint( $form['id'] ) ?>" aria-label="<?php esc_attr_e( 'View All Entries', 'gravityforms' ) ?>"><?php echo absint( $form['total_entries'] ) ?></a>
 							</td>
 						</tr>
 						<?php
@@ -1890,7 +2482,7 @@ class GFForms {
 		}
 
 		if ( version_compare( GFCommon::$version, $version_info['version'], '<' ) ) {
-			$message = sprintf( esc_html__( 'There is an update available for Gravity Forms. %sView Details%s', 'gravityforms' ), "<a href='admin.php?page=gf_update'>", '</a>' );
+			$message = sprintf( esc_html__( 'There is an update available for Gravity Forms. %sView Details%s', 'gravityforms' ), "<a href='admin.php?page=gf_system_status&subview=updates'>", '</a>' );
 			?>
 			<div class='updated' style='padding:15px; position:relative;' id='gf_dashboard_message'><?php echo $message ?>
 				<a href="javascript:void(0);" onclick="GFDismissUpgrade();" onkeypress="GFDismissUpgrade();" style='float:right;'><?php esc_html_e( 'Dismiss', 'gravityforms' ) ?></a>
@@ -1941,55 +2533,109 @@ class GFForms {
 		$version  = GFForms::$version;
 		$min      = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
 
-		wp_register_script( 'gform_chosen', $base_url . '/js/chosen.jquery.min.js', array( 'jquery' ), $version );
+		wp_register_script( 'gform_chosen', $base_url . "/js/chosen.jquery.min.js", array( 'jquery' ), $version );
+		wp_register_script( 'gform_selectwoo', $base_url . "/js/vendor/selectWoo.full.js", array( 'jquery' ), $version );
+		wp_register_script( 'gform_simplebar', $base_url . "/js/vendor/simplebar.js", array( 'jquery' ), $version );
+		wp_register_script( 'gform_promises_polyfill', 'https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js', array(), $version );
 		wp_register_script( 'gform_conditional_logic', $base_url . "/js/conditional_logic{$min}.js", array(
 			'jquery',
 			'gform_gravityforms'
 		), $version );
+		wp_register_script( 'gform_page_conditional_logic', $base_url . "/js/page_conditional_logic{$min}.js", array(
+			'jquery',
+			'gform_gravityforms'
+		), $version );
+		wp_register_script( 'gform_datepicker_legacy', $base_url . "/js/datepicker-legacy{$min}.js", array(), $version, true );
 		wp_register_script( 'gform_datepicker_init', $base_url . "/js/datepicker{$min}.js", array(
 			'jquery',
 			'jquery-ui-datepicker',
-			'gform_gravityforms'
+			'gform_gravityforms',
+			'gform_datepicker_legacy',
 		), $version, true );
-		wp_register_script( 'gform_floatmenu', $base_url . "/js/floatmenu_init{$min}.js", array( 'jquery' ), $version );
+		wp_register_script( 'gform_form_editor_conditional_flyout', $base_url . "/js/components/form_editor/conditional_flyout/conditional_flyout{$min}.js", array(
+			'jquery',
+			'gform_promises_polyfill',
+			'gform_gravityforms',
+		), $version );
 		wp_register_script( 'gform_form_admin', $base_url . "/js/form_admin{$min}.js", array(
 			'jquery',
 			'jquery-ui-autocomplete',
+			'wp-i18n',
 			'gform_placeholder',
 			'gform_gravityforms',
+			'gform_form_editor_conditional_flyout',
 		), $version );
+		wp_register_script( 'gform_layout_editor', $base_url . "/js/layout_editor{$min}.js", array(
+			'jquery-ui-draggable',
+			'jquery-ui-resizable',
+			'jquery-ui-droppable',
+			'jquery-touch-punch',
+		), $version, true );
 		wp_register_script( 'gform_form_editor', $base_url . "/js/form_editor{$min}.js", array(
 			'jquery',
 			'gform_json',
-			'gform_placeholder'
-		), $version );
+			'gform_placeholder',
+			'gform_layout_editor',
+		), $version, true );
 		wp_register_script( 'gform_forms', $base_url . "/js/forms{$min}.js", array( 'jquery' ), $version );
 		wp_register_script( 'gform_gravityforms', $base_url . "/js/gravityforms{$min}.js", array(
 			'jquery',
 			'gform_json'
-		), $version );
+		), $version, false );
 		wp_register_script( 'gform_json', $base_url . "/js/jquery.json{$min}.js", array( 'jquery' ), $version, true );
-		wp_register_script( 'gform_masked_input', $base_url . '/js/jquery.maskedinput.min.js', array( 'jquery' ), $version );
+		wp_register_script( 'gform_masked_input', $base_url . "/js/jquery.maskedinput{$min}.js", array( 'jquery' ), $version, true );
 		wp_register_script( 'gform_menu', $base_url . "/js/menu{$min}.js", array( 'jquery' ), $version );
-		wp_register_script( 'gform_placeholder', $base_url . '/js/placeholders.jquery.min.js', array( 'jquery' ), $version );
+		wp_register_script( 'gform_placeholder', $base_url . '/js/placeholders.jquery.min.js', array( 'jquery' ), $version, true );
 		wp_register_script( 'gform_tooltip_init', $base_url . "/js/tooltip_init{$min}.js", array( 'jquery-ui-tooltip' ), $version );
-		wp_register_script( 'gform_textarea_counter', $base_url . "/js/jquery.textareaCounter.plugin{$min}.js", array( 'jquery' ), $version );
+		wp_register_script( 'gform_textarea_counter', $base_url . "/js/jquery.textareaCounter.plugin{$min}.js", array( 'jquery' ), $version, true );
 		wp_register_script( 'gform_field_filter', $base_url . "/js/gf_field_filter{$min}.js", array(
 			'jquery',
 			'gform_datepicker_init'
 		), $version );
 		wp_register_script( 'gform_shortcode_ui', $base_url . "/js/shortcode-ui{$min}.js", array(
 			'jquery',
-			'wp-backbone'
+			'wp-backbone',
+			'wp-i18n'
 		), $version, true );
 		wp_register_script( 'gform_system_report_clipboard', $base_url . '/includes/system-status/js/clipboard.min.js', array( 'jquery' ), $version, true );
+		wp_register_script( 'gform_preview', $base_url . "/js/preview{$min}.js", array( 'jquery' ), $version, false );
+		wp_register_script( 'gform_auto_updates', $base_url . "/js/auto_update{$min}.js", array( 'jquery' ), $version, true );
+		wp_register_script( 'gform_plugin_settings', $base_url . "/js/plugin_settings{$min}.js", array(
+			'jquery',
+			'gform_gravityforms',
+		), $version );
 
-		wp_register_style( 'gform_admin', $base_url . "/css/admin{$min}.css", array(), $version );
-		wp_register_style( 'gform_chosen', $base_url . "/css/chosen{$min}.css", array(), $version );
+		wp_register_style( 'gform_admin_ie11', $base_url . "/css/admin-ie11{$min}.css", null, $version );
+		wp_register_style( 'gform_admin_icons', $base_url . "/css/admin-icons{$min}.css", array( 'gform_admin_ie11' ), $version );
+		wp_register_style( 'gform_admin', $base_url . "/css/admin{$min}.css", array( 'gform_admin_icons' ), $version );
+		wp_register_style( 'gform_chosen', $base_url . "/legacy/css/chosen{$min}.css", array(), $version );
 		wp_register_style( 'gform_shortcode_ui', $base_url . "/css/shortcode-ui{$min}.css", array(), $version );
 		wp_register_style( 'gform_font_awesome', $base_url . "/css/font-awesome{$min}.css", null, $version );
-		wp_register_style( 'gform_tooltip', $base_url . "/css/tooltip{$min}.css", array( 'gform_font_awesome' ), $version );
+		wp_register_style( 'gform_dashicons', $base_url . "/css/dashicons{$min}.css", array(), $version );
+		wp_register_style( 'gform_settings', $base_url . "/includes/settings/css/settings{$min}.css", array(), $version );
+		wp_register_style( 'gform_editor', $base_url . "/css/editor{$min}.css", array(), $version );
+		wp_register_style( 'gform_admin_theme', $base_url . "/css/admin-theme{$min}.css", array(), $version );
 
+		wp_register_style( 'gforms_reset_css', $base_url . "/legacy/css/formreset{$min}.css", null, $version );
+		wp_register_style( 'gforms_datepicker_css', $base_url . "/legacy/css/datepicker{$min}.css", null, $version );
+		wp_register_style( 'gforms_formsmain_css', $base_url . "/legacy/css/formsmain{$min}.css", null, $version );
+		wp_register_style( 'gforms_ready_class_css', $base_url . "/legacy/css/readyclass{$min}.css", null, $version );
+		wp_register_style( 'gforms_browsers_css', $base_url . "/legacy/css/browsers{$min}.css", null, $version );
+		wp_register_style( 'gforms_rtl_css', $base_url . "/legacy/css/rtl{$min}.css", null, $version );
+
+		wp_register_style( 'gform_theme_ie11', $base_url . "/css/theme-ie11{$min}.css", null, $version );
+		wp_register_style( 'gform_basic', $base_url . "/css/basic{$min}.css", null, $version );
+		wp_register_style( 'gform_theme', $base_url . "/css/theme{$min}.css", array( 'gform_theme_ie11' ), $version );
+
+		if ( function_exists( 'wp_add_inline_script' ) ) {
+			$hooks_code = GFCommon::get_hooks_javascript_code();
+			wp_add_inline_script( 'gform_gravityforms', $hooks_code, 'before' );
+		} else {
+			add_action( 'gform_preview_header', array( 'GFCommon', 'output_hooks_javascript' ) );
+			add_action( 'wp_head', array( 'GFCommon', 'output_hooks_javascript' ) );
+			add_action( 'admin_head', array( 'GFCommon', 'output_hooks_javascript' ) );
+			add_action( 'gform_pre_print_scripts', array( 'GFCommon', 'output_hooks_javascript' ) );
+		}
 	}
 
 	/**
@@ -2032,6 +2678,12 @@ class GFForms {
 				);
 				break;
 
+			case 'settings':
+				$scripts = array(
+					'gform_plugin_settings',
+				);
+				break;
+
 			case 'form_editor':
 				$thickbox = 'thickbox';
 				$scripts  = array(
@@ -2041,12 +2693,11 @@ class GFForms {
 					'jquery-ui-draggable',
 					'jquery-ui-droppable',
 					'jquery-ui-tabs',
+					'jquery-ui-accordion',
 					'gform_gravityforms',
 					'gform_forms',
 					'gform_json',
 					'gform_form_admin',
-					'gform_floatmenu',
-					'gform_menu',
 					'gform_placeholder',
 					'jquery-ui-autocomplete',
 					'sack',
@@ -2060,6 +2711,7 @@ class GFForms {
 
 			case 'entry_detail':
 				$scripts = array(
+					'gform_gravityforms',
 					'gform_json',
 					'sack',
 					'postbox',
@@ -2145,9 +2797,23 @@ class GFForms {
 				$scripts = array(
 					'gform_system_report_clipboard',
 					'thickbox',
+					'gform_placeholder',
 				);
 				break;
 
+		}
+
+		if ( 'plugins.php' === $hook ) {
+			wp_enqueue_script( 'gform_auto_updates' );
+			wp_localize_script(
+				'gform_auto_updates',
+				'gf_update_ajax',
+				array(
+					'ajaxurl'      => admin_url( 'admin-ajax.php' ),
+					'enable_text'  => __( 'Enable auto-updates', 'gravityforms' ),
+					'disable_text' => __( 'Disable auto-updates', 'gravityforms' ),
+				)
+			);
 		}
 
 		if ( self::page_supports_add_form_button() ) {
@@ -2164,12 +2830,23 @@ class GFForms {
 				 */
 				'previewDisabled' => apply_filters( 'gform_shortcode_preview_disabled', true ),
 				'strings'         => array(
-					'pleaseSelectAForm'   => esc_html__( 'Please select a form.', 'gravityforms' ),
-					'errorLoadingPreview' => esc_html__( 'Failed to load the preview for this form.', 'gravityforms' ),
+					'pleaseSelectAForm'   => wp_strip_all_tags( __( 'Please select a form.', 'gravityforms' ) ),
+					'errorLoadingPreview' => wp_strip_all_tags( __( 'Failed to load the preview for this form.', 'gravityforms' ) ),
 				)
 			) );
 		}
 
+		if ( $page === 'form_editor' ) {
+			$form_id = filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
+			$form_strings = array(
+				'requiredIndicator' => GFFormsModel::get_required_indicator( $form_id ),
+			);
+			wp_localize_script( 'gform_form_editor', 'gform_form_strings', $form_strings );
+		}
+
+		if ( self::has_members_plugin() && rgget( 'page' ) === 'roles' ) {
+		    wp_enqueue_style( 'gform_dashicons' );
+        }
 
 		if ( empty( $scripts ) ) {
 			return;
@@ -2179,8 +2856,8 @@ class GFForms {
 			wp_enqueue_script( $script );
 		}
 
-
 		GFCommon::localize_gform_gravityforms_multifile();
+		GFCommon::localize_legacy_check( 'gform_layout_editor' );
 
 	}
 
@@ -2229,6 +2906,10 @@ class GFForms {
 			return 'form_settings';
 		}
 
+		if ( rgget( 'page' ) == 'gf_edit_forms' && rgget( 'view' ) == 'settings' && rgget( 'subview' ) == 'personal-data' ) {
+			return 'personal_data';
+		}
+
 		if ( rgget( 'page' ) == 'gf_edit_forms' && rgget( 'view' ) == 'settings' && rgget( 'subview' ) == 'confirmation' ) {
 			return 'confirmation';
 		}
@@ -2243,6 +2924,10 @@ class GFForms {
 
 		if ( rgget( 'page' ) == 'gf_edit_forms' && rgget( 'view' ) == 'settings' && rgget( 'subview' ) == 'notification' ) {
 			return 'notification_list';
+		}
+
+		if ( rgget( 'page' ) == 'gf_edit_forms' && rgget( 'view' ) == 'settings' && rgget( 'subview' ) ) {
+			return 'form_settings_' . rgget( 'subview' );
 		}
 
 		if ( rgget( 'page' ) == 'gf_entries' && ( ! rgget( 'view' ) || rgget( 'view' ) == 'entries' ) ) {
@@ -2281,6 +2966,10 @@ class GFForms {
 			return rgget( 'subview' ) === 'updates' ? 'updates' : 'system_status';
 		}
 
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && ( ( isset( $_POST['form_id'] ) && rgpost( 'action' ) === 'rg_select_export_form' ) || ( isset( $_POST['export_form'] ) && rgpost( 'action' ) === 'gf_process_export' ) ) ) {
+			return 'export_entry_ajax';
+		}
+
 		return false;
 	}
 
@@ -2293,7 +2982,7 @@ class GFForms {
 	 * @uses   GFFormDisplay::get_form()
 	 * @uses   GFCommon::get_base_path()
 	 */
-	public static function get_form( $form_id, $display_title = true, $display_description = true, $force_display = false, $field_values = null, $ajax = false, $tabindex = 1 ) {
+	public static function get_form( $form_id, $display_title = true, $display_description = true, $force_display = false, $field_values = null, $ajax = false, $tabindex = 0 ) {
 		require_once( GFCommon::get_base_path() . '/form_display.php' );
 
 		return GFFormDisplay::get_form( $form_id, $display_title, $display_description, $force_display, $field_values, $ajax, $tabindex );
@@ -2353,6 +3042,7 @@ class GFForms {
 	 * @uses   GFFormDetail::forms_page()
 	 */
 	public static function forms_page( $form_id ) {
+		wp_print_styles( array( 'jquery-ui-styles', 'gform_admin', 'gform_settings', 'gform_editor', 'gform_admin_theme' ) );
 		require_once( GFCommon::get_base_path() . '/form_detail.php' );
 		GFFormDetail::forms_page( $form_id );
 	}
@@ -2488,6 +3178,78 @@ class GFForms {
 	}
 
 	/**
+	 * Target for the wp_ajax_gf_disable_logging AJAX action requested from WordPress admin pages.
+	 *
+	 * @since  2.2.4.2
+	 * @access public
+	 *
+	 * @uses   GFCommon::get_base_path()
+	 * @uses   GFSettings::disable_logging()
+	 */
+	public static function ajax_disable_logging() {
+
+		// Verify nonce.
+		check_admin_referer( 'gf_disable_logging_nonce', 'nonce' );
+
+		// Load Settings class.
+		if ( ! class_exists( 'GFSettings' ) ) {
+			require_once( GFCommon::get_base_path() . '/settings.php' );
+		}
+
+		// Disable logging.
+		$disabled = GFSettings::disable_logging();
+
+		if ( $disabled ) {
+			wp_send_json_success( esc_html__( 'Logging disabled.', 'gravityforms' ) );
+		} else {
+			wp_send_json_error( esc_html__( 'Unable to disable logging.', 'gravityforms' ) );
+		}
+
+	}
+
+	/**
+	 * Target for the wp_ajax_gf_force_upgrade ajax action requested from the System Status page.
+	 *
+	 * Outputs a JSON string with the status and then triggers the background upgrader usually handled byt the cron healthcheck.
+	 *
+	 * @since 2.3.0.4
+	 */
+	public static function ajax_force_upgrade() {
+
+		check_ajax_referer( 'gf_force_upgrade', 'nonce' );
+
+		$status_label = get_option( 'gform_upgrade_status' );
+
+		if ( empty( $status_label ) ) {
+			$status = 'complete';
+			$status_label =  __( 'Finished', 'gravityforms' );
+			$percent_complete = 100;
+		} else {
+			$status = 'in_progress';
+			require_once( GFCommon::get_base_path() . '/includes/system-status/class-gf-system-report.php' );
+			$percent_complete = GF_System_Report::get_upgrade_percent_complete();
+		}
+
+		$response = json_encode(
+			array(
+				'status' => $status,
+				'status_label' => $status_label,
+			    'percent' => (string) $percent_complete,
+			)
+		);
+
+		echo $response;
+
+		ob_end_flush();
+
+		// Simuate the healthcheck cron.
+		GFForms::$background_upgrader->handle_cron_healthcheck();
+
+		// The healthcheck task will terminate anyway but exit just in case.
+		exit;
+	}
+
+	/**
 	 * Runs the add-ons page
 	 *
 	 * If the display wizard needs to be displayed, do that instead.
@@ -2497,11 +3259,13 @@ class GFForms {
 	 */
 	public static function addons_page() {
 
+		GFCommon::gf_header();
+
 		if ( self::maybe_display_wizard() ) {
 			return;
 		};
 
-		wp_print_styles( array( 'thickbox' ) );
+		wp_print_styles( array( 'thickbox', 'gform_settings' ) );
 
 		$plugins           = get_plugins();
 		$installed_plugins = array();
@@ -2611,6 +3375,32 @@ class GFForms {
 	}
 
 	/**
+	 * Get all post categories as option configs.
+	 *
+	 * @since 2.5
+	 *
+	 * @return array
+	 */
+	public static function get_post_category_options() {
+		$categories = get_categories(
+			array(
+				'hide_empty' => false,
+			)
+		);
+
+		$response = array();
+
+		foreach ( $categories as $cat ) {
+			$response[] = array(
+				'term_id' => $cat->term_id,
+				'label'   => $cat->name,
+			);
+		}
+
+		return $response;
+	}
+
+	/**
 	 * Gets the post categories.
 	 *
 	 * @since  Unknown
@@ -2621,6 +3411,34 @@ class GFForms {
 	public static function get_post_category_values() {
 		require_once( GFCommon::get_base_path() . '/form_detail.php' );
 		GFFormDetail::get_post_category_values();
+	}
+
+	/**
+	 * Get the address rule options for conditional logic.
+	 *
+	 * @since 2.5
+	 *
+	 * @param $form_id
+	 *
+	 * @return array Array of options.
+	*/
+	public static function get_address_rule_value_options( $form_id ) {
+		$address_field = new GF_Field_Address();
+		$address_types = $address_field->get_address_types( $form_id );
+		$options = [];
+
+		foreach ( $address_types as $type => $data ) {
+			if ( $type === 'international' ) {
+				$options[ $type ] = $address_field->get_countries();
+				continue;
+			}
+
+			$options[ $type ] = $data['states'];
+		}
+
+		$options['international'] = $address_field->get_countries();
+
+		return $options;
 	}
 
 	/**
@@ -2927,9 +3745,44 @@ class GFForms {
 					$notification['toType'] = 'email';
 				}
 
-				GFCommon::send_notification( $notification, $form, $lead );
+				/**
+				 * Allow the resend notification email to be skipped
+				 *
+				 * @since 2.3
+				 *
+				 * @param bool  $abort_email  Should we prevent this email being sent?
+				 * @param array $notification The current notification object.
+				 * @param array $form         The current form object.
+				 * @param array $lead         The current entry object.
+				 */
+				$abort_email = apply_filters( 'gform_disable_resend_notification', false, $notification, $form, $lead );
+
+				if ( ! $abort_email ) {
+					GFCommon::send_notification( $notification, $form, $lead );
+				}
+
+				/**
+				 * Fires after the current notification processing is finished
+				 *
+				 * @since 2.3
+				 *
+				 * @param array $notification The current notification object.
+				 * @param array $form         The current form object.
+				 * @param array $lead         The current entry object.
+				 */
+				do_action( 'gform_post_resend_notification', $notification, $form, $lead );
 			}
 		}
+
+		/**
+		 * Fires after the resend notifications processing is finished
+		 *
+		 * @since 2.3
+		 *
+		 * @param array $form The current form object.
+		 * @param array $lead The current entry object.
+		 */
+		do_action( 'gform_post_resend_all_notifications', $form, $lead );
 
 		die();
 	}
@@ -2981,7 +3834,11 @@ class GFForms {
 	 */
 	public static function update_form_active() {
 		check_ajax_referer( 'rg_update_form_active', 'rg_update_form_active' );
-		RGFormsModel::update_form_active( $_POST['form_id'], $_POST['is_active'] );
+		if ( GFCommon::current_user_can_any( 'gravityforms_edit_forms' ) ) {
+			GFFormsModel::update_form_active( $_POST['form_id'], $_POST['is_active'] );
+		} else {
+			wp_die( -1, 403 );
+		}
 	}
 
 	/**
@@ -2996,7 +3853,11 @@ class GFForms {
 	 */
 	public static function update_notification_active() {
 		check_ajax_referer( 'rg_update_notification_active', 'rg_update_notification_active' );
-		RGFormsModel::update_notification_active( $_POST['form_id'], $_POST['notification_id'], $_POST['is_active'] );
+		if ( GFCommon::current_user_can_any( 'gravityforms_edit_forms' ) ) {
+			GFFormsModel::update_notification_active( $_POST['form_id'], $_POST['notification_id'], $_POST['is_active'] );
+		} else {
+			wp_die( -1, 403 );
+		}
 	}
 
 	/**
@@ -3011,7 +3872,11 @@ class GFForms {
 	 */
 	public static function update_confirmation_active() {
 		check_ajax_referer( 'rg_update_confirmation_active', 'rg_update_confirmation_active' );
-		RGFormsModel::update_confirmation_active( $_POST['form_id'], $_POST['confirmation_id'], $_POST['is_active'] );
+		if ( GFCommon::current_user_can_any( 'gravityforms_edit_forms' ) ) {
+			GFFormsModel::update_confirmation_active( $_POST['form_id'], $_POST['confirmation_id'], $_POST['is_active'] );
+		} else {
+			wp_die( -1, 403 );
+		}
 	}
 
 	/**
@@ -3022,11 +3887,11 @@ class GFForms {
 	 * @since  Unknown
 	 * @access public
 	 *
-	 * @uses   GFFormsModel::update_lead_property()
+	 * @uses GFFormsModel::update_entry_property()
 	 */
 	public static function update_lead_property() {
 		check_ajax_referer( 'rg_update_lead_property', 'rg_update_lead_property' );
-		RGFormsModel::update_lead_property( $_POST['lead_id'], $_POST['name'], $_POST['value'] );
+		GFFormsModel::update_entry_property( $_POST['lead_id'], $_POST['name'], $_POST['value'] );
 	}
 
 	/**
@@ -3049,18 +3914,30 @@ class GFForms {
 		$form  = GFAPI::get_form( $entry['form_id'] );
 
 		switch ( $status ) {
-			case 'unspam' :
-				RGFormsModel::update_lead_property( $lead_id, 'status', 'active' );
+			case 'unspam':
+				GFFormsModel::update_entry_property( $lead_id, 'status', 'active' );
 				break;
 
-			case 'delete' :
+			case 'restore':
 				if ( GFCommon::current_user_can_any( 'gravityforms_delete_entries' ) ) {
-					RGFormsModel::delete_lead( $lead_id );
+					GFFormsModel::update_entry_property( $lead_id, 'status', 'active' );
+				}
+				break;
+
+			case 'delete':
+				if ( GFCommon::current_user_can_any( 'gravityforms_delete_entries' ) ) {
+					GFFormsModel::delete_entry( $lead_id );
+				}
+				break;
+
+			case 'trash':
+				if ( GFCommon::current_user_can_any( 'gravityforms_delete_entries' ) ) {
+					GFFormsModel::update_entry_property( $lead_id, 'status', 'trash' );
 				}
 				break;
 
 			default :
-				RGFormsModel::update_lead_property( $lead_id, 'status', $status );
+				GFFormsModel::update_entry_property( $lead_id, 'status', $status );
 				break;
 		}
 		require_once( 'entry_list.php' );
@@ -3350,6 +4227,17 @@ class GFForms {
 	}
 
 	/**
+	 * Used to check that background tasks are working.
+	 *
+	 * @since 2.3
+	 */
+	public static function check_background_tasks() {
+		check_ajax_referer( 'gf_check_background_tasks', 'nonce' );
+		echo 'ok';
+		die();
+	}
+
+	/**
 	 * Displays the edit title popup.
 	 *
 	 * @since  Unknown
@@ -3463,13 +4351,21 @@ class GFForms {
 	/**
 	 * Displays the form switcher dropdown.
 	 *
+	 * @param string $title The form title
+	 *
 	 * @since  Unknown
 	 * @access public
 	 */
-	public static function form_switcher() {
+	public static function form_switcher( $title = '' ) {
 
-		// Get all forms.
-		$all_forms = RGFormsModel::get_forms( null, 'title' );
+		/**
+		 * Get forms to be displayed in Form Switcher dropdown.
+		 *
+		 * @since 2.4.16
+		 *
+		 * @param array $all_forms All available Form objects, sorted by title.
+		 */
+		$all_forms = apply_filters( 'gform_form_switcher_forms', GFFormsModel::get_forms( null, 'title' ) );
 
 		// Sort forms by active state.
 		$forms = array( 'active' => array(), 'inactive' => array(), );
@@ -3481,27 +4377,70 @@ class GFForms {
 			}
 		}
 
-		// Enqueuing Chosen script and styling.
-		wp_enqueue_script( 'gform_chosen', false, array( 'jquery' ), GFCommon::$version, true );
-		wp_enqueue_style( 'gform_chosen' );
+		// Enqueuing simplebar
+		wp_enqueue_script( 'gform_simplebar' );
+
+		$simplebar_rtl = is_rtl() ? ' data-simplebar-direction="rtl"' : '';
 
 		?>
-		<a href="#" onclick="GF_SetupChosen( this ); event.stopPropagation();" id='form_switcher_arrow' class='form_switcher_arrow'><i class='fa fa-angle-down'></i></a>
-		<div id="form_switcher_container">
-			<select data-placeholder="<?php esc_attr_e( 'Switch Form', 'gravityforms' ) ?>" name="form_switcher" id="form_switcher" onchange="GF_SwitchForm(jQuery(this).val());">
-				<option></option>
-				<?php
-				foreach ( $all_forms as $form_info ) {
-					$title = $form_info->title;
-					?>
-					<option value="<?php echo absint( $form_info->id ); ?>"><?php echo esc_html( $title ) ?></option>
+
+		<article class="gform-dropdown" data-js="gform-form-switcher">
+			<span
+				class="gform-visually-hidden"
+				id="gform-form-switcher-label"
+			><?php esc_attr_e( 'Select a different form', 'gravityforms' ) ?></span>
+			<button
+				aria-expanded="false"
+				aria-haspopup="listbox"
+				aria-labelledby="gform-form-switcher-label gform-form-switcher-control"
+				class="gform-dropdown__control"
+				data-js="gform-dropdown-control"
+				id="gform-form-switcher-control"
+			>
+				<span class="gform-dropdown__control-text" data-js="gform-dropdown-control-text"><?php echo esc_html( $title ); ?></span>
+				<i class="gform-spinner gform-dropdown__spinner"></i>
+				<i class="gform-icon gform-icon--chevron gform-dropdown__chevron"></i>
+			</button>
+			<div
+				aria-labelledby="gform-form-switcher-label"
+				class="gform-dropdown__container"
+				role="listbox"
+				tabindex="-1"
+			>
+				<div class="gform-dropdown__search">
+					<label for="gform-form-switcher-search" class="gform-visually-hidden"><?php esc_attr_e( 'Search forms', 'gravityforms' ) ?></label>
+					<input
+						id="gform-form-switcher-search"
+						type="text" class="gform-input gform-dropdown__search-input"
+						placeholder="<?php esc_attr_e( 'Search for form', 'gravityforms' ) ?>"
+						data-js="gform-dropdown-search"
+					/>
+					<i class="gform-icon gform-icon--search gform-dropdown__search-icon"></i>
+				</div>
+				<div class="gform-dropdown__list-container" data-simplebar<?php echo $simplebar_rtl; ?>>
+					<ul class="gform-dropdown__list">
 					<?php
-				}
-				?>
-			</select>
-		</div>
+						foreach ( $all_forms as $form_info ) {
+							printf(
+								'
+								<li class="gform-dropdown__item">
+									<button class="gform-dropdown__trigger" data-js="gform-dropdown-trigger" data-value="%d">
+										%s
+									</button>
+								</li>
+								',
+								absint( $form_info->id ),
+								esc_html( $form_info->title)
+							);
+						}
+					?>
+					</ul>
+				</div>
+			</div>
+		</article>
 
 		<script type="text/javascript">
+
 			function GF_ReplaceQuery(key, newValue) {
 				var new_query = "";
 				var query = document.location.search.substring(1);
@@ -3588,34 +4527,12 @@ class GFForms {
 				FieldClick(jQuery('#gform_heading')[0]);
 			}
 
-			function GF_PositionFormSwitcher() {
-
-				var $container = jQuery('#form_switcher_container');
-				var position = jQuery('#form_switcher_arrow').position().left,
-					width = $container.outerWidth(),
-					offset = width > position ? 0 : position - width + 20;
-
-				$container.css('left', offset + 'px');
-			}
-
-			function GF_SetupChosen(elem) {
-
-				//displaying container
-				var $container = jQuery('#form_switcher_container');
-				$container.show();
-
-				//initializing and activating chosen
-				var $ch = jQuery('#form_switcher').chosen();
-				$ch.trigger('chosen:open');
-
-				//setting form switcher position
-				GF_PositionFormSwitcher();
-
-				//binding to close event
-				$ch.bind('chosen:hiding_dropdown', function (ch) {
-					jQuery('#form_switcher_container').hide();
-				});
-			}
+			gform.instances.formSwitcher = new gform.components.dropdown( {
+				onItemSelect: GF_SwitchForm,
+				reveal: 'hover',
+				selector: 'gform-form-switcher',
+				showSpinner: true,
+			} );
 
 			jQuery(document).ready(function () {
 				if (document.location.search.indexOf("display_settings") > 0)
@@ -3626,17 +4543,135 @@ class GFForms {
 				});
 			});
 
-			jQuery(window).resize(function () {
-				GF_PositionFormSwitcher();
-			});
-
 
 		</script>
 		<?php
 	}
 
 	/**
-	 * Displays the top toolbar withing Gravity Forms pages.
+	*
+	* Displays header for admin settings pages.
+	*
+	* @since 2.5
+	*
+	* @param array $tabs
+	* @param bool $toolbar
+	*
+	*/
+	public static function admin_header( $tabs = array(), $toolbar = true ) {
+		// Print admin styles.
+		wp_print_styles( array( 'jquery-ui-styles', 'gform_admin', 'gform_settings', 'wp-pointer' ) );
+
+		// Set class for display mode on entries list page.
+		$view_class = null;
+		if ( isset( $_GET['page'] ) && $_GET['page'] === 'gf_entries' && ! isset( $_GET['lid'] ) ) {
+			if ( class_exists( 'GFEntryList' ) ) {
+				$option_values = GFEntryList::get_screen_options_values();
+				$view_class    = ( $option_values['display_mode'] === 'full_width' ) ? ' gform_form_settings_wrap--full-width' : null;
+			}
+		}
+		?>
+		<div class="wrap gforms_edit_form gforms_form_settings_wrap <?php echo GFCommon::get_browser_class() . $view_class; ?>">
+
+		<?php GFCommon::gf_header(); ?>
+
+		<?php
+
+			if ( $toolbar ) {
+				GFForms::top_toolbar();
+			}
+
+			$wrapper_classes = ! empty( $tabs ) ? 'gform-settings__wrapper' : 'gform-settings__wrapper gform-settings__wrapper--full';
+		?>
+
+			<?php echo GFCommon::get_remote_message(); ?>
+
+			<?php GFCommon::notices_section(); ?>
+
+			<div class="<?php echo $wrapper_classes; ?>">
+			<?php
+				GFCommon::display_dismissible_message();
+				GFCommon::display_admin_message();
+			?>
+				<?php if ( ! empty( $tabs ) ) { ?>
+				<nav class="gform-settings__navigation">
+					<?php
+						$current_tab = rgempty( 'subview', $_GET ) ? '' : rgget( 'subview' );
+						$active_class = null;
+						foreach ( $tabs as $tab ) {
+
+							if ( rgar( $tab, 'capabilities' ) && ! GFCommon::current_user_can_any( $tab['capabilities'] ) ) {
+								continue;
+							}
+
+							$query = array( 'subview' => $tab['name'] );
+
+							if ( isset( $tab['query'] ) ) {
+								$query = array_merge( $query, $tab['query'] );
+							}
+
+							$url = add_query_arg( $query );
+
+							// Get tab icon.
+							$icon_markup = GFCommon::get_icon_markup( $tab, 'gform-icon--cog' );
+
+							if ( $current_tab === $tab['name'] || ( empty( $current_tab ) && is_null( $active_class ) ) ) {
+								$active_class = 'class="active"';
+							} else {
+								$active_class = '';
+							}
+
+							printf(
+								'<a href="%s"%s><span class="icon">%s</span> <span class="label">%s</span></a>',
+								esc_url( $url ),
+								$active_class,
+								$icon_markup,
+								esc_html( $tab['label'] )
+							);
+						}
+					?>
+				</nav>
+				<?php } ?>
+
+				<div class="gform-settings__content" <?php echo isset( $current_tab ) ? 'id="tab_' . esc_attr( $current_tab ) . '"' : ''; ?>>
+		<?php
+	}
+
+	/**
+	* Displays footer for admin settings pages.
+	*
+	* @since 2.5
+	*
+	*/
+	public static function admin_footer() {
+		if ( ! class_exists( 'GFSettings' ) ) {
+			require_once( GFCommon::get_base_path() . '/settings.php' );
+		}
+		GFSettings::page_footer();
+	}
+
+	/**
+	 * Add a special body class when within the wp-admin area.
+	 *
+	 * @since 2.5
+	 *
+	 * @param string $body_classes The current body classes.
+	 *
+	 * @return string
+	 */
+	public static function add_admin_body_class( $body_classes ) {
+		$classes = explode( ' ', $body_classes );
+		$classes = array_merge( $classes, array( 'gform-admin' ) );
+
+		if ( GFCommon::is_form_editor() && wp_style_is( 'jetpack-admin-menu' ) && ! is_rtl() ) {
+			$classes[] = 'gform-jetpack-admin-menu';
+		}
+
+		return implode( ' ', $classes );
+	}
+
+	/**
+	 * Displays the top toolbar within Gravity Forms pages.
 	 *
 	 * @since  Unknown
 	 * @access public
@@ -3649,19 +4684,65 @@ class GFForms {
 
 		$forms = RGFormsModel::get_forms( null, 'title' );
 		$id    = rgempty( 'id', $_GET ) ? count( $forms ) > 0 ? $forms[0]->id : '0' : rgget( 'id' );
-		?>
-		<div id="gf_form_toolbar">
-			<ul id="gf_form_toolbar_links">
 
-				<?php
-				$menu_items = apply_filters( 'gform_toolbar_menu', self::get_toolbar_menu_items( $id ), $id );
-				echo self::format_toolbar_menu_items( $menu_items );
-				?>
-			</ul>
+		// Get form.
+		$form = GFAPI::get_form( $id );
+
+		?>
+		<div id="gform-form-toolbar" class="gform-form-toolbar">
+
+			<div class="gform-form-toolbar__container">
+
+				<div class="gform-form-toolbar__form-title">
+					<?php self::form_switcher( $form['title'] ); ?>
+				</div>
+
+				<ul id="gform-form-toolbar__menu" class="gform-form-toolbar__menu">
+					<?php
+					$menu_items = apply_filters( 'gform_toolbar_menu', self::get_toolbar_menu_items( $id ), $id );
+					foreach ( $menu_items as $key => $item ) {
+						if ( in_array( $key, array( 'edit', 'settings', 'entries' ) ) ) {
+							$fixed_menu_items[ $key ] = $item;
+						} else {
+							$dynamic_menu_items[ $key ] = $item;
+						}
+					}
+					echo self::format_toolbar_menu_items( $fixed_menu_items );
+					if ( ! empty( $dynamic_menu_items ) ) {
+						echo '<span class="gform-form-toolbar__divider"></span>';
+						echo GFForms::format_toolbar_menu_items( $dynamic_menu_items );
+					}
+					?>
+				</ul>
+				<div id="gf_toolbar_buttons_container" class="gform-form-toolbar__buttons gf_toolbar_buttons_container">
+					<?php
+					$preview_args = array(
+						'form_id' => $id,
+					);
+					echo GFCommon::get_preview_link( $preview_args );
+					?>
+				</div>
+			</div>
 		</div>
 
 		<?php
 
+	}
+
+	/**
+	 * Sorts menu items according to priority key.
+	 *
+	 * @since 2.5
+	 *
+	 * @param array $menu_items Contains the menu items to be displayed
+	 */
+	public static function sort_menu_items( &$menu_items ) {
+		$priorities = array();
+		foreach ( $menu_items as $k => $menu_item ) {
+			$priorities[ $k ] = rgar( $menu_item, 'priority' );
+		}
+
+		array_multisort( $priorities, SORT_DESC, $menu_items );
 	}
 
 	/**
@@ -3685,13 +4766,7 @@ class GFForms {
 
 		$output = '';
 
-		$priorities = array();
-		foreach ( $menu_items as $k => $menu_item ) {
-			$priorities[ $k ] = rgar( $menu_item, 'priority' );
-		}
-
-		array_multisort( $priorities, SORT_DESC, $menu_items );
-
+		self::sort_menu_items( $menu_items );
 		$keys     = array_keys( $menu_items );
 		$last_key = array_pop( $keys ); // array_pop(array_keys($menu_items)) causes a Strict Standards warning in WP 3.6 on PHP 5.4
 
@@ -3711,7 +4786,8 @@ class GFForms {
 						$count_sub_menu_items = count( $sub_menu_items );
 					}
 
-					$menu_class = rgar( $menu_item, 'menu_class' );
+					$menu_class    = rgar( $menu_item, 'menu_class' );
+					$submenu_class = $count_sub_menu_items == 0 ? '' : 'has_submenu';
 
 					if ( $count_sub_menu_items == 1 ) {
 						$label     = $compact ? rgar( $menu_item, 'label' ) : rgar( $sub_menu_items[0], 'label' );
@@ -3720,15 +4796,16 @@ class GFForms {
 						$label        = rgar( $menu_item, 'label' );
 						$sub_menu_str = self::toolbar_sub_menu_items( $sub_menu_items, $compact );
 					}
-					$link_class = esc_attr( rgar( $menu_item, 'link_class' ) );
+					$link_class = esc_attr( rgar( $menu_item, 'link_class' ) ) . ' ' . $submenu_class;
 					$icon       = rgar( $menu_item, 'icon' );
 					$url        = esc_url( rgar( $menu_item, 'url' ) );
-					$title      = esc_attr( rgar( $menu_item, 'title' ) );
+					$aria_label = rgar( $menu_item, 'aria-label' );
+					$aria_label = ( ! empty( $aria_label ) ) ? "aria-label='" . esc_attr( $aria_label ) . "'" : '';
 					$onclick    = esc_attr( rgar( $menu_item, 'onclick' ) );
 					$label      = esc_html( $label );
 					$target     = rgar( $menu_item, 'target' );
 
-					$link = "<a class='{$link_class}' onclick='{$onclick}' onkeypress='{$onclick}' title='{$title}' href='{$url}' target='{$target}'>{$icon} {$label}</a>" . $sub_menu_str;
+					$link = "<a class='{$link_class}' onclick='{$onclick}' onkeypress='{$onclick}' {$aria_label} href='{$url}' target='{$target}'>{$label}</a>" . $sub_menu_str;
 					if ( $compact ) {
 						if ( $key == 'delete' ) {
 
@@ -3782,29 +4859,29 @@ class GFForms {
 
 		$form_id = absint( $form_id );
 
-		// ---- Form Editor ----
 		$edit_capabilities = array( 'gravityforms_edit_forms' );
 
-		$menu_items['edit'] = array(
-			'label'        => __( 'Edit', 'gravityforms' ),
-			'short_label'  => esc_html__( 'Editor', 'gravityforms' ),
-			'icon'         => '<i class="fa fa-pencil-square-o fa-lg"></i>',
-			'title'        => __( 'Edit this form', 'gravityforms' ),
-			'url'          => '?page=gf_edit_forms&id=' . $form_id,
-			'menu_class'   => 'gf_form_toolbar_editor',
-			'link_class'   => self::toolbar_class( 'editor' ),
-			'capabilities' => $edit_capabilities,
-			'priority'     => 1000,
-		);
+		$page = self::get_page();
 
-		// ---- Form Settings ----
+		// Don't show the edit link if we're already in the editor.
+		if ( $page != 'form_editor' ) {
+			$menu_items['edit'] = array(
+				'label'        => esc_html__( 'Edit', 'gravityforms' ),
+				'short_label'  => esc_html__( 'Editor', 'gravityforms' ),
+				'aria-label'   => esc_html__( 'Editor', 'gravityforms' ),
+				'icon'         => '<i class="fa fa-pencil-square-o fa-lg"></i>',
+				'url'          => '?page=gf_edit_forms&id=' . $form_id,
+				'menu_class'   => 'gf_form_toolbar_editor',
+				'link_class'   => self::toolbar_class( 'editor' ),
+				'capabilities' => $edit_capabilities,
+				'priority'     => 1000,
+			);
+		}
 
 		$sub_menu_items = self::get_form_settings_sub_menu_items( $form_id );
-
 		$menu_items['settings'] = array(
-			'label'          => __( 'Settings', 'gravityforms' ),
-			'icon'           => '<i class="fa fa-cogs fa-lg"></i>',
-			'title'          => __( 'Edit settings for this form', 'gravityforms' ),
+			'label'          => esc_html__( 'Settings', 'gravityforms' ),
+			'aria-label'     => esc_html__( 'Edit settings for this form', 'gravityforms' ),
 			'url'            => $is_mobile ? '#' : '?page=gf_edit_forms&view=settings&id=' . $form_id,
 			'menu_class'     => 'gf_form_toolbar_settings',
 			'link_class'     => self::toolbar_class( 'settings' ),
@@ -3813,19 +4890,14 @@ class GFForms {
 			'priority'       => 900,
 		);
 
-
-		// ---- Entries ----
-
 		$entries_capabilities = array(
 			'gravityforms_view_entries',
 			'gravityforms_edit_entries',
 			'gravityforms_delete_entries'
 		);
-
 		$menu_items['entries'] = array(
-			'label'        => __( 'Entries', 'gravityforms' ),
-			'icon'         => '<i class="fa fa-comment-o fa-lg"></i>',
-			'title'        => __( 'View entries generated by this form', 'gravityforms' ),
+			'label'        => esc_html__( 'Entries', 'gravityforms' ),
+			'aria-label'   => esc_html__( 'View entries generated by this form', 'gravityforms' ),
 			'url'          => '?page=gf_entries&id=' . $form_id,
 			'menu_class'   => 'gf_form_toolbar_entries',
 			'link_class'   => self::toolbar_class( 'entries' ),
@@ -3833,57 +4905,17 @@ class GFForms {
 			'priority'     => 800,
 		);
 
-		// ---- Preview ----
+		// Don't show in form editor toolbar as it is shown next to the update button.
+		if ( $page == 'form_list' || $page == 'new_form' ) {
+			$preview_args = array(
+				'array'      => true,
+				'form_id'    => $form_id,
+				'link_class' => self::toolbar_class( 'preview' ),
+				'menu_class' => 'gf_form_toolbar_preview',
+			);
 
-		$preview_capabilities = array(
-			'gravityforms_edit_forms',
-			'gravityforms_create_form',
-			'gravityforms_preview_forms'
-		);
-
-		$menu_items['preview'] = array(
-			'label'        => __( 'Preview', 'gravityforms' ),
-			'icon'         => '<i class="fa fa-eye fa-lg"></i>',
-			'title'        => __( 'Preview this form', 'gravityforms' ),
-			'url'          => trailingslashit( site_url() ) . '?gf_page=preview&id=' . $form_id,
-			'menu_class'   => 'gf_form_toolbar_preview',
-			'link_class'   => self::toolbar_class( 'preview' ),
-			'target'       => '_blank',
-			'capabilities' => $preview_capabilities,
-			'priority'     => 700,
-		);
-
-		/*
-		// ---- Duplicate ----
-
-		$duplicate_capabilities = array( 'gravityforms_edit_forms', 'gravityforms_create_form' );
-
-		$menu_items['duplicate'] = array(
-			'label'        => __( 'Duplicate', 'gravityforms' ),
-			'icon'         => '<i class="fa fa-files-o fa-lg"></i>',
-			'title'        => __( 'Duplicate this form', 'gravityforms' ),
-			'url'		   => wp_nonce_url( "?page=gf_edit_forms&action=duplicate&arg={$form_id}", "gf_duplicate_form_{$form_id}" ),
-			'menu_class'   => 'gf_form_toolbar_duplicate',
-			'link_class'   => self::toolbar_class( 'duplicate' ),
-			'capabilities' => $duplicate_capabilities,
-			'priority'     => 600,
-		);
-
-		//---- Trash ----
-
-		$trash_capabilities = array( 'gravityforms_delete_forms' );
-
-		$menu_items['trash'] = array(
-			'label'        => __( 'Trash', 'gravityforms' ),
-			'icon'         => '<i class="fa fa-trash-o fa-lg"></i>',
-			'title'        => __( 'Trash this form', 'gravityforms' ),
-			'url'		   => wp_nonce_url( "?page=gf_edit_forms&action=trash&arg={$form_id}", "gf_delete_form_{$form_id}" ),
-			'menu_class'   => 'gf_form_toolbar_trash',
-			'link_class'   => self::toolbar_class( 'trash' ),
-			'capabilities' => $trash_capabilities,
-			'priority'     => 500,
-		);
-		*/
+			$menu_items['preview'] = GFCommon::get_preview_link_data( $preview_args );
+		}
 
 		return $menu_items;
 	}
@@ -3914,14 +4946,12 @@ class GFForms {
 				$url        = esc_url( rgar( $menu_item, 'url' ) );
 				$label      = esc_html( rgar( $menu_item, 'label' ) );
 				$target     = esc_attr( rgar( $menu_item, 'target' ) );
-				$sub_menu_items_string .= "<li class='{$menu_class}'><a href='{$url}' class='{$link_class}' target='{$target}'>{$label}</a></li>";
+				$icon       = rgar( $menu_item, 'icon' );
+				$sub_menu_items_string .= "<li class='{$menu_class}'><a href='{$url}' class='{$link_class}' target='{$target}'><span class='gform-form-toolbar__icon'>{$icon}</span> {$label}</a></li>";
 			}
 		}
-		if ( $compact ) {
-			$sub_menu_items_string = '<div class="gf_submenu"><ul>' . $sub_menu_items_string . '</ul></div>';
-		} else {
-			$sub_menu_items_string = '<div class="gf_submenu"><ul>' . $sub_menu_items_string . '</ul></div>';
-		}
+
+		$sub_menu_items_string = '<div class="gform-form-toolbar__submenu"><ul>' . $sub_menu_items_string . '</ul></div>';
 
 		return $sub_menu_items_string;
 	}
@@ -3954,7 +4984,8 @@ class GFForms {
 			$sub_menu_items[] = array(
 				'url'          => admin_url( "admin.php?page=gf_edit_forms&view=settings&subview={$tab['name']}&id={$form_id}" ),
 				'label'        => $tab['label'],
-				'capabilities' => array( 'gravityforms_edit_forms' )
+				'icon'         => GFCommon::get_icon_markup( $tab ),
+				'capabilities' => ( isset( $tab['capabilities'] ) ) ? $tab['capabilities'] : array( 'gravityforms_edit_forms' ),
 			);
 
 		}
@@ -4005,7 +5036,7 @@ class GFForms {
 			case 'entries' :
 				if ( rgget( 'page' ) == 'gf_new_form' ) {
 					return 'gf_toolbar_disabled';
-				} else if ( rgget( 'page' ) == 'gf_entries' && rgempty( 'view', $_GET ) ) {
+				} else if ( rgget( 'page' ) == 'gf_entries' && strpos( rgget( 'view' ), 'gf_results_' ) === false ) {
 					return 'gf_toolbar_active';
 				}
 
@@ -4065,7 +5096,7 @@ class GFForms {
 
 		$args = array(
 			'id'    => 'gform-forms',
-			'title' => '<div class="ab-item gforms-menu-icon svg" style="background-image: url(\'' . self::get_admin_icon_b64( '#888888' ) . '\');"></div><span class="ab-label">' . esc_html__( 'Forms', 'gravityforms' ) . '</span></a>',
+			'title' => '<div class="ab-item gforms-menu-icon svg" style="background-image: url(\'' . self::get_admin_icon_b64( '#888888' ) . '\');"></div><span class="ab-label">' . esc_html__( 'Forms', 'gravityforms' ) . '</span>',
 			'href'  => admin_url( 'admin.php?page=gf_edit_forms' ),
 		);
 
@@ -4093,7 +5124,7 @@ class GFForms {
 							array(
 								'id'     => 'gform-form-' . $recent_form_id,
 								'parent' => 'gform-form-recent-forms',
-								'title'  => $form['title'],
+								'title'  => esc_html( $form['title'] ),
 								'href'   => GFCommon::current_user_can_any( 'gravityforms_edit_forms' ) ? admin_url( 'admin.php?page=gf_edit_forms&id=' . $recent_form_id ) : '',
 							)
 						);
@@ -4191,37 +5222,51 @@ class GFForms {
 	 */
 	public static function maybe_auto_update( $update, $item ) {
 
-		if ( isset( $item->slug ) && $item->slug == 'gravityforms' ) {
-
-			GFCommon::log_debug( 'GFForms::maybe_auto_update() - Starting auto-update for gravityforms.' );
-
-			$auto_update_disabled = self::is_auto_update_disabled();
-			GFCommon::log_debug( 'GFForms::maybe_auto_update() - $auto_update_disabled: ' . var_export( $auto_update_disabled, true ) );
-
-			if ( $auto_update_disabled || version_compare( GFForms::$version, $item->new_version, '=>' ) ) {
-				GFCommon::log_debug( 'GFForms::maybe_auto_update() - Aborting update.' );
-
-				return false;
-			}
-
-			$current_major = implode( '.', array_slice( preg_split( '/[.-]/', GFForms::$version ), 0, 1 ) );
-			$new_major     = implode( '.', array_slice( preg_split( '/[.-]/', $item->new_version ), 0, 1 ) );
-
-			$current_branch = implode( '.', array_slice( preg_split( '/[.-]/', GFForms::$version ), 0, 2 ) );
-			$new_branch     = implode( '.', array_slice( preg_split( '/[.-]/', $item->new_version ), 0, 2 ) );
-
-			if ( $current_major == $new_major && $current_branch == $new_branch ) {
-				GFCommon::log_debug( __METHOD__ . '() - OK to update.' );
-
-				return true;
-			} else {
-				GFCommon::log_debug( __METHOD__ . '() - Aborting update. Not on the same major version.' );
-
-				return false;
-			}
+		if ( ! isset( $item->slug ) || $item->slug !== 'gravityforms' ) {
+			return $update;
 		}
 
-		return $update;
+		GFCommon::log_debug( 'GFForms::maybe_auto_update() - Starting auto-update for gravityforms.' );
+
+		$auto_update_disabled = self::is_auto_update_disabled();
+		GFCommon::log_debug( 'GFForms::maybe_auto_update() - $auto_update_disabled: ' . var_export( $auto_update_disabled, true ) );
+
+		if ( $auto_update_disabled || version_compare( GFForms::$version, $item->new_version, '>=' ) ) {
+			GFCommon::log_debug( 'GFForms::maybe_auto_update() - Aborting update.' );
+
+			return false;
+		}
+
+		if ( self::should_update_to_version( $item->new_version ) ) {
+			GFCommon::log_debug( __METHOD__ . '() - OK to update.' );
+
+			return true;
+		}
+
+		GFCommon::log_debug( __METHOD__ . sprintf( '() - Aborting. Automatically updating from %s to %s is not supported.', GFForms::$version, $item->new_version ) );
+
+		return false;
+
+	}
+
+	/**
+	 * Determines if the current version should update to the offered version.
+	 *
+	 * @since 2.4.22.4
+	 *
+	 * @param string $offered_ver The version number to be compared against the installed version number.
+	 *
+	 * @return bool
+	 */
+	public static function should_update_to_version( $offered_ver ) {
+		if ( version_compare( GFForms::$version, $offered_ver, '>=' ) ) {
+			return false;
+		}
+
+		$current_branch = implode( '.', array_slice( preg_split( '/[.-]/', GFForms::$version ), 0, 2 ) );
+		$new_branch     = implode( '.', array_slice( preg_split( '/[.-]/', $offered_ver ), 0, 2 ) );
+
+		return $current_branch == $new_branch;
 	}
 
 	/**
@@ -4231,46 +5276,11 @@ class GFForms {
 	 * @access  public
 	 *
 	 * @used-by GFForms::maybe_auto_update()
-	 * @used    DISALLOW_FILE_MODS
-	 * @used    WP_INSTALLING
-	 * @used    AUTOMATIC_UPDATER_DISABLED
-	 * @used    GFORM_DISABLE_AUTO_UPDATE
 	 *
 	 * @return bool True if auto update is disabled.  False otherwise.
 	 */
 	public static function is_auto_update_disabled() {
-
-		// Currently WordPress won't ask Gravity Forms to update if background updates are disabled.
-		// Let's double check anyway.
-
-		// WordPress background updates are disabled if you don't want file changes.
-		if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) {
-			return true;
-		}
-
-		if ( defined( 'WP_INSTALLING' ) ) {
-			return true;
-		}
-
-		$wp_updates_disabled = defined( 'AUTOMATIC_UPDATER_DISABLED' ) && AUTOMATIC_UPDATER_DISABLED;
-
-		/**
-		 * Overrides the WordPress AUTOMATIC_UPDATER_DISABLED constant.
-		 *
-		 * @since Unknown
-		 *
-		 * @param bool $wp_updates_disabled True if disables.  False otherwise.
-		 */
-		$wp_updates_disabled = apply_filters( 'automatic_updater_disabled', $wp_updates_disabled );
-
-		if ( $wp_updates_disabled ) {
-			GFCommon::log_debug( __METHOD__ . '() - Background updates are disabled in WordPress.' );
-
-			return true;
-		}
-
-		// Now check Gravity Forms Background Update Settings
-
+		// Check Gravity Forms Background Update Settings.
 		$enabled = get_option( 'gform_enable_background_updates' );
 		GFCommon::log_debug( 'GFForms::is_auto_update_disabled() - $enabled: ' . var_export( $enabled, true ) );
 
@@ -4288,6 +5298,146 @@ class GFForms {
 		}
 
 		return $disabled;
+	}
+
+	/**
+	 * Filter the auto-update message on the plugins page.
+	 *
+	 * @since Unknown
+	 *
+	 * @param string $html         HTML of the auto-update message.
+	 * @param string $plugin_file  Plugin file.
+	 * @param array  $plugin_data  Plugin details.
+	 *
+	 * @return string|void
+	 */
+	public static function auto_update_message( $html, $plugin_file, $plugin_data ) {
+		// Check if the plugin is Gravity Forms or an add-on.
+		if ( ! self::is_gf_or_addon( $plugin_data['PluginURI'] ) ) {
+			return $html;
+		}
+
+		$update            = GFCommon::get_version_info();
+		$no_update_message = esc_html__( 'Auto-updates unavailable.', 'gravityforms' );
+
+		// If it's not GF core, only filter the message if the license is invalid.
+		if ( 'gravityforms.php' !== substr( $plugin_file, strrpos( $plugin_file, '/' ) + 1 ) ) {
+			if ( ! rgar( $update, 'is_valid_key' ) ) {
+				return $no_update_message;
+			} else {
+				return $html;
+			}
+		}
+
+		// We've gotten this far, so it must be GF core.
+		if ( ! rgar( $update, 'is_valid_key' ) ) {
+			return $no_update_message;
+		}
+
+		$background_updates = get_option( 'gform_enable_background_updates' );
+		if ( $background_updates ) {
+			// auto-updates are enabled, so clicking on this will disable them.
+			$message = esc_html__( 'Disable auto-updates', 'gravityforms' );
+			$action  = 'disable';
+		} else {
+			// auto-updates are disabled, so clicking on this will enable them.
+			$message = esc_html__( 'Enable auto-updates', 'gravityforms' );
+			$action  = 'enable';
+		}
+
+		$html = sprintf(
+			'<a href="%s" class="gf-toggle-auto-update aria-button-if-js" data-gfaction="%s" data-nonce="%s"><span class="dashicons dashicons-update spin hidden gf-update-setting" aria-hidden="true"></span><span class="label gf-update-label">%s</span></a><div class="gf-auto-update-notice notice notice-error notice-alt inline hidden"><p></p></div>',
+			esc_url( 'admin.php?page=gf_settings' ),
+			$action . '-gf-updates',
+			wp_create_nonce( 'gf-updates' ),
+			$message
+		);
+
+		return $html;
+	}
+
+	/**
+	 * Filter the auto-update message on the Site Health page.
+	 *
+	 * @since 2.4.20.2
+	 *
+	 * @param string $auto_updates_string Text of auto-update message.
+	 * @param string $plugin_path         Plugin path.
+	 * @param array  $plugin              Plugin details.
+	 * @param bool   $enabled             Whether auto-updates are enabled.
+	 *
+	 * @return string|void
+	 */
+	public static function auto_update_debug_message( $auto_updates_string, $plugin_path, $plugin, $enabled ) {
+		// Check if the plugin is Gravity Forms or an add-on.
+		if ( ! self::is_gf_or_addon( $plugin['PluginURI'] ) ) {
+			return $auto_updates_string;
+		}
+
+		$update            = GFCommon::get_version_info();
+		$no_update_message = __( 'Please register your copy of Gravity Forms to enable automatic updates.', 'gravityforms' );
+
+		// If it's not GF core, only filter the message if the license is invalid.
+		if ( 'gravityforms.php' !== substr( $plugin_path, strrpos( $plugin_path, '/' ) + 1 ) ) {
+			if ( ! rgar( $update, 'is_valid_key' ) ) {
+				return $no_update_message;
+			} else {
+				return $auto_updates_string;
+			}
+		}
+
+		// Filter the message for GF core.
+		if ( rgar( $update, 'is_valid_key' ) ) {
+			return $auto_updates_string;
+		} else {
+			return $no_update_message;
+		}
+
+	}
+
+	/**
+	 * Enable or disable auto-updates.
+	 *
+	 * AJAX function to enable or disable auto-updates from the WordPress plugins page.
+	 *
+	 * @since 2.4.20.2
+	 */
+	public static function update_auto_update_setting() {
+
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'gf-updates' ) ) {
+			wp_send_json_error( __( 'Permissions error.', 'gravityforms' ) );
+		}
+
+		$acceptable_tasks = array( 'enable-gf-updates', 'disable-gf-updates' );
+		if ( ! rgar( $_POST, 'task' ) || ! in_array( $_POST['task'], $acceptable_tasks ) ) {
+			wp_send_json_error( __( 'Error processing request.  Please refresh and try again.', 'gravityforms' ) );
+		}
+
+		if ( 'enable-gf-updates' == $_POST['task'] ) {
+			update_option( 'gform_enable_background_updates', true );
+			wp_send_json_success( 'success' );
+		} else {
+			update_option( 'gform_enable_background_updates', false );
+			wp_send_json_success( 'success' );
+		}
+
+	}
+
+	/**
+	 * Check if a plugin is Gravity Forms or an offical add-on.
+	 *
+	 * @since 2.4.20.2
+	 *
+	 * @param string $plugin_uri The URI of the plugin as found in the plugin header.
+	 *
+	 * @return bool
+	 */
+	public static function is_gf_or_addon( $plugin_uri ) {
+		if ( strpos( $plugin_uri, 'gravityforms.com' ) ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public static function deprecate_add_on_methods() {
@@ -4427,7 +5577,7 @@ class GFForms {
 		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
 
 		$editor_styles = $base_url . "/css/shortcode-ui-editor-styles{$min}.css,";
-		$form_styles   = $base_url . "/css/formsmain{$min}.css";
+		$form_styles   = $base_url . "/legacy/css/formsmain{$min}.css";
 
 		if ( isset( $init['content_css'] ) ) {
 			if ( empty( $init['content_css'] ) ) {
@@ -4463,6 +5613,15 @@ class GFForms {
 		foreach ( $forms as $form ) {
 			$forms_options[ absint( $form->id ) ] = $form->title;
 		}
+
+		/**
+		 * Modify the list of available forms displayed in the shortcode builder.
+		 *
+		 * @since 2.4.23
+		 *
+		 * @param array $forms_options A collection of active forms on site.
+		 */
+		$forms_options = apply_filters( 'gform_shortcode_builder_forms', $forms_options );
 
 		$default_attrs = array(
 			array(
@@ -4596,6 +5755,59 @@ class GFForms {
 	}
 
 	/**
+	 * Display admin notice when logging is enabled.
+	 *
+	 * @since  2.4
+	 * @access public
+	 */
+	public static function maybe_display_logging_notice() {
+
+		$notice_disabled = defined( 'GF_LOGGING_DISABLE_NOTICE' ) && GF_LOGGING_DISABLE_NOTICE;
+		$logging_enabled = get_option( 'gform_enable_logging', false ) || is_plugin_active( 'gravityformslogging/logging.php' );
+
+		// If logging is disabled, return.
+		if ( $notice_disabled || ! $logging_enabled || ! GFCommon::current_user_can_any( 'gravityforms_edit_settings' ) ) {
+			return;
+		}
+
+		// Prepare message.
+		$message = sprintf(
+			'<p>%s</p><p><strong>%s</strong></p>',
+			sprintf(
+				esc_html__( "Gravity Forms logging is currently enabled. Log files can contain sensitive information so ensure that logging is only enabled for as long as is required for troubleshooting. %sClick here to disable logging.%s", 'gravityforms' ),
+				'<a href="' . esc_url( admin_url( 'admin.php?page=gf_settings' ) ) . '">',
+				'</a>'
+			),
+			esc_html__( "If you're currently receiving support, do not disable logging until the issue is resolved.", 'gravityforms' )
+		);
+
+		// Prepare script.
+		$script = "<script type='text/javascript'>
+			jQuery( document ).on( 'click', '#gform_disable_logging_notice a', function( e ) {
+				e.preventDefault();
+				var container = jQuery( '#gform_disable_logging_notice' );
+				jQuery.ajax( {
+					url: ajaxurl,
+					dataType: 'json',
+					data: {
+						action: 'gf_disable_logging',
+						nonce:  container.data( 'nonce' )
+					},
+					success: function( response ) {
+						if ( response.success ) {
+							container.removeClass( 'notice-error' ).addClass( 'notice-success' );
+						}
+						container.html( '<p>' + response.data + '</p>' );
+					}
+				} );             	
+			} );
+		</script>";
+
+		printf( '<div class="notice notice-error gf-notice" id="gform_disable_logging_notice" data-nonce="%s">%s</div>%s', wp_create_nonce( 'gf_disable_logging_nonce' ), $message, $script );
+
+	}
+
+	/**
 	 * Sets the screen options for the entry list.
 	 *
 	 * @since   2.0
@@ -4615,6 +5827,7 @@ class GFForms {
 			$return                   = array();
 			$return['default_filter'] = sanitize_key( rgpost( 'gform_default_filter' ) );
 			$return['per_page']       = sanitize_key( rgpost( 'gform_per_page' ) );
+			$return['display_mode']   = sanitize_key( rgpost( 'gform_entries_display_mode' ) );
 		} elseif ( $option = 'gform_forms_per_page' ) {
 			$return = $value;
 		}
@@ -4711,7 +5924,12 @@ class GFForms {
 
 		self::do_self_healing();
 
-		self::delete_orphaned_entries();
+		if ( ! get_option( 'gform_enable_logging' ) ) {
+			gf_logging()->delete_log_files();
+		}
+
+		require_once( 'includes/class-personal-data.php' );
+		GF_Personal_Data::cron_task();
 
 		GFCommon::log_debug( __METHOD__ . '(): Done.' );
 	}
@@ -4737,7 +5955,7 @@ class GFForms {
 			return;
 		}
 		GFCommon::log_debug( __METHOD__ . '(): Start deleting old export files' );
-		foreach ( glob( $export_folder . DIRECTORY_SEPARATOR . '*.csv', GLOB_BRACE ) as $filename ) {
+		foreach ( GFCommon::glob( '*.csv', $export_folder . DIRECTORY_SEPARATOR ) as $filename ) {
 			$timestamp = filemtime( $filename );
 			if ( $timestamp < time() - DAY_IN_SECONDS ) {
 				// Delete files over a day old
@@ -4769,7 +5987,7 @@ class GFForms {
 			return;
 		}
 		GFCommon::log_debug( __METHOD__ . '(): Start deleting old log files' );
-		foreach ( glob( $logs_folder . DIRECTORY_SEPARATOR . '*.txt', GLOB_BRACE ) as $filename ) {
+		foreach ( GFCommon::glob( '*.txt', $logs_folder . DIRECTORY_SEPARATOR ) as $filename ) {
 			$timestamp = filemtime( $filename );
 			if ( $timestamp < time() - MONTH_IN_SECONDS ) {
 				// Delete files over one month old
@@ -4783,17 +6001,25 @@ class GFForms {
 	/**
 	 * Deletes all rows in the lead table that don't have corresponding rows in the details table.
 	 *
+	 * @deprecated
 	 * @since  2.0.0
 	 * @access public
 	 * @global $wpdb
 	 */
 	public static function delete_orphaned_entries() {
+		_deprecated_function( __METHOD__, '2.4.17' );
+
 		global $wpdb;
+
+		if ( version_compare( GFFormsModel::get_database_version(), '2.3-beta-1', '<' ) || GFFormsModel::has_batch_field_operations() ) {
+			return;
+		}
+
 		GFCommon::log_debug( __METHOD__ . '(): Starting to delete orphaned entries' );
-		$lead_table         = GFFormsModel::get_lead_table_name();
-		$lead_details_table = GFFormsModel::get_lead_details_table_name();
-		$sql                = "DELETE FROM {$lead_table} WHERE id NOT IN( SELECT lead_id FROM {$lead_details_table} )";
-		$result             = $wpdb->query( $sql );
+		$entry_table      = GFFormsModel::get_entry_table_name();
+		$entry_meta_table = GFFormsModel::get_entry_meta_table_name();
+		$sql              = "DELETE FROM {$entry_table} WHERE id NOT IN( SELECT entry_id FROM {$entry_meta_table} )";
+		$result           = $wpdb->query( $sql );
 		GFCommon::log_debug( __METHOD__ . '(): Delete result: ' . print_r( $result, true ) );
 	}
 
@@ -4855,6 +6081,29 @@ class GFForms {
 	}
 
 	/**
+	 * Preload the webfonts we use as font-face directives to avoid FOUT.
+	 *
+	 * @since 2.5
+	 *
+	 * @return void
+	 */
+	public static function preload_webfonts() {
+		$preloaded = array(
+				'inter-medium-webfont.woff',
+				'inter-medium-webfont.woff2',
+				'inter-regular-webfont.woff',
+				'inter-regular-webfont.woff2',
+				'inter-semibold-webfont.woff',
+				'inter-semibold-webfont.woff2',
+		);
+
+		foreach( $preloaded as $font_file ) {
+			$url = GFCommon::get_font_url( $font_file );
+			printf( '<link rel="preload" as="font" href="%s" type="font/woff2" crossorigin="anonymous">%s', esc_url( $url ), "\r\n" );
+		}
+	}
+
+	/**
 	 * Drops a table index.
 	 *
 	 * @access     public
@@ -4908,6 +6157,123 @@ class GFForms {
 
 		gf_upgrade()->upgrade_schema();
 	}
+
+	/**
+	 * Creates an instance of GF_Background_Upgrader and stores it in GFForms::$background_upgrader
+	 *
+	 * @since 2.3
+	 */
+	public static function init_background_upgrader() {
+		if ( empty( self::$background_upgrader ) ) {
+			require_once( plugin_dir_path( __FILE__ ) . 'includes/class-gf-background-upgrader.php' );
+			self::$background_upgrader = new GF_Background_Upgrader();
+		}
+	}
+
+	/**
+	 * Target for the WordPress 'query' filter. Triggers an PHP Notice if an outdated add-on or custom code attempts to
+	 * access tables that are not valid for this version of Gravity Forms.
+	 *
+	 * @since 2.3
+	 *
+	 * @param $query
+	 *
+	 * @return string
+	 */
+	public static function filter_query( $query ) {
+		global $wpdb;
+
+		if ( preg_match( "/$wpdb->prefix(rg_lead_detail|rg_lead_meta|rg_lead_notes|rg_lead|rg_form_meta|rg_form_view|rg_form|rg_incomplete_submissions)/", $query, $matches ) ) {
+			if ( version_compare( GFFormsModel::get_database_version(), '2.3-dev-1', '>' ) ) {
+				$table_name = $matches[0];
+				$url = 'https://docs.gravityforms.com/database-storage-structure-reference/#changes-from-gravity-forms-2-2';
+				/* translators: 1: The table name 2: the URL with further details */
+				$message = esc_html__( 'An outdated add-on or custom code is attempting to access the %1$s table which is not valid in this version of Gravity Forms. Update your add-ons and custom code to prevent loss of form data. Further details: %2$s', 'gravityforms' );
+				$notice = sprintf( $message, $table_name, $url );
+				trigger_error( $notice );
+			}
+		}
+		return $query;
+	}
+
+	/**
+	 * Target for the admin_notices action.
+	 *
+	 * @since 2.3
+	 *
+	 * Displays site-side dismissible notices.
+	 */
+	public static function action_admin_notices() {
+		GFCommon::display_dismissible_message( false, 'site-wide' );
+	}
+
+	/**
+	 * Registers the Gravity Forms data exporter.
+	 *
+	 * @since 2.4
+	 *
+	 * @param array $exporters
+	 *
+	 * @return array
+	 */
+	public static function register_data_exporter( $exporters ) {
+		$exporters['gravityforms'] = array(
+			'exporter_friendly_name' => __( 'Gravity Forms Exporter' ),
+			'callback' => array( 'GFForms', 'data_exporter' ),
+		);
+		return $exporters;
+	}
+
+	/**
+	 * Registers the Gravity Forms data eraser.
+	 *
+	 * @since 2.4
+	 *
+	 * @param array $erasers
+	 *
+	 * @return array
+	 */
+	public static function register_data_eraser( $erasers ) {
+		$erasers['gravityforms'] = array(
+			'eraser_friendly_name' => __( 'Gravity Forms Eraser' ),
+			'callback' => array( 'GFForms', 'data_eraser' ),
+		);
+		return $erasers;
+	}
+
+	/**
+	 * Callback for the WordPress data exporter.
+	 *
+	 * @since 2.4
+	 *
+	 * @param string $email_address
+	 * @param int    $page
+	 *
+	 * @return array
+	 */
+	public static function data_exporter( $email_address, $page = 1 ) {
+
+		require_once( 'includes/class-personal-data.php' );
+
+		return GF_Personal_Data::data_exporter( $email_address, $page );
+	}
+
+	/**
+	 * Callback for the WordPress data eraser.
+	 *
+	 * @since 2.4
+	 *
+	 * @param string $email_address
+	 * @param int    $page
+	 *
+	 * @return array
+	 */
+	public static function data_eraser( $email_address, $page = 1 ) {
+
+		require_once( 'includes/class-personal-data.php' );
+
+		return GF_Personal_Data::data_eraser( $email_address, $page );
+	}
 }
 
 /**
@@ -4924,18 +6290,18 @@ class RGForms extends GFForms {
  *
  * Should be used to insert a Gravity Form from code.
  *
- * @param string     $id                  The form ID
- * @param bool       $display_title       If the form title should be displayed in the form. Defaults to true.
- * @param bool       $display_description If the form description should be displayed in the form. Defaults to true.
- * @param bool       $display_inactive    If the form should be displayed if marked as inactive. Defaults to false.
- * @param array|null $field_values        Default field values. Defaults to null.
- * @param bool       $ajax                If submission should be processed via AJAX. Defaults to false.
- * @param int        $tabindex            Starting tabindex. Defaults to 1.
- * @param bool       $echo                If the field should be echoed.  Defaults to true.
+ * @param string $id The form ID
+ * @param bool $display_title If the form title should be displayed in the form. Defaults to true.
+ * @param bool $display_description If the form description should be displayed in the form. Defaults to true.
+ * @param bool $display_inactive If the form should be displayed if marked as inactive. Defaults to false.
+ * @param array|null $field_values Default field values. Defaults to null.
+ * @param bool $ajax If submission should be processed via AJAX. Defaults to false.
+ * @param int $tabindex Starting tabindex. Defaults to 0.
+ * @param bool $echo If the field should be echoed.  Defaults to true.
  *
  * @return string|void
  */
-function gravity_form( $id, $display_title = true, $display_description = true, $display_inactive = false, $field_values = null, $ajax = false, $tabindex = 1, $echo = true ) {
+function gravity_form( $id, $display_title = true, $display_description = true, $display_inactive = false, $field_values = null, $ajax = false, $tabindex = 0, $echo = true ) {
 	if ( ! $echo ) {
 		return GFForms::get_form( $id, $display_title, $display_description, $display_inactive, $field_values, $ajax, $tabindex );
 	}
@@ -4959,7 +6325,7 @@ function gf_upgrade() {
  * @uses GFForms::enqueue_form_scripts()
  *
  * @param string $form_id The form ID.
- * @param bool   $is_ajax If the form is submitted via AJAX.  Defaults to false.
+ * @param bool $is_ajax If the form is submitted via AJAX.  Defaults to false.
  */
 function gravity_form_enqueue_scripts( $form_id, $is_ajax = false ) {
 	GFForms::enqueue_form_scripts( $form_id, $is_ajax );
@@ -4969,8 +6335,8 @@ if ( ! function_exists( 'rgget' ) ) {
 	/**
 	 * Helper function for getting values from query strings or arrays
 	 *
-	 * @param string $name  The key
-	 * @param array  $array The array to search through.  If null, checks query strings.  Defaults to null.
+	 * @param string $name The key
+	 * @param array $array The array to search through.  If null, checks query strings.  Defaults to null.
 	 *
 	 * @return string The value.  If none found, empty string.
 	 */
@@ -4995,8 +6361,8 @@ if ( ! function_exists( 'rgpost' ) ) {
 	/**
 	 * Helper function to obtain POST values.
 	 *
-	 * @param string $name            The key
-	 * @param bool   $do_stripslashes Optional. Performs stripslashes_deep.  Defaults to true.
+	 * @param string $name The key
+	 * @param bool $do_stripslashes Optional. Performs stripslashes_deep.  Defaults to true.
 	 *
 	 * @return string The value.  If none found, empty string.
 	 */
@@ -5018,8 +6384,8 @@ if ( ! function_exists( 'rgar' ) ) {
 	 * @since  Unknown
 	 * @access public
 	 *
-	 * @param array  $array   Array from which the property's value should be retrieved.
-	 * @param string $prop    Name of the property to be retrieved.
+	 * @param array $array Array from which the property's value should be retrieved.
+	 * @param string $prop Name of the property to be retrieved.
 	 * @param string $default Optional. Value that should be returned if the property is not set or empty. Defaults to null.
 	 *
 	 * @return null|string|mixed The value
@@ -5047,8 +6413,8 @@ if ( ! function_exists( 'rgars' ) ) {
 	 * @since  Unknown
 	 * @access public
 	 *
-	 * @param array  $array   The array to search in.
-	 * @param string $name    The name of the property to find.
+	 * @param array $array The array to search in.
+	 * @param string $name The name of the property to find.
 	 * @param string $default Optional. Value that should be returned if the property is not set or empty. Defaults to null.
 	 *
 	 * @return null|string|mixed The value
@@ -5076,8 +6442,8 @@ if ( ! function_exists( 'rgempty' ) ) {
 	 * @since  Unknown
 	 * @access public
 	 *
-	 * @param string $name  The property name to check.
-	 * @param array  $array Optional. An array to check through.  Otherwise, checks for POST variables.
+	 * @param string $name The property name to check.
+	 * @param array $array Optional. An array to check through.  Otherwise, checks for POST variables.
 	 *
 	 * @return bool True if empty.  False otherwise.
 	 */
@@ -5120,7 +6486,7 @@ if ( ! function_exists( 'rgobj' ) ) {
 	 * @since  Unknown
 	 * @access public
 	 *
-	 * @param object $obj  The object to check
+	 * @param object $obj The object to check
 	 * @param string $name The property name to check for
 	 *
 	 * @return string The property value
@@ -5140,9 +6506,9 @@ if ( ! function_exists( 'rgexplode' ) ) {
 	 * @since  Unknown
 	 * @access public
 	 *
-	 * @param string $sep    The delimiter between values
+	 * @param string $sep The delimiter between values
 	 * @param string $string The string to convert
-	 * @param int    $count  The expected number of items in the resulting array
+	 * @param int $count The expected number of items in the resulting array
 	 *
 	 * @return array $ary The exploded array
 	 */
@@ -5167,7 +6533,7 @@ if ( ! function_exists( 'gf_apply_filters' ) ) {
 	 * @access public
 	 *
 	 * @param string|array $filter The name of the filter.
-	 * @param mixed  $value  The value to filter.
+	 * @param mixed $value The value to filter.
 	 *
 	 * @return mixed The filtered value.
 	 */
@@ -5195,9 +6561,9 @@ if ( ! function_exists( 'gf_apply_filters' ) ) {
 
 		// Apply modified versions of filter
 		foreach ( $modifiers as $modifier ) {
-			$modifier = empty( $modifier ) ? '' : sprintf( '_%s', $modifier );
-			$filter .= $modifier;
-			$value = apply_filters( $filter, $value, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9] );
+			$modifier = rgblank( $modifier ) ? '' : sprintf( '_%s', $modifier );
+			$filter   .= $modifier;
+			$value    = apply_filters( $filter, $value, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9] );
 		}
 
 		return $value;
@@ -5214,7 +6580,7 @@ if ( ! function_exists( 'gf_do_action' ) ) {
 	 * @since  1.9.12
 	 * @access public
 	 *
-	 * @param string $action The action.
+	 * @param string|array $action The action.
 	 */
 	function gf_do_action( $action ) {
 
@@ -5239,9 +6605,71 @@ if ( ! function_exists( 'gf_do_action' ) ) {
 
 		// Apply modified versions of filter
 		foreach ( $modifiers as $modifier ) {
-			$modifier = empty( $modifier ) ? '' : sprintf( '_%s', $modifier );
-			$action .= $modifier;
+			$modifier = rgblank( $modifier ) ? '' : sprintf( '_%s', $modifier );
+			$action   .= $modifier;
 			do_action( $action, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9] );
 		}
+	}
+}
+
+if ( ! function_exists( 'gf_has_filters' ) ) {
+	/**
+	 * Determines if a callback has been registered for the specified filter.
+	 *
+	 * @since 2.4.18
+	 *
+	 * @param array $filter An array containing the filter tag and modifiers.
+	 * @param bool|callable $function_to_check The optional callback to check for.
+	 *
+	 * @return bool
+	 */
+	function gf_has_filters( $filter, $function_to_check = false ) {
+		$modifiers = array_splice( $filter, 1, count( $filter ) );
+		$filter    = $filter[0];
+
+		// Adding empty modifier for the base filter.
+		array_unshift( $modifiers, '' );
+
+		foreach ( $modifiers as $modifier ) {
+			$modifier = rgblank( $modifier ) ? '' : sprintf( '_%s', $modifier );
+			$filter   .= $modifier;
+			if ( has_filter( $filter, $function_to_check ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+}
+
+if ( ! function_exists( 'gf_has_filter' ) ) {
+	/**
+	 * Determines if a callback has been registered for the specified filter.
+	 *
+	 * @since 2.4.18
+	 *
+	 * @param array $filter An array containing the filter tag and modifiers.
+	 * @param bool|callable $function_to_check The optional callback to check for.
+	 *
+	 * @return bool
+	 */
+	function gf_has_filter( $filter, $function_to_check = false ) {
+		return gf_has_filters( $filter, $function_to_check );
+	}
+}
+
+if ( ! function_exists( 'gf_has_action' ) ) {
+	/**
+	 * Determines if a callback has been registered for the specified action.
+	 *
+	 * @since 2.4.18
+	 *
+	 * @param array $action An array containing the action tag and modifiers.
+	 * @param bool|callable $function_to_check The optional callback to check for.
+	 *
+	 * @return bool
+	 */
+	function gf_has_action( $action, $function_to_check = false ) {
+		return gf_has_filters( $action, $function_to_check );
 	}
 }

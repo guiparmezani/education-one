@@ -9,16 +9,24 @@ class Report
     /**
      * WP Staging Support Email
      *
-     * @var string 
+     * @var string
      */
     const WPSTG_SUPPORT_EMAIL = "support@wp-staging.com";
 
     /**
      * Email Subject for Issue Email
      *
-     * @var string 
+     * @var string
      */
     const EMAIL_SUBJECT = "Report Issue!";
+
+    /**
+     * Maximum attachment file size of 5MB
+     *
+     * @var int
+     *
+     */
+    const ATTACHMENT_MAX_FILE_SIZE = 5242880;
 
     /**
      * Send customer issue report
@@ -41,35 +49,34 @@ class Report
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = __('Email address is not valid.', 'wp-staging');
         }
-        
+
         if (empty($message)) {
             $errors[] = __('Please enter your issue.', 'wp-staging');
         }
-        
+
         if (empty($terms)) {
             $errors[] = __('Please accept our privacy policy.', 'wp-staging');
-        } 
+        }
 
         if (count($errors) !== 0) {
             return $errors;
         }
 
         $attachments = [];
-        $maxFileSize = 512 * 1024;
         if ($provider) {
             $message .= "\n\n'Hosting provider: " . $provider;
         }
-        
+
         if (!empty($syslog)) {
             $message .= "\n\n'" . $this->getSyslog();
             $debugLogFile = WP_CONTENT_DIR . '/debug.log';
-            if (filesize($debugLogFile) && $maxFileSize > filesize($debugLogFile)) {
+            if (file_exists($debugLogFile) && self::ATTACHMENT_MAX_FILE_SIZE > filesize($debugLogFile)) {
                 $attachments[] = $debugLogFile;
             }
         }
 
         $transient = new ReportSubmitTransient();
-        if ($transient->getTransient() && !$forceSend) {
+        if (!$forceSend && $transient->getTransient()) {
             // to show alert using js
             $errors[] = [
                 "status" => 'already_submitted',
@@ -114,9 +121,8 @@ class Report
 
         if ($success) {
             return true;
-        } 
+        }
 
         return false;
     }
-
 }

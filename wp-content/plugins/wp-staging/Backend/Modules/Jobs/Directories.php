@@ -2,16 +2,14 @@
 
 namespace WPStaging\Backend\Modules\Jobs;
 
-// No Direct Access
-if (!defined("WPINC")) {
-    die;
-}
-
 use Exception;
 use WPStaging\Core\WPStaging;
+use WPStaging\Framework\CloningProcess\ExcludedPlugins;
+use WPStaging\Framework\Filesystem\Filters\ExcludeFilter;
+use WPStaging\Framework\Traits\FileScanToCacheTrait;
+use WPStaging\Framework\Utils\SlashMode;
 use WPStaging\Framework\Utils\Strings;
-use WPStaging\Core\Iterators\RecursiveDirectoryIterator;
-use WPStaging\Core\Iterators\RecursiveFilterExclude;
+use WPStaging\Framework\Utils\WpDefaultDirectories;
 
 /**
  * Class Files
@@ -19,6 +17,7 @@ use WPStaging\Core\Iterators\RecursiveFilterExclude;
  */
 class Directories extends JobExecutable
 {
+    use FileScanToCacheTrait;
 
     /**
      * @var array
@@ -38,11 +37,23 @@ class Directories extends JobExecutable
     private $filename;
 
     /**
+     * @var WpDefaultDirectories
+     */
+    private $wpDirectories;
+
+    /**
+     * @var Strings
+     */
+    private $strUtils;
+
+    /**
      * Initialize
      */
     public function initialize()
     {
         $this->filename = $this->cache->getCacheDir() . "files_to_copy." . $this->cache->getCacheExtension();
+        $this->wpDirectories = new WpDefaultDirectories();
+        $this->strUtils = new Strings();
     }
 
     /**
@@ -51,6 +62,10 @@ class Directories extends JobExecutable
      */
     protected function calculateTotalSteps()
     {
+        // Set total to 5 for multisite
+        if ($this->isMultisiteAndPro()) {
+            $this->total = 5;
+        }
 
         $this->options->totalSteps = $this->total + count($this->options->extraDirectories);
     }
@@ -61,14 +76,13 @@ class Directories extends JobExecutable
      */
     public function start()
     {
-
         // Execute steps
         $this->run();
 
         // Save option, progress
         $this->saveProgress();
 
-        return ( object )$this->response;
+        return (object)$this->response;
     }
 
     /**
@@ -78,25 +92,14 @@ class Directories extends JobExecutable
      */
     private function getWpRootFiles()
     {
-
         // open file handle
         $files = $this->open($this->filename, 'a');
 
+        $this->log("Scanning / for its files");
+
         try {
-
             // Iterate over wp root directory
-            $iterator = new \DirectoryIterator(WPStaging::getWPpath());
-
-            $this->log("Scanning / for files");
-
-            // Write path line
-            foreach ($iterator as $item) {
-                if (!$item->isDot() && $item->isFile()) {
-                    if ($this->write($files, $iterator->getFilename() . PHP_EOL)) {
-                        $this->options->totalFiles++;
-                    }
-                }
-            }
+            $this->options->totalFiles = $this->scanToCacheFile($files, ABSPATH);
         } catch (Exception $e) {
             $this->returnException('Error: ' . $e->getMessage());
         }
@@ -106,67 +109,42 @@ class Directories extends JobExecutable
     }
 
     /**
-     * Step 2
+     * Step 1
      * Get WP Content Files
      */
     private function getWpContentFiles()
     {
-
+        $directory = WP_CONTENT_DIR;
         // Skip it
-        if ($this->isDirectoryExcluded(WP_CONTENT_DIR)) {
-            $this->log("Skip " . WPStaging::getWPpath() . WP_CONTENT_DIR);
+        if ($this->isDirectoryExcluded($directory)) {
+            $this->log("Skip " . $directory);
             return true;
         }
         // open file handle
         $files = $this->open($this->filename, 'a');
 
-        /**
-         * Excluded folders relative to the folder to iterate
-         */
+        $relativeDirectory = str_replace(ABSPATH, '', $directory);
+        $this->log("Scanning " . $relativeDirectory . " for its sub-directories and files");
+
         $excludePaths = [
-            'cache',
-            'plugins/wps-hide-login',
-            'uploads/sites'
+            $this->wpDirectories->getRelativeWpContentPath(SlashMode::BOTH_SLASHES) . 'cache',
+            '/' . str_replace(ABSPATH, '', rtrim(WPStaging::getContentDir(), '/')),
+            '**/wp-staging*/**/node_modules', // only exclude node modules in WP Staging's plugins
         ];
 
-        /**
-         * Get user excluded folders
-         */
-        $directory = [];
-        foreach ($this->options->excludedDirectories as $dir) {
-            $dir = wpstg_replace_windows_directory_separator($dir);
-            $wpContentDir = wpstg_replace_windows_directory_separator(WP_CONTENT_DIR);
-
-            if (strpos($dir, $wpContentDir) !== false) {
-                $directory[] = ltrim(str_replace($wpContentDir, '', $dir), '/\\');
-            }
+        if (is_multisite() && !is_main_site()) {
+            $excludePaths[] = $this->wpDirectories->getRelativeUploadPath(SlashMode::LEADING_SLASH);
+        } else {
+            $excludePaths[] = $this->wpDirectories->getRelativeUploadPath(SlashMode::BOTH_SLASHES) . 'sites';
         }
 
-        $excludePaths = array_merge($excludePaths, $directory);
+        // add excluded plugins defined by WP Staging
+        $excludePaths = array_merge((new ExcludedPlugins())->getPluginsToExcludeWithRelativePath(), $excludePaths);
+
+        $excludePaths = array_merge($this->getFilteredExcludedPaths(), $excludePaths);
 
         try {
-
-            // Iterate over content directory
-            $iterator = new RecursiveDirectoryIterator(WP_CONTENT_DIR);
-
-            // Exclude uploads, plugins or themes
-            $iterator = new RecursiveFilterExclude($iterator, apply_filters('wpstg_clone_excl_folders', $excludePaths));
-
-            // Recursively iterate over content directory
-            $iterator = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::LEAVES_ONLY, \RecursiveIteratorIterator::CATCH_GET_CHILD);
-
-            $this->log("Scanning /wp-content folder " . WP_CONTENT_DIR);
-
-            // Write path line
-            foreach ($iterator as $item) {
-                if ($item->isFile()) {
-                    $wpContentDir = str_replace(ABSPATH, '', WP_CONTENT_DIR);
-                    $file = $wpContentDir . '/' . $iterator->getSubPathName() . PHP_EOL;
-                    if ($this->write($files, $file)) {
-                        $this->options->totalFiles++;
-                    }
-                }
-            }
+            $this->options->totalFiles += $this->scanToCacheFile($files, $directory, true, $excludePaths, $this->getFilteredExcludedFileSizes());
         } catch (Exception $e) {
             $this->returnException('Error: ' . $e->getMessage());
         }
@@ -183,34 +161,20 @@ class Directories extends JobExecutable
      */
     private function getWpIncludesFiles()
     {
-
+        $directory = ABSPATH . 'wp-includes';
         // Skip it
-        if ($this->isDirectoryExcluded(WPStaging::getWPpath() . 'wp-includes/')) {
-            $this->log("Skip " . WPStaging::getWPpath() . 'wp-includes/');
+        if ($this->isDirectoryExcluded($directory)) {
+            $this->log("Skip " . $directory);
             return true;
         }
-
-        // open file handle and attach data to end of file
+        // open file handle
         $files = $this->open($this->filename, 'a');
 
+        $relativeDirectory = str_replace(ABSPATH, '', $directory);
+        $this->log("Scanning " . $relativeDirectory . " for its sub-directories and files");
+
         try {
-
-            // Iterate over wp-admin directory
-            $iterator = new RecursiveDirectoryIterator(WPStaging::getWPpath() . 'wp-includes/');
-
-            // Recursively iterate over wp-includes directory
-            $iterator = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::LEAVES_ONLY, \RecursiveIteratorIterator::CATCH_GET_CHILD);
-
-            $this->log("Scanning /wp-includes for its sub-directories and files");
-
-            // Write files
-            foreach ($iterator as $item) {
-                if ($item->isFile()) {
-                    if ($this->write($files, 'wp-includes/' . $iterator->getSubPathName() . PHP_EOL)) {
-                        $this->options->totalFiles++;
-                    }
-                }
-            }
+            $this->options->totalFiles += $this->scanToCacheFile($files, $directory, true);
         } catch (Exception $e) {
             $this->returnException('Error: ' . $e->getMessage());
         }
@@ -227,36 +191,20 @@ class Directories extends JobExecutable
      */
     private function getWpAdminFiles()
     {
-
+        $directory = ABSPATH . 'wp-admin';
         // Skip it
-        if ($this->isDirectoryExcluded(WPStaging::getWPpath() . 'wp-admin/')) {
-            $this->log("Skip " . WPStaging::getWPpath() . 'wp-admin/');
+        if ($this->isDirectoryExcluded($directory)) {
+            $this->log("Skip " . $directory);
             return true;
         }
-
-        // open file handle and attach data to end of file
+        // open file handle
         $files = $this->open($this->filename, 'a');
 
+        $relativeDirectory = str_replace(ABSPATH, '', $directory);
+        $this->log("Scanning " . $relativeDirectory . " for its sub-directories and files");
+
         try {
-
-            // Iterate over wp-admin directory
-            $iterator = new RecursiveDirectoryIterator(WPStaging::getWPpath() . 'wp-admin/');
-
-            // Recursively iterate over content directory
-            $iterator = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::LEAVES_ONLY, \RecursiveIteratorIterator::CATCH_GET_CHILD);
-
-            $this->log("Scanning /wp-admin for its sub-directories and files");
-
-            // Write path line
-            foreach ($iterator as $item) {
-                if ($item->isFile()) {
-                    if ($this->write($files, 'wp-admin/' . $iterator->getSubPathName() . PHP_EOL)) {
-                        $this->options->totalFiles++;
-                        // Too much cpu time
-                        //$this->options->totalFileSize += $iterator->getSize();
-                    }
-                }
-            }
+            $this->options->totalFiles += $this->scanToCacheFile($files, $directory, true);
         } catch (Exception $e) {
             $this->returnException('Error: ' . $e->getMessage());
         }
@@ -267,43 +215,83 @@ class Directories extends JobExecutable
     }
 
     /**
-     * Step 4 - x
+     * Step 4 (Multisite Only)
+     * Get WP Content Uploads Files multisite folder wp-content/uploads/sites or wp-content/blogs.dir/ID/files
+     */
+    private function getWpContentUploadsSites()
+    {
+        // Skip if main site is cloned
+        if (is_main_site()) {
+            return true;
+        }
+
+        // Skip if symlink option selected
+        if ($this->options->uploadsSymlinked) {
+            return true;
+        }
+
+        // Absolute path to uploads folder
+        $directory = $this->wpDirectories->getUploadsPath();
+
+        // Skip it
+        if (!is_dir($directory)) {
+            $this->log("Skipping: {$directory} does not exist.");
+            return true;
+        }
+
+        // Skip it
+        if ($this->isDirectoryExcluded($directory)) {
+            $this->log("Skipping: {$directory}");
+            return true;
+        }
+
+
+        // open file handle
+        $files = $this->open($this->filename, 'a');
+
+        $excludePaths = [
+            '/' . str_replace(ABSPATH, ' ', rtrim(WPStaging::getContentDir(), '/')),
+            '**/node_modules',
+        ];
+
+        $excludePaths = array_merge($this->getFilteredExcludedPaths(), $excludePaths);
+
+        try {
+            $this->options->totalFiles += $this->scanToCacheFile($files, $directory, true, $excludePaths, $this->getFilteredExcludedFileSizes());
+        } catch (Exception $e) {
+            $this->returnException('Error: ' . $e->getMessage());
+        }
+
+        // close the file handler
+        $this->close($files);
+        return true;
+    }
+
+    /**
+     * Step 4 - x (Single Site)
+     * Step 5 - x (Multisite)
      * Get extra folders of the wp root level
      * Does not collect wp-includes, wp-admin and wp-content folder
+     * @param string $folder
+     * @return boolean
      */
     private function getExtraFiles($folder)
     {
+        if (empty($folder)) {
+            return true;
+        }
 
-        if (!is_dir($folder)) {
+        $absoluteExtraPath = ABSPATH . $folder;
+        if (!is_dir($absoluteExtraPath)) {
             return true;
         }
 
         // open file handle and attach data to end of file
         $files = $this->open($this->filename, 'a');
+        $this->log("Scanning {$folder} for its sub-directories and files");
 
         try {
-
-            // Iterate over extra directory
-            $iterator = new RecursiveDirectoryIterator($folder);
-
-            $exclude = [];
-
-            $iterator = new RecursiveFilterExclude($iterator, $exclude);
-            // Recursively iterate over content directory
-            $iterator = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::LEAVES_ONLY, \RecursiveIteratorIterator::CATCH_GET_CHILD);
-
-            $strings = new Strings();
-            $this->log("Scanning {$strings->getLastElemAfterString( '/', $folder )} for its sub-directories and files");
-
-            // Write path line
-            foreach ($iterator as $item) {
-                if ($item->isFile()) {
-                    $path = str_replace(wpstg_replace_windows_directory_separator(WPStaging::getWPpath()), '', wpstg_replace_windows_directory_separator($folder)) . DIRECTORY_SEPARATOR . $iterator->getSubPathName() . PHP_EOL;
-                    if ($this->write($files, $path)) {
-                        $this->options->totalFiles++;
-                    }
-                }
-            }
+            $this->options->totalFiles += $this->scanToCacheFile($files, $absoluteExtraPath, true, $this->getFilteredExcludedPaths(), $this->getFilteredExcludedFileSizes());
         } catch (Exception $e) {
             $this->returnException('Error: ' . $e->getMessage());
         }
@@ -404,6 +392,12 @@ class Directories extends JobExecutable
             return false;
         }
 
+        if ($this->isMultisiteAndPro() && $this->options->currentStep == 4) {
+            $this->getWpContentUploadsSites();
+            $this->prepareResponse(false, true);
+            return false;
+        }
+
         if (isset($this->options->extraDirectories[$this->options->currentStep - $this->total])) {
             $this->getExtraFiles($this->options->extraDirectories[$this->options->currentStep - $this->total]);
             $this->prepareResponse(false, true);
@@ -456,29 +450,22 @@ class Directories extends JobExecutable
     }
 
     /**
-     * Replace forward slash with current directory separator
-     *
-     * @param string $path Path
-     *
-     * @return string
-     */
-    private function sanitizeDirectorySeparator($path)
-    {
-        $string = str_replace("/", "\\", $path);
-        return str_replace('\\\\', '\\', $string);
-    }
-
-    /**
      * Check if directory is excluded
      * @param string $directory
      * @return bool
      */
     protected function isDirectoryExcluded($directory)
     {
-        $directory = $this->sanitizeDirectorySeparator($directory);
+        $directory = $this->strUtils->sanitizeDirectorySeparator($directory);
         foreach ($this->options->excludedDirectories as $excludedDirectory) {
-            $excludedDirectory = $this->sanitizeDirectorySeparator($excludedDirectory);
-            if (strpos(trailingslashit($directory), trailingslashit($excludedDirectory)) === 0) {
+            $excludedDirectory = $this->strUtils->sanitizeDirectorySeparator($excludedDirectory);
+            // Check whether directory is itself is a part of excluded directories
+            if ($excludedDirectory === $directory) {
+                return true;
+            }
+
+            // Check whether directory a child of any excluded directories
+            if ($this->strUtils->startsWith($directory, $excludedDirectory . '/')) {
                 return true;
             }
         }
@@ -486,4 +473,46 @@ class Directories extends JobExecutable
         return false;
     }
 
+    /**
+     * Return List of all user defined file size excludes from hooks and through UI
+     * @return array
+     */
+    private function getFilteredExcludedFileSizes()
+    {
+        return apply_filters('wpstg_clone_file_size_exclude', $this->options->excludeSizeRules);
+    }
+
+    /**
+     * Return list of all exclude rules and exclude paths,
+     * Defined by user in hooks or through UI
+     * Defined by WP Staging i.e. cache or some plugins.
+     * @return array
+     */
+    private function getFilteredExcludedPaths()
+    {
+        $excludePaths = [];
+        $abspath = $this->strUtils->sanitizeDirectorySeparator(ABSPATH);
+        foreach ($this->options->excludedDirectories as $excludedDirectory) {
+            $directory = $this->strUtils->sanitizeDirectorySeparator($excludedDirectory);
+            if ($this->strUtils->startsWith($directory, $abspath)) {
+                $excludePaths[] = '/' . str_replace($abspath, '', $directory);
+                continue;
+            }
+
+            $excludePaths[] = $excludedDirectory;
+        }
+
+        if ($this->isMultisiteAndPro()) {
+            $excludePaths = apply_filters('wpstg_clone_mu_excl_folders', $excludePaths);
+        } else {
+            $excludePaths = apply_filters('wpstg_clone_excl_folders', $excludePaths);
+        }
+
+        $excludeFilters = new ExcludeFilter();
+        $excludeGlobRules = array_map(function ($rule) use ($excludeFilters) {
+            return $excludeFilters->mapExclude($rule);
+        }, $this->options->excludeGlobRules);
+
+        return array_merge($excludePaths, $excludeGlobRules);
+    }
 }

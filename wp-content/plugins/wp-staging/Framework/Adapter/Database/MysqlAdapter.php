@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpComposerExtensionStubsInspection */
 
 namespace WPStaging\Framework\Adapter\Database;
@@ -112,4 +113,21 @@ class MysqlAdapter implements InterfaceDatabaseClient
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function insertId()
+    {
+        // phpcs:ignore PHPCompatibility.Extensions.RemovedExtensions.mysql_DeprecatedRemoved
+        return mysql_insert_id($this->link);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function foundRows()
+    {
+        // phpcs:ignore PHPCompatibility.Extensions.RemovedExtensions.mysql_DeprecatedRemoved
+        return mysql_affected_rows($this->link);
+    }
 }

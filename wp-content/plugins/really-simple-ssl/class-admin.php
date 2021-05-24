@@ -65,6 +65,8 @@ class rsssl_admin extends rsssl_front_end
         register_deactivation_hook(dirname(__FILE__) . "/" . $this->plugin_filename, array($this, 'deactivate'));
 	    add_action('admin_init', array($this, 'add_privacy_info'));
 	    add_action('admin_init', array($this, 'maybe_dismiss_review_notice'));
+	    add_action( 'admin_init', array($this, 'insert_secure_cookie_settings'), 70);
+
 	    add_action( "update_option_rlrsssl_options", array( $this, "maybe_clear_transients" ), 10, 3 );
 
 	    // Only show deactivate popup when SSL has been enabled.
@@ -203,6 +205,8 @@ class rsssl_admin extends rsssl_front_end
             }
         }
 
+        add_action( 'admin_init', array( $this, 'check_upgrade' ), 10, 2 );
+
         //when SSL is enabled, and not enabled by user, ask for activation.
         add_action("admin_notices", array($this, 'show_notice_activate_ssl'), 10);
         add_action('rsssl_activation_notice', array($this, 'ssl_detected'), 10);
@@ -215,7 +219,6 @@ class rsssl_admin extends rsssl_front_end
         //settings page, form  and settings link in the plugins page
         add_action('admin_menu', array($this, 'add_settings_page'), 40);
 	    add_action('admin_init', array($this, 'create_form'), 40);
-	    add_action('admin_init', array($this, 'backward_compatibility'), 40);
         add_action('admin_init', array($this, 'listen_for_deactivation'), 40);
         add_action( 'update_option_rlrsssl_options', array( $this, 'maybe_remove_highlight_from_url' ), 50 );
 
@@ -246,14 +249,16 @@ class rsssl_admin extends rsssl_front_end
         if ( $prev_version && version_compare( $prev_version, '4.0', '<' ) ) {
             update_option('rsssl_remaining_tasks', true);
         }
-        update_option( 'rsssl_current_version', rsssl_version );
-    }
 
-	/**
-	 * Because of breaking changes in 4.0 we need to remove some legacy actions to ensure no issues occur
-	 */
-    public function backward_compatibility(){
-	    if ( function_exists('RSSSL_PRO') ) remove_action( 'admin_init', array(RSSSL_PRO()->rsssl_premium_options, 'add_pro_settings'),60);
+        if ( $prev_version && version_compare( $prev_version, '4.0.10', '<=' ) ) {
+            if (function_exists('is_wpe') && is_wpe()) {
+                $this->wp_redirect = true;
+                $this->htaccess_redirect = false;
+                $this->save_options();
+            }
+        }
+
+        update_option( 'rsssl_current_version', rsssl_version );
     }
 
     /**
@@ -540,91 +545,175 @@ class rsssl_admin extends rsssl_front_end
 
 		ob_start();
 		?>
-        <style>
-            #rsssl-message.error{
-                border-left-color:#d7263d;
-            }
-            .activate-ssl {
-                border-left: 4px solid #F8BE2E;
-            }
-            .activate-ssl .button {
-                margin-bottom: 5px;
-            }
+        <?php if ( is_rtl() ) { ?>
+            <style>
+                #rsssl-message .error{
+                    border-right-color:#d7263d;
+                }
+                .activate-ssl {
+                    border-right: 4px solid #F8BE2E;
+                }
+                .activate-ssl .button {
+                    margin-bottom: 5px;
+                }
 
-            #rsssl-message .button-primary {
-                margin-right: 10px;
-            }
+                #rsssl-message .button-primary {
+                    margin-left: 10px;
+                }
 
-            .rsssl-notice-header {
-                height: 60px;
-                border-bottom: 1px solid #dedede;
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                padding-left: 25px;
-            }
-            .rsssl-notice-header h1 {
-                font-weight: bold;
-            }
+                .rsssl-notice-header {
+                    height: 60px;
+                    border-bottom: 1px solid #dedede;
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding-right: 25px;
+                }
+                .rsssl-notice-header h1 {
+                    font-weight: bold;
+                }
 
-            .rsssl-notice-content {
-                margin-top: 20px;
-                padding-bottom: 20px;
-                padding-left: 25px;
-            }
+                .rsssl-notice-content {
+                    margin-top: 20px;
+                    padding-bottom: 20px;
+                    padding-right: 25px;
+                }
 
-            .rsssl-notice-footer {
-                border-top: 1px solid #dedede;
-                height: 35px;
-                display: flex;
-                align-items: center;
-                padding-top: 10px;
-                padding-bottom: 10px;
-                margin-left: 25px;
-                margin-right: 25px;
-            }
+                .rsssl-notice-footer {
+                    border-top: 1px solid #dedede;
+                    height: 35px;
+                    display: flex;
+                    align-items: center;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+                    margin-right: 25px;
+                    margin-left: 25px;
+                }
 
-            #rsssl-message {
-                padding: 0;
-                border-left-color: #333;
-            }
+                #rsssl-message {
+                    padding: 0;
+                    border-right-color: #333;
+                }
 
-            #rsssl-message .rsssl-notice-li::before {
-                vertical-align: middle;
-                margin-right: 25px;
-                color: lightgrey;
-                content: "\f345";
-                font: 400 21px/1 dashicons;
-            }
+                #rsssl-message .rsssl-notice-li::before {
+                    vertical-align: middle;
+                    margin-left: 25px;
+                    color: lightgrey;
+                    content: "\f345";
+                    font: 400 21px/1 dashicons;
+                }
 
-            #rsssl-message ul {
-                list-style: none;
-                list-style-position: inside;
-            }
-            #rsssl-message li {
-                margin-left:30px;
-                margin-bottom:10px;
-            }
-            #rsssl-message li:before {
-                background-color: #f8be2e;
-                color: #fff;
-                height: 10px;
-                width: 10px;
-                border-radius:50%;
-                content: '';
-                position: absolute;
-                margin-top: 5px;
-                margin-left:-30px;
-            }
+                #rsssl-message ul {
+                    list-style: none;
+                    list-style-position: inside;
+                }
+                #rsssl-message li {
+                    margin-right:30px;
+                    margin-bottom:10px;
+                }
+                #rsssl-message li:before {
+                    background-color: #f8be2e;
+                    color: #fff;
+                    height: 10px;
+                    width: 10px;
+                    border-radius:50%;
+                    content: '';
+                    position: absolute;
+                    margin-top: 5px;
+                    margin-right:-30px;
+                }
 
-            .settings_page_rlrsssl_really_simple_ssl #wpcontent #rsssl-message, .settings_page_really-simple-ssl #wpcontent #rsssl-message {
-                margin: 20px;
-            }
-            <?php echo apply_filters('rsssl_pro_inline_style', ''); ?>
+                .settings_page_rlrsssl_really_simple_ssl #wpcontent #rsssl-message, .settings_page_really-simple-ssl #wpcontent #rsssl-message {
+                    margin: 20px;
+                }
+                <?php echo apply_filters('rsssl_pro_inline_style', ''); ?>
+            </style>
+        <?php } else { ?>
+            <style>
+                #rsssl-message .error{
+                    border-left-color:#d7263d;
+                }
+                .activate-ssl {
+                    border-left: 4px solid #F8BE2E;
+                }
+                .activate-ssl .button {
+                    margin-bottom: 5px;
+                }
 
-        </style>
+                #rsssl-message .button-primary {
+                    margin-right: 10px;
+                }
 
+                .rsssl-notice-header {
+                    height: 60px;
+                    border-bottom: 1px solid #dedede;
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding-left: 25px;
+                }
+                .rsssl-notice-header h1 {
+                    font-weight: bold;
+                }
+
+                .rsssl-notice-content {
+                    margin-top: 20px;
+                    padding-bottom: 20px;
+                    padding-left: 25px;
+                }
+
+                .rsssl-notice-footer {
+                    border-top: 1px solid #dedede;
+                    height: 35px;
+                    display: flex;
+                    align-items: center;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+                    margin-left: 25px;
+                    margin-right: 25px;
+                }
+
+                #rsssl-message {
+                    padding: 0;
+                    border-left-color: #333;
+                }
+
+                #rsssl-message .rsssl-notice-li::before {
+                    vertical-align: middle;
+                    margin-right: 25px;
+                    color: lightgrey;
+                    content: "\f345";
+                    font: 400 21px/1 dashicons;
+                }
+
+                #rsssl-message ul {
+                    list-style: none;
+                    list-style-position: inside;
+                }
+                #rsssl-message li {
+                    margin-left:30px;
+                    margin-bottom:10px;
+                }
+                #rsssl-message li:before {
+                    background-color: #f8be2e;
+                    color: #fff;
+                    height: 10px;
+                    width: 10px;
+                    border-radius:50%;
+                    content: '';
+                    position: absolute;
+                    margin-top: 5px;
+                    margin-left:-30px;
+                }
+
+                .settings_page_rlrsssl_really_simple_ssl #wpcontent #rsssl-message, .settings_page_really-simple-ssl #wpcontent #rsssl-message {
+                    margin: 20px;
+                }
+                <?php echo apply_filters('rsssl_pro_inline_style', ''); ?>
+            </style>
+        <?php } ?>
         <div id="rsssl-message" class="notice <?php echo $class?> really-simple-plugins">
             <div class="rsssl-notice">
                 <div class="rsssl-notice-header">
@@ -1286,8 +1375,10 @@ class rsssl_admin extends rsssl_front_end
         $homeurl_ssl = str_replace("http://", "https://", get_option('home'));
         update_option('siteurl', $siteurl_ssl);
         update_option('home', $homeurl_ssl);
-    }
 
+        //RSSSL has it's own, more extensive mixed content fixer.
+	    update_option( 'https_migration_required', false );
+    }
 
     /**
      * On de-activation, siteurl and homeurl are reset to http
@@ -1355,6 +1446,7 @@ class rsssl_admin extends rsssl_front_end
         if ( $this->ssl_enabled ) {
 	        $this->remove_ssl_from_siteurl();
 	        $this->remove_ssl_from_siteurl_in_wpconfig();
+	        $this->remove_secure_cookie_settings();
 
 	        $this->site_has_ssl = FALSE;
 	        $this->hsts = FALSE;
@@ -1385,6 +1477,33 @@ class rsssl_admin extends rsssl_front_end
 	        $this->removeHtaccessEdit();
         }
     }
+
+	/**
+	 * remove secure cookie settings
+	 *
+	 * @since  4.0.10
+	 *
+	 * @access public
+	 *
+	 */
+
+	public function remove_secure_cookie_settings() {
+
+		if ( wp_doing_ajax() || !current_user_can("activate_plugins")) return;
+
+		if ( !$this->contains_secure_cookie_settings()) return;
+
+		$wpconfig_path = $this->find_wp_config_path();
+
+		if ( !is_writable($wpconfig_path) ) return;
+
+		if (!empty($wpconfig_path)) {
+			$wpconfig = file_get_contents($wpconfig_path);
+			$wpconfig = preg_replace("/\/\/Begin\s?Really\s?Simple\s?SSL\s?session\s?cookie\s?settings.*?\/\/END\s?Really\s?Simple\s?SSL/s", "", $wpconfig);
+			$wpconfig = preg_replace("/\n+/","\n", $wpconfig);
+			file_put_contents($wpconfig_path, $wpconfig);
+		}
+	}
 
 
     /**
@@ -2190,7 +2309,7 @@ class rsssl_admin extends rsssl_front_end
             <p>
                 <?php echo __("A definition of a siteurl or homeurl was detected in your wp-config.php, but the file is not writable.", "really-simple-ssl"); ?>
             </p>
-            <p><?php echo __("Set your wp-config.php to writable and reload this page.", "really-simple-ssl"); ?></p>
+            <p><?php echo sprintf(__("Set your wp-config.php to %swritable%s and reload this page.", "really-simple-ssl"), '<a target="_blank" href="https://really-simple-ssl.com/knowledge-base/htaccess-wp-config-files-not-writable/">', '</a>'); ?></p>
         <?php }
         if ($this->do_wpconfig_loadbalancer_fix) { ?>
             <p><?php echo __("Your wp-config.php has to be edited, but is not writable.", "really-simple-ssl"); ?></p>
@@ -2210,14 +2329,14 @@ class rsssl_admin extends rsssl_front_end
                     //END Really Simple SSL
                 </code><br>
             </p>
-            <p><?php echo __("Or set your wp-config.php to writable and reload this page.", "really-simple-ssl"); ?></p>
+            <p><?php echo sprintf(__("Or set your wp-config.php to %swritable%s and reload this page.", "really-simple-ssl"), '<a target="_blank" href="https://really-simple-ssl.com/knowledge-base/htaccess-wp-config-files-not-writable/">', '</a>'); ?></p>
             <?php
         }
 
         if ($this->no_server_variable) {
             ?>
             <p><?php echo __('Because your server does not pass a variable with which WordPress can detect SSL, WordPress may create redirect loops on SSL.', 'really-simple-ssl'); ?></p>
-            <p><?php echo __("Set your wp-config.php to writable and reload this page.", "really-simple-ssl"); ?></p>
+            <p><?php echo sprintf(__("Set your wp-config.php to %swritable%s and reload this page.", "really-simple-ssl"), '<a target="_blank" href="https://really-simple-ssl.com/knowledge-base/htaccess-wp-config-files-not-writable/">', '</a>');?></p>
             <?php
         }
 
@@ -2289,24 +2408,45 @@ class rsssl_admin extends rsssl_front_end
         if (!$this->review_notice_shown && get_option('rsssl_activation_timestamp') && get_option('rsssl_activation_timestamp') < strtotime("-1 month")) {
             add_action('admin_print_footer_scripts', array($this, 'insert_dismiss_review'));
             ?>
-            <style>
-                .rlrsssl-review .rsssl-container {
-                    display: flex;
-                    padding:12px;
-                }
-                .rlrsssl-review .rsssl-container .dashicons {
-                    margin-left:10px;
-                    margin-right:5px;
-                }
-                .rlrsssl-review .rsssl-review-image img{
-                    margin-top:0.5em;
-                }
-                .rlrsssl-review .rsssl-buttons-row {
-                    margin-top:10px;
-                    display: flex;
-                    align-items: center;
-                }
-            </style>
+            <?php if ( is_rtl() ) { ?>
+                <style>
+                    .rlrsssl-review .rsssl-container {
+                        display: flex;
+                        padding:12px;
+                    }
+                    .rlrsssl-review .rsssl-container .dashicons {
+                        margin-left:10px;
+                        margin-right:5px;
+                    }
+                    .rlrsssl-review .rsssl-review-image img{
+                        margin-top:0.5em;
+                    }
+                    .rlrsssl-review .rsssl-buttons-row {
+                        margin-top:10px;
+                        display: flex;
+                        align-items: center;
+                    }
+                </style>
+            <?php } else { ?>
+                <style>
+                    .rlrsssl-review .rsssl-container {
+                        display: flex;
+                        padding:12px;
+                    }
+                    .rlrsssl-review .rsssl-container .dashicons {
+                        margin-right:10px;
+                        margin-left:5px;
+                    }
+                    .rlrsssl-review .rsssl-review-image img{
+                        margin-top:0.5em;
+                    }
+                    .rlrsssl-review .rsssl-buttons-row {
+                        margin-top:10px;
+                        display: flex;
+                        align-items: center;
+                    }
+                </style>
+            <?php } ?>
             <div id="message" class="updated fade notice is-dismissible rlrsssl-review really-simple-plugins" style="border-left:4px solid #333">
                 <div class="rsssl-container">
                     <div class="rsssl-review-image"><img width=80px" src="<?php echo rsssl_url?>/assets/icon-128x128.png" alt="review-logo"></div>
@@ -2653,7 +2793,7 @@ class rsssl_admin extends rsssl_front_end
         );
 
 	    $curl_error = get_transient('rsssl_curl_error');
-
+        $current_plugin_folder = $this->get_current_rsssl_free_dirname();
         $reload_https_url = add_query_arg( array( 'ssl_reload_https' => '1') , esc_url_raw("https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]) );
         $notices = array(
             'deactivation_file_detected' => array(
@@ -2665,8 +2805,21 @@ class rsssl_admin extends rsssl_front_end
                         'msg' => __("The 'force-deactivate.php' file has to be renamed to .txt. Otherwise your ssl can be deactivated by anyone on the internet.", "really-simple-ssl") .' '.
                                  '<a href="'.add_query_arg(array('page'=>'rlrsssl_really_simple_ssl'), admin_url('options-general.php?page=')).'">'.__("Check again", "really-simple-ssl").'</a>',
                         'icon' => 'warning',
-                        'admin_notice' =>true,
+                        'admin_notice' => true,
                         'plusone' => true,
+                    ),
+                ),
+            ),
+
+            'non_default_plugin_folder' => array(
+                'callback' => 'RSSSL()->really_simple_ssl->uses_default_folder_name',
+                'score' => 30,
+                'output' => array(
+                    'false' => array(
+	                    'msg' => sprintf(__("The Really Simple SSL plugin folder in the /wp-content/plugins/ directory has been renamed to %s. This might cause issues when deactivating, or with premium add-ons. To fix this you can rename the Really Simple SSL folder back to the default %s.", "really-simple-ssl"),"<b>" . $current_plugin_folder . "</b>" , "<b>really-simple-ssl</b>"),
+	                    'url' => 'https://really-simple-ssl.com/knowledge-base/why-you-should-use-the-default-plugin-folder-name-for-really-simple-ssl/',
+                        'icon' => 'warning',
+                        'admin_notice' => false,
                     ),
                 ),
             ),
@@ -2826,7 +2979,6 @@ class rsssl_admin extends rsssl_front_end
                         'icon' => 'open',
                         'plusone' => RSSSL()->rsssl_server->uses_htaccess(),
                         'dismissible' => true,
-                        'enable_dismiss' => 'enable',
                     ),
                     'no-redirect-set' => array(
                         'msg' => __('Enable a .htaccess redirect or WordPress redirect in the settings to create a 301 redirect.', 'really-simple-ssl') ,
@@ -2835,7 +2987,7 @@ class rsssl_admin extends rsssl_front_end
                     ),
                     'htaccess-not-writeable' => array(
                         'url' => 'https://really-simple-ssl.com/knowledge-base/manually-insert-htaccess-redirect-http-to-https/',
-                        'msg' => sprintf(__('The %s file is not writable. You can either use the WordPress redirect, add the rules manually, or set the file to writable.', 'really-simple-ssl'), $htaccess_file),
+                        'msg' => sprintf(__('The %s file is not writable. You can either use the WordPress redirect, add the rules manually, or set the file to %swritable%s.', 'really-simple-ssl'), $htaccess_file, '<a target="_blank" href="https://really-simple-ssl.com/knowledge-base/htaccess-wp-config-files-not-writable/">', '</a>'),
                         'icon' => 'warning',
                         'dismissible' => true
                     ),
@@ -2894,18 +3046,42 @@ class rsssl_admin extends rsssl_front_end
             ),
 
             'secure_cookies_set' => array(
-	            'condition' => array('rsssl_ssl_enabled'),
-	            'callback' => 'RSSSL()->really_simple_ssl->contains_secure_cookie_settings',
+	            'condition' => array(
+	                    'rsssl_ssl_enabled',
+                        'RSSSL()->really_simple_ssl->can_apply_networkwide',
+                ),
+	            'callback' => 'RSSSL()->really_simple_ssl->secure_cookie_settings_status',
                 'score' => 5,
                 'output' => array(
-                    'true' => array(
-                        'msg' =>__('Secure cookies set.', 'really-simple-ssl'),
-                        'icon' => 'success'
+                    'set' => array(
+                        'msg' =>__('New feature! HttpOnly Secure cookies have been set automatically!', 'really-simple-ssl'),
+                        'icon' => 'open',
+                        'dismissible' => true,
+                        'plusone' => true,
+                        'url' => 'https://really-simple-ssl.com/secure-cookies-with-httponly-secure-and-use_only_cookies/',
                     ),
-                    'false' => array(
-                        'msg' => sprintf(__("Secure cookie settings not enabled (%sRead more%s).", "really-simple-ssl"), '<a target="_blank" href="https://really-simple-ssl.com/secure-cookies-with-httponly-secure-and-use_only_cookies/">', '</a>'),
-                        'icon' => 'premium'
+                    'not-set' => array(
+	                    'msg' => __('HttpOnly Secure cookies not set.', 'really-simple-ssl'),
+	                    'icon' => 'warning',
+	                    'dismissible' => true,
+	                    'plusone' => true,
+                        'url' => 'https://really-simple-ssl.com/secure-cookies-with-httponly-secure-and-use_only_cookies/',
                     ),
+                    'wpconfig-not-writable' => array(
+                        'msg' =>    __("To set the httponly secure cookie settings, your wp-config.php has to be edited, but the file is not writable.","really-simple-ssl").'&nbsp;'.__("Add the following lines of code to your wp-config.php.","really-simple-ssl") .
+                                    "<br><br><code>
+                                            //Begin Really Simple SSL session cookie settings <br>
+                                            &nbsp;&nbsp;@ini_set('session.cookie_httponly', true); <br>
+                                            &nbsp;&nbsp;@ini_set('session.cookie_secure', true); <br>
+                                            &nbsp;&nbsp;@ini_set('session.use_only_cookies', true); <br>
+                                            //END Really Simple SSL cookie settings <br>
+                                        </code><br>
+                                    ".__("Or set your wp-config.php to writable and reload this page.", "really-simple-ssl"),
+                        'icon' => 'warning',
+                        'dismissible' => true,
+                        'plusone' => true,
+                        'url' => 'https://really-simple-ssl.com/secure-cookies-with-httponly-secure-and-use_only_cookies/',
+                    )
                 ),
             ),
 
@@ -2919,19 +3095,25 @@ class rsssl_admin extends rsssl_front_end
 		            ),
 	            ),
             ),
-
-            'htaccess_not_writable' => array(
-                'callback' => 'rsssl_htaccess_not_writable',
+            'uses_wp_engine' => array(
+                'condition' => array('rsssl_uses_wp_engine'),
+                'callback' => '_true_',
                 'score' => 5,
                 'output' => array(
-                    'htaccess' => array(
-                        'msg' => __("Your .htaccess file is not writable. This prevents Really Simple SSL from writing redirects or security headers to your .htaccess file.", "really-simple-ssl"),
+                    'true' => array(
+                        'msg' =>__('Due to a recent update by WP Engine, we have changed your settings automatically to adapt.', 'really-simple-ssl'),
+                        'url' => 'https://really-simple-ssl.com/really-simple-ssl-adapts-to-recent-wp-engine-changes/',
                         'icon' => 'open',
-                        'dismissible' => 'true',
+                        'dismissible' => true
                     ),
                 ),
             ),
         );
+
+        //on multisite, don't show the notice on subsites.
+        if ( is_multisite() && !is_network_admin() ) {
+            unset($notices['secure_cookies_set']);
+        }
 
         $notices = apply_filters('rsssl_notices', $notices);
         foreach ($notices as $id => $notice) {
@@ -2999,7 +3181,7 @@ class rsssl_admin extends rsssl_front_end
         //if only admin_notices are required, filter out the rest.
 	    if ( $args['admin_notices'] ) {
             foreach ( $notices as $id => $notice ) {
-                if (!isset($notice['output']['admin_notice'])){
+                if (!isset($notice['output']['admin_notice']) || !$notice['output']['admin_notice']){
 	                unset( $notices[$id]);
                 }
             }
@@ -3384,15 +3566,19 @@ class rsssl_admin extends rsssl_front_end
 
     public function get_status_link($item){
         if (!defined($item['constant_free']) && !defined($item['constant_premium'])) {
-	        $link = admin_url() . "plugin-install.php?s=".$item['search']."&tab=search&type=term";
-	        $text = __('Install', 'really-simple-ssl');
-	        $status = "<a href=$link>$text</a>";
-        } elseif ($item['constant_free'] == 'wpsi_plugin' || defined($item['constant_premium'] ) ) {
-            $status = __("Installed", "really-simple-ssl");
-        } elseif (defined($item['constant_free']) && !defined($item['constant_premium'])) {
+            $args = array(
+                "s" => $item['search'],
+                "tab" => "search",
+                "type" => "term"
+            );
+            $admin_url= is_multisite() ? network_admin_url('plugin-install.php') : admin_url('plugin-install.php');
+	        $link = add_query_arg( $args, $admin_url );
+	        $status = '<a href="'.esc_url_raw($link).'">'.__('Install', 'really-simple-ssl').'</a>';
+        } elseif (isset($item['constant_premium']) && !defined($item['constant_premium'])) {
 	        $link = $item['website'];
-	        $text = __('Upgrade to pro', 'really-simple-ssl');
-	        $status = "<a href=$link>$text</a>";
+	        $status = '<a href="'.esc_url_raw($link).'">'.__('Upgrade to pro', 'really-simple-ssl').'</a>';
+        } else {
+	        $status = __( "Installed", "really-simple-ssl" );
         }
         return $status;
     }
@@ -3447,7 +3633,23 @@ class rsssl_admin extends rsssl_front_end
 		    $header = $this->get_template_part($grid_item, 'header', $index);
             $instructions = $grid_item['instructions'] ? '<a href="'.esc_url($grid_item['instructions']).'" target="_blank">'.__("Instructions manual", "really-simple-ssl").'</a>' : '';
 		    // Add form if type is settings
-		    $block = str_replace(array('{class}', '{title}', '{header}', '{content}', '{footer}', '{instructions}'), array($grid_item['class'], $grid_item['title'], $header, $content, $footer, $instructions), $element);
+		    $form_open = '';
+		    $form_close = '';
+		    if ( $grid_item['type'] === 'scan' ) {
+			    $form_open = '<form id="rsssl_scan_form" action="" method="post">';
+			    $form_close = '</form>';
+		    } elseif ( $grid_item['type'] === 'settings' ) {
+			    if ( is_network_admin() ) {
+				    $form_open = '<form action="edit.php?action=rsssl_update_network_settings" method="post">'.wp_nonce_field('rsssl_ms_settings_update', 'rsssl_ms_nonce');
+				    $form_close = '</form>';
+
+			    } else {
+				    $form_open = '<form action="options.php" method="post">';
+				    $form_close = '</form>';
+			    }
+		    }
+
+		    $block = str_replace(array('{class}', '{title}', '{header}', '{content}', '{footer}', '{instructions}', '{form_open}','{form_close}'), array($grid_item['class'], $grid_item['title'], $header, $content, $footer, $instructions, $form_open, $form_close), $element);
 		    $output .= $block;
 	    }
 
@@ -3463,39 +3665,22 @@ class rsssl_admin extends rsssl_front_end
 	 * @return string
 	 */
 
-    public function get_template_part($grid_item, $key, $index) {
+	public function get_template_part($grid_item, $key, $index) {
 
-	    if ( !isset($grid_item[$key]) || !$grid_item[$key] ) {
-		    $template_part = '';
-	    } else {
-		    if ( strpos( $grid_item[ $key ], '.php' ) !== false && file_exists($grid_item[ $key ])  ) {
-		        ob_start();
-			    require $grid_item[ $key ];
-			    $template_part = ob_get_clean();
-		    } else {
-			    $template_part = '';
-            }
-	    }
+		if ( !isset($grid_item[$key]) || !$grid_item[$key] ) {
+			$template_part = '';
+		} else {
+			if ( strpos( $grid_item[ $key ], '.php' ) !== false && file_exists($grid_item[ $key ])  ) {
+				ob_start();
+				require $grid_item[ $key ];
+				$template_part = ob_get_clean();
+			} else {
+				$template_part = '';
+			}
+		}
 
-	    if ($key === 'content' ) {
-		    if ( $grid_item['type'] === 'scan' ) {
-			    $template_part = '<form id="rsssl_scan_form" action="" method="post">'.$template_part;
-		    } elseif ( $grid_item['type'] === 'settings' ) {
-			    if ( is_network_admin() ) {
-				    $template_part = '<form action="edit.php?action=rsssl_update_network_settings" method="post">'.wp_nonce_field('rsssl_ms_settings_update', 'rsssl_ms_nonce').
-				                     $template_part;
-			    } else {
-				    $template_part = '<form action="options.php" method="post">'.$template_part;
-			    }
-		    }
-	    }
-
-	    if ( $key === 'footer' && ( $grid_item['type'] === 'scan' || $grid_item['type'] === 'settings') ) {
-		    $template_part .= '</form>';
-	    }
-
-	    return apply_filters("rsssl_template_part_".$key.'_'.$index, $template_part, $grid_item);
-    }
+		return apply_filters("rsssl_template_part_".$key.'_'.$index, $template_part, $grid_item);
+	}
 
     /**
      * Returns a success, error or warning image for the settings page
@@ -3845,8 +4030,8 @@ class rsssl_admin extends rsssl_front_end
             <span class="rsssl-slider rsssl-round"></span>
         </label>
         <?php
-        if (!$this->do_not_edit_htaccess && !is_writable($this->htaccess_file()))  {
-            $comment = __(".htaccess is currently not writable.", "really-simple-ssl");
+        if ( !$this->do_not_edit_htaccess && !is_writable($this->htaccess_file()))  {
+            $comment = sprintf(__(".htaccess is currently not %swritable%s.", "really-simple-ssl"), '<a target="_blank" href="https://really-simple-ssl.com/knowledge-base/htaccess-wp-config-files-not-writable/">', '</a>');
 	        RSSSL()->rsssl_help->get_comment($comment);
         }
     }
@@ -3910,87 +4095,169 @@ class rsssl_admin extends rsssl_front_end
 
         ?>
 	    <?php add_thickbox();?>
-        <style>
+        <?php if ( is_rtl() ) { ?>
+            <style>
+                #TB_ajaxContent.rsssl-deactivation-popup {
+                    text-align: center !important;
+                    width:750px;
+                }
+                #TB_window.rsssl-deactivation-popup {
+                    height: 440px !important;
+                    border-right: 7px solid black;
+                }
+                .rsssl-deactivation-popup #TB_title{
+                    height: 70px;
+                    border-bottom: 1px solid #dedede;
+                }
+                .rsssl-deactivation-popup #TB_ajaxWindowTitle {
+                    font-weight:bold;
+                    font-size:30px;
+                    padding: 20px;
+                }
 
-            #TB_ajaxContent.rsssl-deactivation-popup {
-                text-align: center !important;
-                width:750px;
-            }
-            #TB_window.rsssl-deactivation-popup {
-                height: 440px !important;
-                border-left: 7px solid black;
-            }
-            .rsssl-deactivation-popup #TB_title{
-                height: 70px;
-                border-bottom: 1px solid #dedede;
-            }
-            .rsssl-deactivation-popup #TB_ajaxWindowTitle {
-                font-weight:bold;
-                font-size:30px;
-                padding: 20px;
-            }
+                .rsssl-deactivation-popup .tb-close-icon {
+                    color:#dedede;
+                    width: 50px;
+                    height: 50px;
+                    top: 12px;
+                    left: 20px;
+                }
+                .rsssl-deactivation-popup .tb-close-icon:before {
+                    font: normal 50px/50px dashicons;
+                }
+                .rsssl-deactivation-popup #TB_closeWindowButton:focus .tb-close-icon {
+                    outline:0;
+                    box-shadow: 0 0 0 0 #5b9dd9, 0 0 0 0 rgba(30, 140, 190, .8);
+                    color:#dedede;
+                }
+                .rsssl-deactivation-popup #TB_closeWindowButton .tb-close-icon:hover {
+                    color:#666;
+                }
+                .rsssl-deactivation-popup #TB_closeWindowButton:focus {
+                    outline:0;
+                }
+                .rsssl-deactivation-popup #TB_ajaxContent {
+                    width: 100% !important;
+                    padding: 0;
+                }
 
-            .rsssl-deactivation-popup .tb-close-icon {
-                color:#dedede;
-                width: 50px;
-                height: 50px;
-                top: 12px;
-                right: 20px;
-            }
-            .rsssl-deactivation-popup .tb-close-icon:before {
-                font: normal 50px/50px dashicons;
-            }
-            .rsssl-deactivation-popup #TB_closeWindowButton:focus .tb-close-icon {
-                outline:0;
-                box-shadow: 0 0 0 0 #5b9dd9, 0 0 0 0 rgba(30, 140, 190, .8);
-                color:#dedede;
-            }
-            .rsssl-deactivation-popup #TB_closeWindowButton .tb-close-icon:hover {
-                color:#666;
-            }
-            .rsssl-deactivation-popup #TB_closeWindowButton:focus {
-                outline:0;
-            }
-            .rsssl-deactivation-popup #TB_ajaxContent {
-                width: 100% !important;
-                padding: 0;
-            }
+                .rsssl-deactivation-popup .button-rsssl-tertiary.button {
+                    background-color: #D7263D !important;
+                    color: white !important;
+                    border-color: #D7263D;
+                }
 
-            .rsssl-deactivation-popup .button-rsssl-tertiary.button {
-                background-color: #D7263D !important;
-                color: white !important;
-                border-color: #D7263D;
-            }
+                .rsssl-deactivation-popup .button-rsssl-tertiary.button:hover {
+                    background-color: #f1f1f1 !important;
+                    color: #d7263d !important;
+                }
 
-            .rsssl-deactivation-popup .button-rsssl-tertiary.button:hover {
-                background-color: #f1f1f1 !important;
-                color: #d7263d !important;
-            }
+                .rsssl-deactivate-notice-content {
+                    margin: 20px
+                }
+                .rsssl-deactivate-notice-content h3 , .rsssl-deactivate-notice-content ul{
+                    font-size:1.1em;
+                }
 
-            .rsssl-deactivate-notice-content {
-                margin: 20px
-            }
-            .rsssl-deactivate-notice-content h3 , .rsssl-deactivate-notice-content ul{
-                font-size:1.1em;
-            }
+                .rsssl-deactivate-notice-footer {
+                    padding-top: 20px;
+                    position:absolute;
+                    bottom:15px;
+                    width: 94%;
+                    margin-right: 3%;
+                    border-top: 1px solid #dedede;
+                }
 
-            .rsssl-deactivate-notice-footer {
-                padding-top: 20px;
-                position:absolute;
-                bottom:15px;
-                width: 94%;
-                margin-left: 3%;
-                border-top: 1px solid #dedede;
-            }
+                .rsssl-deactivation-popup ul {
+                    list-style: circle;
+                    padding-right: 20px;
+                }
+                .rsssl-deactivation-popup a {
+                    margin-left:10px !important;
+                }
+            </style>
+        <?php } else { ?>
+            <style>
+                #TB_ajaxContent.rsssl-deactivation-popup {
+                    text-align: center !important;
+                    width:750px;
+                }
+                #TB_window.rsssl-deactivation-popup {
+                    height: 440px !important;
+                    border-left: 7px solid black;
+                }
+                .rsssl-deactivation-popup #TB_title{
+                    height: 70px;
+                    border-bottom: 1px solid #dedede;
+                }
+                .rsssl-deactivation-popup #TB_ajaxWindowTitle {
+                    font-weight:bold;
+                    font-size:30px;
+                    padding: 20px;
+                }
 
-            .rsssl-deactivation-popup ul {
-                list-style: circle;
-                padding-left: 20px;
-            }
-            .rsssl-deactivation-popup a {
-                margin-right:10px !important;
-            }
-        </style>
+                .rsssl-deactivation-popup .tb-close-icon {
+                    color:#dedede;
+                    width: 50px;
+                    height: 50px;
+                    top: 12px;
+                    right: 20px;
+                }
+                .rsssl-deactivation-popup .tb-close-icon:before {
+                    font: normal 50px/50px dashicons;
+                }
+                .rsssl-deactivation-popup #TB_closeWindowButton:focus .tb-close-icon {
+                    outline:0;
+                    box-shadow: 0 0 0 0 #5b9dd9, 0 0 0 0 rgba(30, 140, 190, .8);
+                    color:#dedede;
+                }
+                .rsssl-deactivation-popup #TB_closeWindowButton .tb-close-icon:hover {
+                    color:#666;
+                }
+                .rsssl-deactivation-popup #TB_closeWindowButton:focus {
+                    outline:0;
+                }
+                .rsssl-deactivation-popup #TB_ajaxContent {
+                    width: 100% !important;
+                    padding: 0;
+                }
+
+                .rsssl-deactivation-popup .button-rsssl-tertiary.button {
+                    background-color: #D7263D !important;
+                    color: white !important;
+                    border-color: #D7263D;
+                }
+
+                .rsssl-deactivation-popup .button-rsssl-tertiary.button:hover {
+                    background-color: #f1f1f1 !important;
+                    color: #d7263d !important;
+                }
+
+                .rsssl-deactivate-notice-content {
+                    margin: 20px
+                }
+                .rsssl-deactivate-notice-content h3 , .rsssl-deactivate-notice-content ul{
+                    font-size:1.1em;
+                }
+
+                .rsssl-deactivate-notice-footer {
+                    padding-top: 20px;
+                    position:absolute;
+                    bottom:15px;
+                    width: 94%;
+                    margin-left: 3%;
+                    border-top: 1px solid #dedede;
+                }
+
+                .rsssl-deactivation-popup ul {
+                    list-style: circle;
+                    padding-left: 20px;
+                }
+                .rsssl-deactivation-popup a {
+                    margin-right:10px !important;
+                }
+            </style>
+        <?php } ?>
         <script>
             jQuery(document).ready(function ($) {
                 $('#rsssl_close_tb_window').click(tb_remove);
@@ -4099,9 +4366,9 @@ class rsssl_admin extends rsssl_front_end
 
 
     /**
-     * Check if wpconfig contains httponly cooky settings
+     * Check if wpconfig contains httponly cookie settings
      *
-     * @since  2.5
+     * @since  4.0.11
      *
      * @access public
      * @return boolean
@@ -4110,20 +4377,81 @@ class rsssl_admin extends rsssl_front_end
 
     public function contains_secure_cookie_settings()
     {
-        $wpconfig_path = $this->find_wp_config_path();
-
-        if (!$wpconfig_path) return false;
-
-        $wpconfig = file_get_contents($wpconfig_path);
-        if ((strpos($wpconfig, "//Begin Really Simple SSL session cookie settings") === FALSE) && (strpos($wpconfig, "cookie_httponly") === FALSE)) {
+        if ( $this->secure_cookie_settings_status() === 'set' ) {
+            return true;
+        } else {
             return false;
         }
-
-        return true;
     }
 
+	/**
+     * Check if wpconfig contains httponly cookie settings
+     *
+	 * @return string
+	 */
 
-    /**
+	public function secure_cookie_settings_status()
+	{
+		$wpconfig_path = $this->find_wp_config_path();
+		if (!$wpconfig_path) {
+			return 'wpconfig-not-writable';
+		}
+
+		$wpconfig = file_get_contents($wpconfig_path);
+		if ((strpos($wpconfig, "//Begin Really Simple SSL session cookie settings") !== FALSE) || (strpos($wpconfig, "cookie_httponly") !== FALSE)) {
+			return 'set';
+		}
+
+		if ( !is_writable($wpconfig_path) ) {
+			return 'wpconfig-not-writable';
+		}
+
+		return 'not-set';
+	}
+
+	/**
+	 * Insert secure cookie settings
+	 */
+
+	public function insert_secure_cookie_settings(){
+		if (!current_user_can("activate_plugins")) return;
+
+		if ( wp_doing_ajax() || !$this->is_settings_page() ) return;
+
+		//only if this site has SSL activated, otherwise, remove cookie settings and exit.
+		if (!$this->ssl_enabled) {
+			$this->remove_secure_cookie_settings();
+			return;
+		}
+
+		//if multisite, only on network wide activated setups
+		if (is_multisite() && !RSSSL()->rsssl_multisite->ssl_enabled_networkwide ) return;
+
+		//only if cookie settings were not inserted yet
+		if (!$this->contains_secure_cookie_settings() ) {
+			$wpconfig_path = RSSSL()->really_simple_ssl->find_wp_config_path();
+			$wpconfig = file_get_contents($wpconfig_path);
+			if ((strlen($wpconfig)!=0) && is_writable($wpconfig_path)) {
+				$rule  = "\n"."//Begin Really Simple SSL session cookie settings"."\n";
+				$rule .= "@ini_set('session.cookie_httponly', true);"."\n";
+				$rule .= "@ini_set('session.cookie_secure', true);"."\n";
+				$rule .= "@ini_set('session.use_only_cookies', true);"."\n";
+				$rule .= "//END Really Simple SSL"."\n";
+
+				$insert_after = "<?php";
+				$pos = strpos($wpconfig, $insert_after);
+				if ($pos !== false) {
+					$wpconfig = substr_replace($wpconfig,$rule,$pos+1+strlen($insert_after),0);
+				}
+
+				file_put_contents($wpconfig_path, $wpconfig);
+			}
+		}
+	}
+
+
+
+	/**
      * Get the absolute path the the www directory of this site, where .htaccess lives.
      *
      * @since  2.0
@@ -4149,6 +4477,19 @@ class rsssl_admin extends rsssl_front_end
         }
 
         return $path;
+    }
+
+	/**
+     * Check if it's either a single site, or when multisite, network enabled.
+	 * @return bool
+	 */
+    public function can_apply_networkwide(){
+        if ( !is_multisite() ) {
+            return true;
+        } elseif (RSSSL()->rsssl_multisite->ssl_enabled_networkwide) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -4209,17 +4550,37 @@ class rsssl_admin extends rsssl_front_end
     }
 
     /**
+     * Determine dirname to show in admin_notices() in really-simple-ssl-pro.php to show a warning when free folder has been renamed
      *
      * @return string
      *
      * since 3.1
      *
-     * Determine dirname to show in admin_notices() in really-simple-ssl-pro.php to show a warning when free folder has been renamed
      */
 
     public function get_current_rsssl_free_dirname() {
         return basename( __DIR__ );
     }
+
+
+	/**
+	 *
+	 * Check the current free plugin folder path and compare it to default path to detect if the plugin folder has been renamed
+	 *
+	 * @return boolean
+	 *
+	 * @since 3.1
+	 *
+	 */
+
+	public function uses_default_folder_name() {
+		$current_plugin_path = $this->get_current_rsssl_free_dirname();
+		if ( $this->plugin_dir === $current_plugin_path ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
     /**
      * @return string
@@ -4352,18 +4713,6 @@ if (!function_exists('rsssl_check_redirect')) {
 	}
 }
 
-if (!function_exists('rsssl_htaccess_not_writable')) {
-	function rsssl_htaccess_not_writable() {
-	    //don't trigger if htaccess not used
-	    if ( !RSSSL()->rsssl_server->uses_htaccess() ) return false;
-
-		if (RSSSL()->really_simple_ssl->do_not_edit_htaccess || !is_writable(RSSSL()->really_simple_ssl->ABSpath.".htaccess")){
-			return true;
-		}
-		return false;
-	}
-}
-
 if (!function_exists('rsssl_uses_elementor')) {
 	function rsssl_uses_elementor() {
 		return ( defined( 'ELEMENTOR_VERSION' ) || defined( 'ELEMENTOR_PRO_VERSION' ) );
@@ -4374,6 +4723,15 @@ if (!function_exists('rsssl_uses_divi')) {
 	function rsssl_uses_divi() {
 		return defined( 'ET_CORE_PATH' );
 	}
+}
+
+if (!function_exists('rsssl_uses_wp_engine')) {
+    function rsssl_uses_wp_engine() {
+        if (function_exists('is_wpe') && is_wpe()) {
+            return true;
+        }
+        return false;
+    }
 }
 
 if (!function_exists('rsssl_ssl_activation_time_no_longer_then_3_days_ago')) {

@@ -22,6 +22,15 @@ if ( ! GFCommon::current_user_can_any( array( 'gravityforms_edit_forms', 'gravit
 	die( esc_html__( "You don't have adequate permission to preview forms.", 'gravityforms' ) );
 }
 
+/**
+ * Fires when a Form Preview is loaded.
+ *
+ * The hook fires when a Form Preview is initialized and before it is rendered.
+ *
+ * @since 2.5
+ */
+do_action( 'gform_preview_init' );
+
 // Load form display class.
 require_once( GFCommon::get_base_path() . '/form_display.php' );
 
@@ -30,9 +39,6 @@ $form_id = absint( rgget( 'id' ) );
 
 // Get form object.
 $form = RGFormsModel::get_form_meta( $_GET['id'] );
-
-// Determine if we're loading minified scripts.
-$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -49,101 +55,53 @@ $min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] 
 			GFFormDisplay::enqueue_form_scripts( $form );
 		}
 
+		wp_enqueue_script( 'gform_preview' );
+
 		wp_print_head_scripts();
 
-		$styles = apply_filters( 'gform_preview_styles', array(), $form );
+		$styles = array();
+
+		/**
+		 * Filters Form Preview Styles.
+		 *
+		 * This filter modifies the enqueued styles for the Form Preview. Any handles returned in the array
+		 * will be loaded in the Preview header (if they've been registered with wp_register_style).
+		 *
+		 * @since 2.4
+		 *
+		 * @param array $styles An empty array representing the currently-active styles.
+		 * @param array $form An array representing the current Form.
+		 *
+		 * @return array An array of handles to enqueue in the header.
+		 */
+		$styles = apply_filters( 'gform_preview_styles', $styles, $form );
+
 		if ( ! empty( $styles ) ) {
 			wp_print_styles( $styles );
 		}
+
+		/**
+		 * Fire before the closing <head> tag of the preview page.
+		 *
+		 * @since 2.4.19
+		 *
+		 * @param int $form_id The ID of the form currently being previewed.
+		 */
+		do_action( 'gform_preview_header', $form_id );
+
 	?>
-
-	<?php /* quick bit of script to toggle the helper classes that show the form structure */ ?>
-	<script>
-	jQuery( document ).ready(function() {
-
-		jQuery('.toggle_helpers input[type=checkbox]').attr('checked',false);
-
-	    jQuery('#showgrid').click(function(){
-		    if(jQuery(this).is(":checked")) {
-		        jQuery('#preview_form_container').addClass("showgrid");
-		    } else {
-		        jQuery('#preview_form_container').removeClass("showgrid");
-		    }
-		});
-
-		jQuery('#showme').click(function(){
-		    if(jQuery(this).is(":checked")) {
-		        jQuery('.gform_wrapper form').addClass("gf_showme");
-		        jQuery('#helper_legend_container').css("display", "inline-block");
-		    } else {
-		        jQuery('.gform_wrapper form').removeClass("gf_showme");
-		        jQuery('#helper_legend_container').css("display", "none");
-		    }
-		});
-
-	});
-	</script>
-
-	<?php /* dismiss the alerts and set a cookie so they're not annoying */ ?>
-
-	<script>
-
-	jQuery(document).ready(function () {
-	    if (GetCookie("dismissed-notifications")) {
-	        jQuery(GetCookie("dismissed-notifications")).hide();
-	    }
-	    jQuery(".hidenotice").click(function () {
-	        var alertId = jQuery(this).closest(".preview_notice").attr("id");
-	        var dismissedNotifications = GetCookie("dismissed-notifications") + ",#" + alertId;
-	        jQuery(this).closest(".preview_notice").slideToggle('slow');
-	      SetCookie("dismissed-notifications",dismissedNotifications.replace('null,',''))
-	    });
-
-      // Create the cookie
-		function SetCookie(sName, sValue)
-		{
-		  document.cookie = sName + "=" + escape(sValue);
-		  // Expires the cookie after a month
-		  var date = new Date();
-		  date.setMonth(date.getMonth()+1);
-		  document.cookie += ("; expires=" + date.toUTCString());
-		}
-
-      // Retrieve the value of the cookie.
-		function GetCookie(sName)
-		{
-		  var aCookie = document.cookie.split("; ");
-		  for (var i=0; i < aCookie.length; i++)
-		  {
-		    var aCrumb = aCookie[i].split("=");
-		    if (sName == aCrumb[0])
-		      return unescape(aCrumb[1]);
-		  	}
-		  	return null;
-			}
-		});
-
-	</script>
-
-	<?php /* now display the current viewport size */ ?>
-
-	<script type="text/javascript">
-
-	jQuery( document ).ready(function() {
-
-	   jQuery('#browser_size_info').text('Viewport ( Width : '
-	                + jQuery(window).width() + 'px , Height :' + jQuery(window).height() + 'px )');
-
-	    jQuery(window).resize(function () {
-			jQuery('#browser_size_info').text('Viewport ( Width : ' + jQuery(window).width()
-	                                 + 'px , Height :' + jQuery(window).height() + 'px )');
-	    });
-	});
-
-	</script>
-
 </head>
-<body>
+<body <?php body_class(); ?>>
+<?php
+/**
+ * Fire after the opening <body> tag of the preview page.
+ *
+ * @since 2.4.19
+ *
+ * @param int $form_id The ID of the form currently being previewed.
+ */
+do_action( 'gform_preview_body_open', $form_id );
+?>
 <div id="preview_top">
 	<div id="preview_hdr">
 
@@ -177,9 +135,6 @@ $min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] 
 </div>
 <div id="browser_size_info"></div>
 
-<!-- load up the styles -->
-
-<link rel='stylesheet' href='<?php echo GFCommon::get_base_url() ?>/css/reset<?php echo $min; ?>.css' type='text/css' />
 <?php
 
 wp_print_footer_scripts();
@@ -191,10 +146,6 @@ wp_print_footer_scripts();
  */
 do_action( 'gform_preview_footer', $form_id );
 ?>
-
-<?php if ( is_rtl() ) { ?><link rel='stylesheet' href='<?php echo GFCommon::get_base_url() ?>/css/rtl<?php echo $min; ?>.css' type='text/css' /><?php } ?>
-<link rel='stylesheet' href='<?php echo GFCommon::get_base_url() ?>/css/preview<?php echo $min; ?>.css' type='text/css' />
-
 
 </body>
 </html>

@@ -4,9 +4,9 @@ License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 Tags: CRM, Email Marketing, Live Chat, Forms, Analytics, Popups, Newsletter
 Requires at least: 4.0
-Tested up to: 5.6
+Tested up to: 5.7
 Requires PHP: 5.6
-Stable tag: 7.48.85
+Stable tag: 8.0.166
 
 Capture, organize and engage web visitors with free forms, live chat, CRM (contact management), email marketing, and analytics. Easy to use, no coding.
 
@@ -228,13 +228,13 @@ Please visit the <a href="https://community.hubspot.com/?utm_source=wordpress-pl
 == Changelog ==
 
 <a href="http://plugins.svn.wordpress.org/leadin/trunk/changelog.txt" target="_blank">Full changelog here</a>
-- Current version: 7.48.85
-- Version release date: 2020-12-30
+- Current version: 8.0.166
+- Version release date: 2021-05-20
 
-= 7.48.69 (2020-12-17) =
-* Remove legacy code
-* Limit the error logging
+= 8.0.166 (2021-05-20) =
+* Improved fingerprinting of API requests for error tracking/handling
 
-= 7.48.63 (2020-12-15) =
-* Fix the search method in the HubSpot Gutenberg block
+= 8.0.140 (2021-05-17) =
+* Set required "hublet" property when connecting the plugin
+* Add plugin's version to error monitoring
 

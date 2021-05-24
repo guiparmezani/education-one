@@ -41,3 +41,17 @@ export function filterLeadinQueryParams(searchString) {
 
   return $.param(filteredSearch);
 }
+
+export function serializeQueryObject(queryParamObject) {
+  const queryKeys = Object.keys(queryParamObject);
+  if (!queryKeys.length) {
+    return '';
+  }
+
+  return queryKeys
+    .map(
+      key =>
+        `${key}=${encodeURIComponent(JSON.stringify(queryParamObject[key]))}`
+    )
+    .join('&');
+}

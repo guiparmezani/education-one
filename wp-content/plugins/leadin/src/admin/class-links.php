@@ -3,30 +3,37 @@
 namespace Leadin\admin;
 
 use Leadin\LeadinFilters;
-use Leadin\LeadinOptions;
-use Leadin\admin\AdminFilters;
+use Leadin\options\AccountOptions;
 use Leadin\admin\MenuConstants;
 use Leadin\admin\utils\Background;
 use Leadin\wp\User;
+use Leadin\utils\QueryParameters;
 use Leadin\utils\Versions;
+use Leadin\auth\OAuth;
+use Leadin\admin\Connection;
+use Leadin\admin\AdminConstants;
+use Leadin\includes\utils as utils;
 
 /**
  * Class containing all the functions to generate links to HubSpot.
  */
 class Links {
 	/**
+	 * Deprecated for OAuth2 routes
+	 *
 	 * Get a map of <admin_page, url>
 	 * Where
 	 * - admin_page is a string
 	 * - url is either a string or another map <route, string_url>, both strings
 	 */
 	public static function get_routes_mapping() {
-		$portal_id      = get_option( 'leadin_portalId' );
+		$portal_id      = AccountOptions::get_portal_id();
 		$reporting_page = "/wordpress-plugin-ui/$portal_id/reporting";
 		$user_guide     = "/wordpress-plugin-ui/$portal_id/onboarding/start";
 
 		return array(
 			MenuConstants::ROOT       => $user_guide,
+			MenuConstants::USER_GUIDE => $user_guide,
 			MenuConstants::REPORTING  => $reporting_page,
 			MenuConstants::CHATFLOWS  => array(
 				''         => "/chatflows/$portal_id",
@@ -43,7 +50,6 @@ class Links {
 				''      => "/wordpress-plugin-ui/$portal_id/settings",
 				'forms' => "/settings/$portal_id/marketing/form",
 			),
-			MenuConstants::USER_GUIDE => $user_guide,
 			MenuConstants::PRICING    => "/pricing/$portal_id/marketing",
 		);
 	}
@@ -80,13 +86,16 @@ class Links {
 	 * @param array $arr query parameters to stringify.
 	 */
 	private static function http_build_query( $arr ) {
+		if ( ! is_array( $arr ) ) {
+			return '';
+		}
 		return http_build_query( $arr, null, ini_get( 'arg_separator.output' ), PHP_QUERY_RFC3986 );
 	}
 
 	/**
 	 * Validate static version.
 	 *
-	 * @param string $version version of the static bundle.
+	 * @param String $version version of the static bundle.
 	 */
 	private static function is_static_version_valid( $version ) {
 		preg_match( '/static-\d+\.\d+/', $version, $match );
@@ -94,106 +103,22 @@ class Links {
 	}
 
 	/**
-	 * Return utm_campaign to add to the signup link.
-	 */
-	private static function get_utm_campaign() {
-		$wpe_template = LeadinOptions::get_wpe_template();
-		if ( 'hubspot' === $wpe_template ) {
-			return 'wp-engine-site-template';
-		}
-	}
-
-	/**
-	 * Return WordPress ajax url.
-	 */
-	public static function get_ajax_url() {
-		return admin_url( 'admin-ajax.php' );
-	}
-
-	/**
-	 * Return an array of properties to be included in the iframe search string
-	 */
-	public static function get_search_string_array() {
-		return array(
-			'l'       => get_locale(),
-			'php'     => Versions::get_php_version(),
-			'v'       => LEADIN_PLUGIN_VERSION,
-			'wp'      => Versions::get_wp_version(),
-			'theme'   => get_option( 'stylesheet' ),
-			'admin'   => User::is_admin(),
-			'ajaxUrl' => self::get_ajax_url(),
-			'domain'  => get_site_url(),
-			'nonce'   => wp_create_nonce( 'hubspot-ajax' ),
-		);
-	}
-
-	/**
 	 * Return a string query parameters to add to the iframe src.
 	 */
 	public static function get_query_params() {
-		$query_param_array = self::get_search_string_array();
+		$config_array = AdminConstants::get_hubspot_query_params_array();
 
-		return self::http_build_query( $query_param_array );
-	}
-
-	/**
-	 * Return the signup url based on the site options.
-	 */
-	public static function get_signup_url() {
-		// Get attribution string.
-		$acquisition_option = LeadinOptions::get_acquisition_attribution();
-		parse_str( $acquisition_option, $signup_params );
-		$signup_params['enableCollectedForms'] = 'true';
-		$redirect_page                         = get_option( 'leadin_portalId' ) ? 'leadin_settings' : 'leadin';
-		$signup_params['wp_redirect_url']      = admin_url( "admin.php?page=$redirect_page" );
-
-		// Get leadin query.
-		$leadin_query = self::get_query_params();
-		parse_str( $leadin_query, $leadin_params );
-
-		$signup_params = array_merge( $signup_params, $leadin_params );
-
-		// Add signup pre-fill info.
-		$wp_user                    = wp_get_current_user();
-		$signup_params['firstName'] = $wp_user->user_firstname;
-		$signup_params['lastName']  = $wp_user->user_lastname;
-		$signup_params['email']     = $wp_user->user_email;
-		$signup_params['company']   = get_bloginfo( 'name' );
-		$signup_params['domain']    = parse_url( get_site_url(), PHP_URL_HOST );
-		$signup_params['show_nav']  = 'true';
-		$signup_params['wp_user']   = $wp_user->first_name ? $wp_user->first_name : $wp_user->user_nicename;
-		if ( function_exists( 'get_avatar_url' ) ) {
-			$signup_params['wp_gravatar'] = get_avatar_url( $wp_user->ID );
-		}
-
-		$affiliate_code = AdminFilters::apply_affiliate_code();
-		$signup_url     = LeadinFilters::get_leadin_signup_base_url() . '/signup/wordpress?';
-
-		if ( $affiliate_code ) {
-			$signup_url     .= self::http_build_query( $signup_params );
-			$destination_url = rawurlencode( $signup_url );
-			return "https://mbsy.co/$affiliate_code?url=$destination_url";
-		}
-
-		$signup_params['utm_source'] = 'wordpress-plugin';
-		$signup_params['utm_medium'] = 'marketplaces';
-
-		$utm_campaign = self::get_utm_campaign();
-		if ( ! empty( $utm_campaign ) ) {
-			$signup_params['utm_campaign'] = $utm_campaign;
-		}
-
-		return $signup_url . self::http_build_query( $signup_params );
+		return self::http_build_query( $config_array );
 	}
 
 	/**
 	 * Get background iframe src.
 	 */
 	public static function get_background_iframe_src() {
-		$portal_id     = LeadinOptions::get_portal_id();
+		$portal_id     = AccountOptions::get_portal_id();
 		$portal_id_url = '';
 
-		if ( ! empty( $portal_id ) ) {
+		if ( Connection::is_connected() ) {
 			$portal_id_url = "/$portal_id";
 		}
 
@@ -206,7 +131,7 @@ class Links {
 	 * Return login link to redirect to when the user isn't authenticated in HubSpot
 	 */
 	public static function get_login_url() {
-		$portal_id = LeadinOptions::get_portal_id();
+		$portal_id = AccountOptions::get_portal_id();
 		return LeadinFilters::get_leadin_base_url() . "/wordpress-plugin-ui/$portal_id/login?" . self::get_query_params();
 	}
 
@@ -217,15 +142,6 @@ class Links {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$portal_id = filter_var( wp_unslash( $_GET['leadin_connect'] ), FILTER_VALIDATE_INT );
 		return LeadinFilters::get_leadin_base_url() . "/wordpress-plugin-ui/onboarding/connect?portalId=$portal_id&" . self::get_query_params();
-	}
-
-	/**
-	 * Returns the url for the unauthed page
-	 *
-	 * @param String $wp_user_id WordPress user ID.
-	 */
-	private static function get_unauthed_src( $wp_user_id ) {
-		return LeadinFilters::get_leadin_base_url() . '/wordpress-plugin-ui/unauthed/' . get_user_meta( $wp_user_id, 'leadin_default_app', true );
 	}
 
 	/**
@@ -249,6 +165,7 @@ class Links {
 		$leadin_new_portal     = 'leadin_new_portal';
 		$browser_search_string = '';
 
+		// Old Connection flow.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['leadin_connect'] ) ) {
 			$extra = '';
@@ -273,20 +190,17 @@ class Links {
 		$inframe_search_string = self::get_iframe_search_string();
 		$browser_search_string = $browser_search_string . $inframe_search_string;
 
-		if ( empty( LeadinOptions::get_portal_id() ) ) {
+		if ( empty( AccountOptions::get_portal_id() ) ) {
 			$wp_user    = wp_get_current_user();
 			$wp_user_id = $wp_user->ID;
-			if ( metadata_exists( 'user', $wp_user_id, 'leadin_default_app' ) ) {
-				return self::get_unauthed_src( $wp_user_id );
-			} else {
-				set_transient( $leadin_onboarding, 'true' );
-				$route = '/wordpress-plugin-ui/onboarding';
-			}
+			set_transient( $leadin_onboarding, 'true' );
+			$route = '/wordpress-plugin-ui/onboarding';
 		} else {
 			$page_id = self::get_page_id();
 			$routes  = self::get_routes_mapping();
 
-			if ( isset( $routes[ $page_id ] ) ) {
+			$route = IframeRoutes::get_oauth_path();
+			if ( empty( $route ) && isset( $routes[ $page_id ] ) ) {
 				$route = $routes[ $page_id ];
 
 				if ( \is_array( $route ) && isset( $sub_routes_array[0] ) ) {
@@ -301,8 +215,6 @@ class Links {
 				if ( \is_array( $route ) ) {
 					$route = $route[''];
 				}
-			} else {
-				$route = '';
 			}
 		}
 
@@ -310,7 +222,6 @@ class Links {
 		$sub_routes = empty( $sub_routes ) ? $sub_routes : "/$sub_routes";
 		// Query string separator "?" may have been added to the URL already.
 		$add_separator = strpos( $sub_routes, '?' ) ? '&' : '?';
-
 		return LeadinFilters::get_leadin_base_url() . "$route$sub_routes" . $add_separator . self::get_query_params() . $browser_search_string;
 	}
 }

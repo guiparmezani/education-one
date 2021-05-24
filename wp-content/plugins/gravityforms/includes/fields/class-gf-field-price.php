@@ -44,7 +44,6 @@ class GF_Field_Price extends GF_Field {
 
 		$value = esc_attr( $value );
 
-		$logic_event           = $this->get_conditional_logic_event( 'keyup' );
 		$placeholder_attribute = $this->get_field_placeholder_attribute();
 
 		$size         = $this->size;
@@ -55,11 +54,12 @@ class GF_Field_Price extends GF_Field {
 		$disabled_text      = $is_form_editor ? 'disabled="disabled"' : '';
 		$required_attribute = $this->isRequired ? 'aria-required="true"' : '';
 		$invalid_attribute  = $this->failed_validation ? 'aria-invalid="true"' : 'aria-invalid="false"';
+		$describedby_attribute = $this->get_aria_describedby();
 
 		$tabindex = $this->get_tabindex();
 
 		return "<div class='ginput_container ginput_container_product_price'>
-					<input name='input_{$id}' id='{$field_id}' type='text' value='{$value}' class='{$class} ginput_amount' {$tabindex} {$logic_event} {$placeholder_attribute} {$required_attribute} {$invalid_attribute} {$disabled_text}/>
+					<input name='input_{$id}' id='{$field_id}' type='text' value='{$value}' class='{$class} ginput_amount' {$tabindex} {$placeholder_attribute} {$required_attribute} {$invalid_attribute} {$describedby_attribute} {$disabled_text}/>
 				</div>";
 
 

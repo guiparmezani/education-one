@@ -20,7 +20,7 @@ class DisconnectApi extends ApiGenerator {
 	 * Disconnect Api runner. Removes portal id and domain from the WordPress options.
 	 */
 	public function run() {
-		if ( get_option( 'leadin_portalId' ) ) {
+		if ( Connection::is_connected() ) {
 			Connection::disconnect();
 			RequestUtils::send_message( 'Success' );
 		} else {

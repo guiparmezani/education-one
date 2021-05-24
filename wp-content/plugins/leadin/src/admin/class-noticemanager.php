@@ -2,8 +2,8 @@
 
 namespace Leadin\admin;
 
-use Leadin\LeadinOptions;
 use Leadin\wp\User;
+use Leadin\admin\Connection;
 
 /**
  * Class responsible for rendering the admin notices.
@@ -42,10 +42,9 @@ class NoticeManager {
 	 */
 	public function leadin_action_required_notice() {
 		$current_screen = get_current_screen();
-		$portal_id      = LeadinOptions::get_portal_id();
 
 		if ( 'leadin' !== $current_screen->parent_base ) {
-			if ( empty( $portal_id ) && User::is_admin() ) {
+			if ( ! Connection::is_connected() && User::is_admin() ) {
 				$this->leadin_render_disconnected_banner();
 			}
 		}

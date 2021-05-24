@@ -63,91 +63,100 @@ class GFSelectColumns {
 
 			<style type="text/css">
 				body {
-					font-family: "Lucida Grande", Verdana, Arial, sans-serif;
+					color: #444;
+					background: #fff;
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+					font-size: 13px;
+					line-height: 1.4em;
 				}
 
 				#sortable_available, #sortable_selected {
 					list-style-type: none;
 					margin: 0;
 					padding: 2px;
-					height: 250px;
-					border: 1px solid #eaeaea;
-					-moz-border-radius: 4px;
-					-webkit-border-radius: 4px;
-					-khtml-border-radius: 4px;
-					border-radius: 4px;
-					background-color: #FFF;
+					height: 350px;
+					border: 1px solid #9092B2;
+					border-radius: 3px;
 					overflow: auto;
 				}
 				#sortable_available li, #sortable_selected li {
 					margin: 0 2px 2px 2px;
 					padding: 2px;
 					width: 96%;
-					border: 1px solid white;
 					cursor: pointer;
-					font-size: 13px;
 				}
 
 				.field_hover {
-					border: 1px dashed #2175A9 !important;
+					background: #F6F9FC;
 				}
 
 				.placeholder {
-					background-color: #FFF0A5;
+					background-color: #F6F9FC;
 					height: 20px;
 				}
 
 				.gcolumn_wrapper {
 					height: 290px;
-					padding: 0 20px;
+					padding: 0 36px;
+					display: flex;
+					justify-content: space-between;
 				}
 
 				.gcolumn_container_left, .gcolumn_container_right {
-					width: 46%;
-				}
-
-				.gcolumn_container_left {
-					float: left;
-				}
-
-				.gcolumn_container_right {
-					float: right;
+					width: 47%;
 				}
 
 				.gform_select_column_heading {
-					font-weight: bold;
 					padding-bottom: 7px;
-					font-size: 13px;
-				}
-
-				.column-arrow-mid {
-					float: left;
-					width: 45px;
-					height: 250px;
-					background-image: url(<?php echo GFCommon::get_base_url(); ?>/images/arrow-rightleft.png);
-					background-repeat: no-repeat;
-					background-position: center center;
-					margin-top: 26px;
-				}
-
-				.panel-instructions {
-					border-bottom: 1px solid #dfdfdf;
-					color: #555;
-					font-size: 11px;
-					padding: 10px 20px;
-					margin-bottom: 6px
+					font-size: 1.125rem;
 				}
 
 				div.panel-buttons {
-					margin-top: 8px;
-					padding: 0 20px;
+					padding: 20px 32px;
+					position: absolute;
+					bottom: 0;
+					left: 0;
+					right: 0;
+					border-top: 1px solid #E2E8F0;
+					background: #F6F9FC;
 				}
 
-				div.panel-buttons {
-					*margin-top: 0px
+				div.panel-buttons .button,
+				div.panel-buttons .button-primary {
+					font-size: .875rem;
+					font-weight: 600;
+					line-height: 2.15384615;
+					min-height: 30px;
+					margin: 0;
+					cursor: pointer;
+					border-width: 1px;
+					border-style: solid;
+					-webkit-appearance: none;
+					white-space: nowrap;
+					box-sizing: border-box;
+					color: #3E7DA6;
+					border-color: #3E7DA6;
+					background: #fff;
+					border-radius: 3px;
+					padding: .125rem 1.125rem;
+					transition: all .3s ease;
 				}
 
-				/* ie specific */
+				div.panel-buttons .button-primary {
+					background: #3E7DA6;
+					border-color: #3E7DA6;
+					color: #fff;
+				}
+
+				div.panel-buttons .button:hover,
+				div.panel-buttons .button-primary:hover {
+					box-shadow: 0 4px 6px rgba( 28, 31, 63, 0.0837013 );
+					transform: translate( 0, -2px );
+				}
+
+
+
+
 			</style>
 
 			<script type="text/javascript">
@@ -194,7 +203,6 @@ class GFSelectColumns {
 		$form = self::get_selectable_entry_meta( $form );
 		$form = GFFormsModel::convert_field_objects( $form );
 		?>
-		<div class="panel-instructions"><?php esc_html_e( 'Drag & drop to order and select which columns are displayed in the entries table.', 'gravityforms' ) ?></div>
 		<div class="gcolumn_wrapper">
 			<div class="gcolumn_container_left">
 				<div class="gform_select_column_heading"><?php esc_html_e( 'Active Columns', 'gravityforms' ); ?></div>
@@ -208,8 +216,6 @@ class GFSelectColumns {
 				?>
 				</ul>
 			</div>
-
-			<div class="column-arrow-mid"></div>
 
 			<div class="gcolumn_container_right" id="available_column">
 				<div class="gform_select_column_heading"> <?php esc_html_e( 'Inactive Columns', 'gravityforms' ); ?></div>
@@ -225,6 +231,21 @@ class GFSelectColumns {
 
 					$inputs = $field->get_entry_inputs();
 
+					$input_type = GFFormsModel::get_input_type( $field );
+
+					$display = ! in_array( $input_type, array( 'list', 'repeater' ) );
+
+					/**
+					 * Allows fields to be added or removed from the select columns UI on the entry list.
+					 *
+					 * @since 2.4
+					 *
+					 * @param bool     $display Whether the field will be available for selection.
+					 * @param GF_Field $field
+					 * @param array    $form
+					 */
+					$display = gf_apply_filters( array( 'gform_display_field_select_columns_entry_list', $form_id, $field->id ), $display, $field, $form );
+
 					if ( is_array( $inputs ) ) {
 						foreach ( $inputs as $input ) {
 							if ( rgar( $input, 'isHidden' ) ) {
@@ -237,7 +258,7 @@ class GFSelectColumns {
 							<?php
 							}
 						}
-					} else if ( ! $field->displayOnly && ! in_array( $field->id, $field_ids ) && RGFormsModel::get_input_type( $field ) != 'list' ) {
+					} else if ( ! $field->displayOnly && ! in_array( $field->id, $field_ids ) && $display ) {
 						?>
 						<li id="<?php echo $field->id ?>"><?php echo esc_html( GFCommon::get_label( $field ) ); ?></li>
 					<?php

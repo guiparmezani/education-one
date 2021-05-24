@@ -2,11 +2,10 @@
 
 namespace WPStaging\Framework\Filesystem;
 
+use WPStaging\Backend\Notices\Notices;
+use WPStaging\Core\WPStaging;
 use WPStaging\Vendor\Psr\Log\LoggerInterface;
 use RuntimeException;
-use WPStaging\Vendor\Symfony\Component\Filesystem\Exception\IOException;
-use WPStaging\Vendor\Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
-use WPStaging\Vendor\Symfony\Component\Finder\Finder;
 
 class Filesystem extends FilterableDirectoryIterator
 {
@@ -16,9 +15,6 @@ class Filesystem extends FilterableDirectoryIterator
     /** @var callable|null */
     private $shouldStop;
 
-    /** @var string[]|array|null */
-    private $notPath;
-
     /** @var int|null */
     private $depth;
 
@@ -27,39 +23,6 @@ class Filesystem extends FilterableDirectoryIterator
 
     /** @var LoggerInterface|null */
     private $logger;
-
-    /**
-     * @param string|null $directory
-     * @return Finder
-     */
-    public function findFiles($directory = null)
-    {
-        $finder = (new Finder)
-            ->ignoreUnreadableDirs()
-            ->files()
-            ->in($this->findPath($directory))
-        ;
-
-        if ($this->depth !== null) {
-            $finder = $finder->depth((string) $this->depth);
-        }
-
-        foreach ($this->getNotPath() as $exclude) {
-            $finder->notPath($exclude);
-        }
-
-        foreach ($this->getFileNames() as $fileName) {
-            $finder->name($fileName);
-        }
-
-        $finder_has_results = count($finder) > 0;
-
-        if (!$finder_has_results) {
-            return null;
-        }
-
-        return $finder;
-    }
 
     /**
      * Safe path makes sure given path is within WP root directory
@@ -78,65 +41,73 @@ class Filesystem extends FilterableDirectoryIterator
     }
 
     /**
-     * Checks given file or directory exists
-     * @param string $fullPath
-     * @return bool
+     * Move content from one path to another
+     * This is better than $this->rename() method as this use custom fileiterator and $this->delete()
+     * @param string $source
+     * @param string $target
+     *
+     * @return boolean Whether the move was successful or not.
      */
-    public function exists($fullPath)
+    public function move($source, $target)
     {
-        return (new SymfonyFilesystem)->exists($fullPath);
-    }
-
-    /**
-     * @param string $newPath
-     * @return bool
-     */
-    public function rename($newPath)
-    {
-        // Target doesn't exist, just use rename
-        if (!$this->exists($newPath)) {
-            return rename($this->getPath(), $newPath);
+        // if $source is link or file, move it and stop execution
+        if (is_link($source) || is_file($source)) {
+            return $this->renameDirect($source, $target);
         }
 
-        // Get all files and dirs
-        $finder = (new Finder)->ignoreUnreadableDirs()->in($this->getPath());
-        if ($this->getNotPath()) {
-            foreach ($this->getNotPath() as $notPath) {
-                $finder->notPath($notPath);
-            }
+        // if $source is empty dir
+        if ($this->isEmptyDir($source)) {
+            return wp_mkdir_p($target) && @rmdir($source);
         }
 
-        $basePath = trailingslashit($newPath);
-        foreach ($finder as $item) {
-            if (!$this->exists($item->getPathname())) {
-                $this->log('Failed to move directory. Directory does not exists' . $item->getPathname());
+        $this->setDirectory($source);
+        $iterator = null;
+        try {
+            $iterator = $this->setIteratorMode(\RecursiveIteratorIterator::CHILD_FIRST)->get();
+        } catch (FilesystemExceptions $e) {
+            $this->log('Permission Error: Can not create recursive iterator for ' . $source);
+            return false;
+        }
+
+        $basePath = trailingslashit($target);
+        foreach ($iterator as $item) {
+            if ($item->isDir() && !$this->isEmptyDir($item->getPathname())) {
                 continue;
             }
 
-            // RelativePathname is relative to $this->path
-            $destination = $basePath . $item->getRelativePathname();
+            $relativeFilePath = $iterator->getFilename();
+            if ($this->isIteratorRecursive()) {
+                $relativeFilePath = $iterator->getSubPathName();
+            }
 
-            // It is not a directory, use built-in rename instead
-            if (!$item->isDir()) {
-                $this->renameDirect($item->getPathname(), $destination);
+            $destination = $basePath . $relativeFilePath;
+            if (file_exists($destination)) {
                 continue;
             }
 
-            // If it doesn't exist, use built-in rename instead
-            if (!$this->exists($destination)) {
-                $this->renameDirect($item->getPathname(), $destination);
+            $result = false;
+            // if empty dir
+            if ($item->isDir()) {
+                $result = wp_mkdir_p($destination) && @rmdir($item->getPathname());
+            } else { // if file or link
+                $result = $this->renameDirect($item->getPathname(), $destination);
+            }
+
+            if (!$result || !is_callable($this->shouldStop)) {
                 continue;
             }
 
-            if ($this->shouldStop) {
+            if (call_user_func($this->shouldStop)) {
                 return false;
             }
         }
 
-        // Due to rename, all files should be deleted so just empty directories left, make sure all of them are deleted.
-        // Due to setting shouldStop, this might return false till everything is deleted.
-        // This might not be just empty dirs as we can exclude some directories using notPath()
-        return $this->delete(null, false);
+        $deleteSelf = true;
+        if (count($this->getExcludePaths()) > 0 || !$this->isIteratorRecursive()) {
+            $deleteSelf = false;
+        }
+
+        return $this->delete($source, $deleteSelf);
     }
 
     /**
@@ -148,7 +119,7 @@ class Filesystem extends FilterableDirectoryIterator
     public function renameDirect($source, $target)
     {
         $dir = dirname($target);
-        if (!$this->exists($dir)) {
+        if (!file_exists($dir)) {
             $this->mkdir($dir);
         }
 
@@ -162,35 +133,104 @@ class Filesystem extends FilterableDirectoryIterator
     }
 
     /**
-     * @param string|null $path
+     * @param string|null $path The path to the new folder, or null to use FileSystem's path.
      *
-     * @return string
+     * @return string Path to newly created folder, or empty string if couldn't create it.
      */
-    public function mkdir($path)
+    public function mkdir($path, $preventDirectoryListing = false)
     {
         $path = $this->findPath($path);
+
         if (!wp_mkdir_p($path)) {
-            throw new IOException('Failed to create directory ' . $path);
+            if (defined('WPSTG_DEBUG') && WPSTG_DEBUG) {
+                error_log("Failed to create directory $path");
+            }
+
+            return '';
+        }
+
+        if ($preventDirectoryListing) {
+            /** @var DirectoryListing $directoryListing */
+            $directoryListing = WPStaging::getInstance()->getContainer()->make(DirectoryListing::class);
+            try {
+                $directoryListing->preventDirectoryListing($path);
+            } catch (\Exception $e) {
+                /**
+                 * Enqueue this error. All enqueued errors will be shown as a single notice.
+                 *
+                 * @see \WPStaging\Backend\Notices\Notices::showDirectoryListingWarningNotice
+                 */
+                WPStaging::getInstance()->getContainer()->pushToArray(Notices::$directoryListingErrors, $e->getMessage());
+            }
         }
 
         return trailingslashit($path);
     }
 
-    public function copy($source, $destination)
-    {
-        $fs = new SymfonyFilesystem;
-        // TODO perhaps use stream_set_chunk_size()?
-        $fs->copy($source, $destination);
-        return $fs->exists($destination);
-    }
-
     /**
-     * @param string
-     * @return bool
+     * The new copy method which works for files, links and directories
+     *
+     * @param string $source
+     * @param string $target
+     * @return boolean
      */
-    public function isWritableDir($fullPath)
+    public function copy($source, $target)
     {
-        return is_dir($fullPath) && is_writable($fullPath);
+        // if $source is link or file, move it and stop execution
+        if (is_link($source) || is_file($source)) {
+            $this->mkdir(dirname($target));
+            return copy($source, $target);
+        }
+
+        // if $source is empty dir
+        if ($this->isEmptyDir($source)) {
+            return wp_mkdir_p($target);
+        }
+
+        $this->setDirectory($source);
+        $iterator = null;
+        try {
+            $iterator = $this->setIteratorMode(\RecursiveIteratorIterator::CHILD_FIRST)->get();
+        } catch (FilesystemExceptions $e) {
+            $this->log('Permission Error: Can not create recursive iterator for ' . $source);
+            return false;
+        }
+
+        $basePath = trailingslashit($target);
+        foreach ($iterator as $item) {
+            if ($item->isDir() && !$this->isEmptyDir($item->getPathname())) {
+                continue;
+            }
+
+            $relativeFilePath = $iterator->getFilename();
+            if ($this->isIteratorRecursive()) {
+                $relativeFilePath = $iterator->getSubPathName();
+            }
+
+            $destination = $basePath . $relativeFilePath;
+            if (file_exists($destination)) {
+                continue;
+            }
+
+            $result = false;
+            // if empty dir
+            if ($item->isDir()) {
+                $result = wp_mkdir_p($destination);
+            } else { // if file or link
+                $this->mkdir(dirname($destination));
+                $result = copy($item->getPathname(), $destination);
+            }
+
+            if (!$result || !is_callable($this->shouldStop)) {
+                continue;
+            }
+
+            if (call_user_func($this->shouldStop)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -208,101 +248,79 @@ class Filesystem extends FilterableDirectoryIterator
     }
 
     /**
-     * Delete single file or entire folder including all subfolders and containing files
-     * @param null $path
-     * @param bool $isUseNotPath
-     * @return bool
-     * @todo Make it deprecated and switch it with $this->>deleteNew() as it is more performant and unit tested
+     * Deletes a directory recursively or not.
+     *
+     * @see \WPStaging\Framework\Filesystem\FilterableDirectoryIterator::setRecursive To control whether this function should delete recursively.
+     *
+     * @param string $path
+     * @param bool   $deleteSelf Whether to delete the target folder after deleting it's contents.
+     * @throws FilesystemExceptions Only if $throw is true.
+     *
+     * @return bool True if target was completely deleted, false if file not deleted or folder still have contents.
      */
-    public function delete($path = null, $isUseNotPath = true)
+    public function delete($path = null, $deleteSelf = true, $throw = false)
     {
         $path = $this->findPath($path);
-        if (!$path) {
-            $this->log('You need to define path to delete');
-            throw new RuntimeException('You need to define path to delete');
-        }
 
         if ($path === ABSPATH) {
             $this->log('You can not delete WP Root directory');
             throw new RuntimeException('You can not delete WP Root directory');
         }
 
+        // if $path is link or file, delete it and stop execution
         if (is_link($path) || is_file($path)) {
-            return unlink($path);
+            if (!unlink($path)) {
+                $this->log('Permission Error: Can not delete file ' . $path);
+                return false;
+            }
+
+            return true;
         }
 
+        // Assume it is already deleted
         if (!is_dir($path)) {
             return true;
         }
 
-        $iterator = (new Finder)
-            ->ignoreUnreadableDirs()
-            ->ignoreDotFiles(false)
-            ->in($this->findPath($path))
-        ;
-
-        if ($this->getShouldStop()) {
-            $iterator->depth('0');
-        }
-
-        if ($isUseNotPath) {
-            foreach ($this->getNotPath() as $exclude) {
-                $iterator->notPath($exclude);
-            }
-        }
-
-        foreach ($this->getFileNames() as $fileName) {
-            $iterator->name($fileName);
-        }
-
-        $iteratorHasResults = count($iterator) > 0;
-
-        if (is_dir($path) && !$iteratorHasResults && $this->isEmptyDir($path)) {
-            return rmdir($path);
-        }
-
-        foreach ($iterator as $file) {
-            $this->delete($file->getPathname(), $isUseNotPath);
-            if ($this->shouldStop) {
+        // delete the directory if it is empty and deleteSelf was true
+        if (is_dir($path) && $this->isEmptyDir($path) && $deleteSelf) {
+            if (!@rmdir($path)) {
+                $this->log('Permission Error: Can not delete directory ' . $path);
                 return false;
             }
-        }
 
-        if (is_dir($path)){
-            return rmdir($path);
-        }
-    }
-
-    /**
-     * Delete a whole directory including all sub directories or a file.
-     * A new faster method than $this->delete()
-     * $this->delete() uses the finder method which seems to be very slow compared to native RecursiveIteratorIterator!
-     * @todo replace $this->>delete() with this method if this can fulfill all requirements
-     *
-     * @param string $path
-     * @param bool $deleteSelf making it optional to delete the parent itself, useful during file and dir exclusion
-     * @return bool True if folder or file is deleted or file is empty ($deleteSelf = false); Return False if folder is not empty and execution should be continued
-     */
-    public function deleteNew($path, $deleteSelf = true)
-    {
-        // if $path is link or file, delete it and stop execution
-        if(is_link($path) || is_file($path))
-        {
-            if (!unlink($path)){
-                $this->log('Permission Error: Can not delete file ' . $path);
-                return false;
-            }
             return true;
         }
 
+        // return since directory was empty and deleteSelf was false
+        if (is_dir($path) && $this->isEmptyDir($path) && !$deleteSelf) {
+            return true;
+        }
 
         $this->setDirectory($path);
-        $iterator = null;
+        $originalIsRecursive = (bool)$this->isIteratorRecursive();
         try {
+            /*
+             * For historical reasons, this function will run as Recursive Mode by default.
+             * To minimize any side-effects of calling this method on an existing instance
+             * of Filesystem, we will store the original isRecursive, and set it to the
+             * original value before returning.
+             */
+            if ($this->isIteratorRecursive() === null) {
+                $this->setRecursive();
+            }
+
             $iterator = $this->setIteratorMode(\RecursiveIteratorIterator::CHILD_FIRST)->get();
         } catch (FilesystemExceptions $e) {
             $this->log('Permission Error: Can not create recursive iterator for ' . $path);
-            return false;
+            if ($throw) {
+                $this->setRecursive($originalIsRecursive);
+                // This allows us to know that Filesystem FAILED and should not continue;
+                throw $e;
+            } else {
+                $this->setRecursive($originalIsRecursive);
+                return false;
+            }
         }
 
         foreach ($iterator as $item) {
@@ -312,24 +330,127 @@ class Filesystem extends FilterableDirectoryIterator
             }
 
             if (call_user_func($this->shouldStop)) {
+                $this->setRecursive($originalIsRecursive);
                 return false;
             }
         }
 
         // Don't delete the parent main dir itself and finish execution
         if (!$deleteSelf) {
+            $this->setRecursive($originalIsRecursive);
             return true;
         }
 
         // Folder is not empty. Return false and continue execution if requested
         if (!$this->isEmptyDir($path)) {
+            $this->setRecursive($originalIsRecursive);
             return false;
         }
-        
+
         // Delete the empty directory itself and finish execution
-        if (is_dir($path)){
-            if (!rmdir($path)){
+        if (is_dir($path)) {
+            if (!rmdir($path)) {
                 $this->log('Permission Error: Can not delete directory ' . $path);
+            }
+        }
+
+        $this->setRecursive($originalIsRecursive);
+        return true;
+    }
+
+    /**
+     * @param string $file full path + filename
+     * @param array $excludedFiles List of filenames. Can be wildcard pattern like data.php, data*.php, *.php, .php
+     * @return boolean
+     */
+    public function isFilenameExcluded($file, $excludedFiles)
+    {
+        $filename = basename($file);
+
+        // Regular filenames
+        if (in_array($filename, $excludedFiles, true)) {
+            return true;
+        }
+
+        // Wildcards
+        foreach ($excludedFiles as $pattern) {
+            if ($this->fnmatch($pattern, $filename)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the passed string would match the given shell wildcard pattern.
+     * This function emulates [[fnmatch()]], which may be unavailable at certain environment, using PCRE.
+     * @param string $pattern the shell wildcard pattern.
+     * @param string $string the tested string.
+     * @param array $options options for matching. Valid options are:
+     *
+     * - caseSensitive: bool, whether pattern should be case sensitive. Defaults to `true`.
+     * - escape: bool, whether backslash escaping is enabled. Defaults to `true`.
+     * - filePath: bool, whether slashes in string only matches slashes in the given pattern. Defaults to `false`.
+     *
+     * @return bool whether the string matches pattern or not.
+     */
+    protected function fnmatch($pattern, $string, $options = [])
+    {
+        if ($pattern === '*' && empty($options['filePath'])) {
+            return true;
+        }
+
+        $replacements = [
+            '\\\\\\\\' => '\\\\',
+            '\\\\\\*' => '[*]',
+            '\\\\\\?' => '[?]',
+            '\*' => '.*',
+            '\?' => '.',
+            '\[\!' => '[^',
+            '\[' => '[',
+            '\]' => ']',
+            '\-' => '-',
+        ];
+
+        if (isset($options['escape']) && !$options['escape']) {
+            unset($replacements['\\\\\\\\'], $replacements['\\\\\\*'], $replacements['\\\\\\?']);
+        }
+
+        if (!empty($options['filePath'])) {
+            $replacements['\*'] = '[^/\\\\]*';
+            $replacements['\?'] = '[^/\\\\]';
+        }
+
+        $pattern = strtr(preg_quote($pattern, '#'), $replacements);
+        $pattern = '#^' . $pattern . '$#us';
+        if (isset($options['caseSensitive']) && !$options['caseSensitive']) {
+            $pattern .= 'i';
+        }
+
+        return preg_match($pattern, $string) === 1;
+    }
+
+    /**
+     * @param array $paths
+     * @return boolean
+     */
+    public function deletePaths($paths)
+    {
+        foreach ($paths as $path) {
+            // only delete the dir if empty
+            // helpful when we exclude path(s) during delete
+            if (is_dir($path) && $this->isEmptyDir($path)) {
+                if (!@rmdir($path)) {
+                    $this->log('Permission Error: Can not delete directory ' . $path);
+                    throw new RuntimeException('Permission Error: Can not delete directory ' . $path);
+                }
+
+                continue;
+            }
+
+            // force to not delete the parent path itself
+            if (!$this->delete($path, false)) {
+                return false;
             }
         }
 
@@ -342,7 +463,7 @@ class Filesystem extends FilterableDirectoryIterator
      */
     public function findPath($path)
     {
-        return $path?: $this->path;
+        return $path ?: $this->path;
     }
 
     /**
@@ -382,34 +503,6 @@ class Filesystem extends FilterableDirectoryIterator
     }
 
     /**
-     * @return array
-     */
-    public function getNotPath()
-    {
-        return $this->notPath?: [];
-    }
-
-    /**
-     * @param array $notPath
-     * @return self
-     */
-    public function setNotPath(array $notPath = [])
-    {
-        $this->notPath = $notPath;
-        return $this;
-    }
-
-    /**
-     * @param string $notPath
-     * @return self
-     */
-    public function addNotPath($notPath)
-    {
-        $this->notPath[] = $notPath;
-        return $this;
-    }
-
-    /**
      * @return int|null
      */
     public function getDepth()
@@ -432,7 +525,7 @@ class Filesystem extends FilterableDirectoryIterator
      */
     public function getFileNames()
     {
-        return $this->fileNames?: [];
+        return $this->fileNames ?: [];
     }
 
     /**
@@ -473,17 +566,23 @@ class Filesystem extends FilterableDirectoryIterator
     protected function deleteItem($item)
     {
         $path = $item->getPathname();
+
+        $perms = substr(sprintf('%o', fileperms($path)), -4);
+        $this->log('Permission Error: Can not delete link ' . $perms);
+
+        if ($item->isLink()) {
+            if (!$this->removeSymlink($path)) {
+                $this->log('Permission Error: Can not delete link ' . $path);
+                throw new RuntimeException('Permission Error: Can not delete link ' . $path);
+            }
+        }
+
         // Checks whether that file or directory exists
         if (!file_exists($path)) {
             return true;
         }
 
-        if ($item->isLink()) {
-            if(!unlink($path)) {
-                $this->log('Permission Error: Can not delete link ' . $path);
-                throw new RuntimeException('Permission Error: Can not delete link ' . $path);
-            }
-        } elseif ($item->isDir()) {
+        if ($item->isDir()) {
             if (!$this->isEmptyDir($path)) {
                 return false;
             }
@@ -503,13 +602,73 @@ class Filesystem extends FilterableDirectoryIterator
     }
 
     /**
+     * Remove symlink for both windows and other OSes
+     * @param string $path Path to the link
+     * @return boolean
+     */
+    protected function removeSymlink($path)
+    {
+        // remove symlink using rmdir if OS is windows
+        if (PHP_SHLIB_SUFFIX === 'dll') {
+            return rmdir($path);
+        }
+
+        return unlink($path);
+    }
+
+    /**
      * @param $string
      */
-    protected function log($string){
+    protected function log($string)
+    {
         if ($this->logger instanceof LoggerInterface) {
             $this->logger->warning($string);
         }
     }
 
+    /**
+     * Create a file with content
+     *
+     * @param  string $path    Path to the file
+     * @param  string $content Content of the file
+     * @return boolean
+     */
+    public function create($path, $content)
+    {
+        if (!@file_exists($path)) {
+            if (!@is_writable(dirname($path))) {
+                return false;
+            }
 
+            if (!@touch($path)) {
+                return false;
+            }
+        } elseif (!@is_writable($path)) {
+            return false;
+        }
+
+        $written = false;
+        if (( $handle     = @fopen($path, 'w') ) !== false) {
+            if (@fwrite($handle, $content) !== false) {
+                $written = true;
+            }
+
+            @fclose($handle);
+        }
+
+        return $written;
+    }
+
+    /**
+     * Create a file with marker and content
+     *
+     * @param  string $path    Path to the file
+     * @param  string $marker  Name of the marker
+     * @param  string $content Content of the file
+     * @return boolean
+     */
+    public function createWithMarkers($path, $marker, $content)
+    {
+        return @insert_with_markers($path, $marker, $content);
+    }
 }

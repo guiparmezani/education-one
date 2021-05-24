@@ -10,7 +10,7 @@ class Versions {
 	 * Return the given version until the patch version
 	 * eg: 6.4.2.1-beta => 6.4.2
 	 *
-	 * @param string $version version.
+	 * @param String $version version.
 	 */
 	private static function parse_version( $version ) {
 		preg_match( '/^\d+(\.\d+){0,2}/', $version, $match );

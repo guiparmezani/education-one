@@ -5,6 +5,9 @@ namespace Leadin;
 use Leadin\LeadinFilters;
 use Leadin\AssetsManager;
 use Leadin\wp\User;
+use Leadin\auth\OAuth;
+use Leadin\admin\Connection;
+use Leadin\options\AccountOptions;
 
 /**
  * Class responsible of adding the script loader to the website, as well as rendering forms, live chat, etc.
@@ -16,7 +19,9 @@ class PageHooks {
 	public function __construct() {
 		add_action( 'wp_head', array( $this, 'add_page_analytics' ) );
 		add_action( 'wp_head', array( $this, 'add_form_management_script' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'add_frontend_scripts' ) );
+		if ( Connection::is_connected() ) {
+			add_action( 'wp_enqueue_scripts', array( $this, 'add_frontend_scripts' ) );
+		}
 		add_filter( 'script_loader_tag', array( $this, 'add_id_to_tracking_code' ), 10, 2 );
 		add_shortcode( 'hubspot', array( $this, 'leadin_add_hubspot_shortcode' ) );
 	}
@@ -68,7 +73,7 @@ class PageHooks {
 	 * Adds the script containing the information needed by the script loader.
 	 */
 	public function add_page_analytics() {
-		$portal_id = LeadinOptions::get_portal_id();
+		$portal_id = AccountOptions::get_portal_id();
 		if ( empty( $portal_id ) ) {
 			echo '<!-- HubSpot WordPress Plugin v' . esc_html( LEADIN_PLUGIN_VERSION ) . ': embed JS disabled as a portalId has not yet been configured -->';
 		} else {
@@ -95,12 +100,12 @@ class PageHooks {
 	/**
 	 * Add the required id to the script loader <script>
 	 *
-	 * @param string $tag tag name.
-	 * @param string $handle handle.
+	 * @param String $tag tag name.
+	 * @param String $handle handle.
 	 */
 	public function add_id_to_tracking_code( $tag, $handle ) {
 		if ( AssetsManager::TRACKING_CODE === $handle ) {
-			$tag = str_replace( '<script', '<script async defer id="hs-script-loader"', $tag );
+			$tag = str_replace( "id='" . $handle . "-js'", "async defer id='hs-script-loader'", $tag );
 		}
 		return $tag;
 	}
