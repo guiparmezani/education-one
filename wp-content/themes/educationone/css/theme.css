@@ -10671,6 +10671,7 @@ body.page-template-template-the-tutorium {
           top: 50%;
           transform: translateY(-50%); }
       .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="text"],
+      .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="email"],
       .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form select {
         padding: 4px 4px 8px 12px !important;
         border: 1px solid #fff;
@@ -10681,9 +10682,11 @@ body.page-template-template-the-tutorium {
         -webkit-appearance: none;
         border-radius: 0; }
         .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="text"] option,
+        .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="email"] option,
         .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form select option {
           color: #474747 !important; }
         .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="text"]::placeholder,
+        .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form input[type="email"]::placeholder,
         .the-tutorium-wrapper .page-content .tutorium-enroll .enroll-form form select::placeholder {
           font-size: 16px;
           color: #fff; }
@@ -10729,6 +10732,12 @@ body.page-template-template-the-tutorium {
     right: -10px; }
   .the-tutorium-wrapper .page-content .carousel .carousel-control.carousel-control-prev {
     left: -10px; } }
+
+#myLandbot {
+  display: none; }
+
+body.uiasdhfiuhasdfuih #myLandbot {
+  display: block; }
 
 body.page-id-1863 .the-tutorium-wrapper .tutorium-nav-wrapper {
   background-color: #FF9C18; }
@@ -10869,7 +10878,7 @@ body.blog .gform_body {
       font-family: "Barlow", sans-serif;
       font-weight: normal;
       margin-bottom: 0; }
-    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="text"], .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield select {
+    .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="text"], .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield input[type="email"], .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield textarea, .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield select {
       border: none;
       background-color: #eaeaea; }
     .eo-form-wrapper .form-wrapper .gform_wrapper .gform_body .gfield.no-label > label {
