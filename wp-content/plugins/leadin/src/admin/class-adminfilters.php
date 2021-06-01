@@ -13,7 +13,7 @@ class AdminFilters {
 	 * Class constructor, adds the necessary filters.
 	 */
 	public function __construct() {
-		add_filter( LEADIN_AFFILIATE_CODE, array( $this, 'get_affiliate_code' ), 100 );
+		add_filter( LEADIN_AFFILIATE_CODE, array( $this, 'get_affiliate_code_option' ), 100 );
 	}
 
 	/**
@@ -21,14 +21,14 @@ class AdminFilters {
 	 *
 	 * @param String $affiliate Affiliate code returned by previous filter.
 	 */
-	public function get_affiliate_code( $affiliate ) {
+	public function get_affiliate_code_option( $affiliate ) {
 		return empty( $affiliate ) ? HubspotOptions::get_affiliate_code() : $affiliate;
 	}
 
 	/**
 	 * Apply leadin_affiliate_code filter.
 	 */
-	public static function apply_affiliate_code() {
+	public static function get_affiliate_code() {
 		return apply_filters( LEADIN_AFFILIATE_CODE, null );
 	}
 

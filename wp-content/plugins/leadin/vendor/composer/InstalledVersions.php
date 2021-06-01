@@ -32,7 +32,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '216ba05f74a82d7b5fab1449496b58c32fdbaa54',
+    'reference' => '9e0252045fa193033b9e1c56ce92204ac4a8069b',
     'name' => 'hubspot/leadin-wordpress-plugin',
   ),
   'versions' => 
@@ -44,7 +44,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '216ba05f74a82d7b5fab1449496b58c32fdbaa54',
+      'reference' => '9e0252045fa193033b9e1c56ce92204ac4a8069b',
     ),
   ),
 );
@@ -227,9 +227,23 @@ return $installed[0]['root'];
 
 
 
+
 public static function getRawData()
 {
+@trigger_error('getRawData only returns the first dataset loaded, which may not be what you expect. Use getAllRawData() instead which returns all datasets for all autoloaders present in the process.', E_USER_DEPRECATED);
+
 return self::$installed;
+}
+
+
+
+
+
+
+
+public static function getAllRawData()
+{
+return self::getInstalled();
 }
 
 

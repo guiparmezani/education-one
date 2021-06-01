@@ -6,7 +6,7 @@ Tags: CRM, Email Marketing, Live Chat, Forms, Analytics, Popups, Newsletter
 Requires at least: 4.0
 Tested up to: 5.7
 Requires PHP: 5.6
-Stable tag: 8.0.166
+Stable tag: 8.0.227
 
 Capture, organize and engage web visitors with free forms, live chat, CRM (contact management), email marketing, and analytics. Easy to use, no coding.
 
@@ -228,13 +228,12 @@ Please visit the <a href="https://community.hubspot.com/?utm_source=wordpress-pl
 == Changelog ==
 
 <a href="http://plugins.svn.wordpress.org/leadin/trunk/changelog.txt" target="_blank">Full changelog here</a>
-- Current version: 8.0.166
-- Version release date: 2021-05-20
+- Current version: 8.0.227
+- Version release date: 2021-05-28
+
+= 8.0.227 (2021-05-28) =
+* Add support for new affiliate links
 
 = 8.0.166 (2021-05-20) =
 * Improved fingerprinting of API requests for error tracking/handling
-
-= 8.0.140 (2021-05-17) =
-* Set required "hublet" property when connecting the plugin
-* Add plugin's version to error monitoring
 

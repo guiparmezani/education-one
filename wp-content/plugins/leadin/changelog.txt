@@ -1,3 +1,6 @@
+= 8.0.227 (2021-05-28) =
+* Add support for new affiliate links
+
 = 8.0.166 (2021-05-20) =
 * Improved fingerprinting of API requests for error tracking/handling
 
@@ -424,8 +427,4 @@
 
 = 7.0.3 (2019-02-12) =
 * Update HubSpot logos
-
-= 7.0.2 (2019-01-22) =
-* Plugin readme update
-* Fix wrong settings link
 

@@ -13,6 +13,7 @@ use Leadin\wp\Website;
 use Leadin\options\AccountOptions;
 use Leadin\options\HubspotOptions;
 use Leadin\admin\Connection;
+use Leadin\admin\Impact;
 
 /**
  * Class containing all the constants used for admin script localization.
@@ -70,14 +71,15 @@ class AdminConstants {
 		$signup_params['leadinPluginVersion']  = constant( 'LEADIN_PLUGIN_VERSION' );
 		$user_prefill_params                   = self::get_signup_prefill_params_array();
 		$signup_params                         = array_merge( $signup_params, $user_prefill_params );
-		$affiliate_code                        = AdminFilters::apply_affiliate_code();
+		$affiliate_code                        = AdminFilters::get_affiliate_code();
+
 		if ( $affiliate_code ) {
 			$signup_params['affiliateCode'] = $affiliate_code;
-			return $signup_params;
+		} else {
+			$utm_params    = self::get_utm_query_params_array();
+			$signup_params = array_merge( $signup_params, $utm_params );
 		}
 
-		$utm_params    = self::get_utm_query_params_array();
-		$signup_params = array_merge( $signup_params, $utm_params );
 		return $signup_params;
 	}
 
@@ -100,7 +102,6 @@ class AdminConstants {
 			'nonce'        => wp_create_nonce( 'hubspot-nonce' ),
 			'accountName'  => AccountOptions::get_account_name(),
 			'portalDomain' => AccountOptions::get_portal_domain(),
-			'',
 		);
 
 		if ( User::is_admin() ) {
@@ -120,11 +121,13 @@ class AdminConstants {
 			if ( Routing::is_new_portal_with_oauth() ) {
 				$hubspot_config['isNewPortal'] = true;
 			}
-		} elseif ( ! Connection::is_connected() ) {
+		}
+
+		if ( ! Connection::is_connected() ) {
 			$hubspot_config['oauth'] = true;
 
 			$signup_params  = self::get_signup_query_params_array();
-			$hubspot_config = array_merge( $hubspot_config, $signup_params );
+			$hubspot_config = array_merge( $hubspot_config, $signup_params, Impact::get_params() );
 		}
 
 		return $hubspot_config;
@@ -177,12 +180,24 @@ class AdminConstants {
 	 */
 	public static function get_leadin_config() {
 		$wp_user_id = get_current_user_id();
-		return \array_merge(
+
+		$leadin_config = \array_merge(
 			self::get_background_leadin_config(),
 			array(
 				'iframeUrl' => Links::get_iframe_src(),
 			)
 		);
+
+		if ( ! Connection::is_connected() ) {
+			if ( ! Impact::has_params() ) {
+				$impact_link = Impact::get_affiliate_link();
+				if ( ! empty( $impact_link ) ) {
+					$leadin_config['impactLink'] = Impact::get_affiliate_link();
+				}
+			}
+		}
+
+		return $leadin_config;
 	}
 	/**
 	 * Returns leadinI18n, containing all the translations needed on the frontend.
